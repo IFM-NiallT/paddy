@@ -7,7 +7,72 @@
    <title>PADDY - Products</title>
    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=VT323&display=swap" rel="stylesheet">
-   <!-- Keep existing styles -->
+   <style>
+       body {
+           background-color: #0d0d0d;
+           color: #d6d6d6;
+           font-family: 'VT323', monospace;
+       }
+
+       nav.navbar {
+           background: linear-gradient(90deg, #ff8c00, #00ff8c);
+           border-bottom: 3px solid #101010;
+       }
+
+       nav a.navbar-brand {
+           color: #101010;
+           font-family: 'Orbitron', sans-serif;
+           text-shadow: 0 0 5px #00ff8c, 0 0 10px #ff8c00;
+       }
+
+       .btn-uni {
+           background-color: #101010;
+           color: #ff8c00;
+           border: 2px solid #00ff8c;
+           font-family: 'VT323', monospace;
+           font-size: 1.2rem;
+           padding: 8px 20px;
+           transition: all 0.3s ease;
+           cursor: pointer;
+           border-radius: 8px;
+       }
+
+       .btn-uni:hover {
+           background-color: #ff8c00;
+           color: #000;
+       }
+
+       .table-dark {
+           background-color: #101010;
+           color: #d6d6d6;
+           font-size: 0.9rem;
+       }
+
+       .table-dark th {
+           background-color: #ff8c00;
+           color: #101010;
+       }
+
+       .table-responsive {
+           overflow-x: auto;
+       }
+
+       footer {
+           background-color: #101010;
+           color: #d6d6d6;
+           padding: 10px;
+           text-align: center;
+           width: 100%;
+           margin-top: 20px;
+       }
+
+       footer::before {
+           content: "";
+           display: block;
+           height: 3px;
+           background-color: #00ff8c;
+       }
+   </style>
 </head>
 <body>
    <nav class="navbar navbar-expand-lg">
@@ -25,24 +90,53 @@
                </div>
            </div>
 
-           <div class="row">
-               {% for product in products.Data %}
-                   <div class="col-md-4 mb-4">
-                       <div class="card">
-                           <div class="card-header">
-                               <h5>{{ product.Description }}</h5>
-                               <small>Code: {{ product.Code }}</small>
-                           </div>
-                           <div class="card-body">
-                               <p>ID: {{ product.ID }}</p>
-                               <p>Updated: {{ product.UpdatedOn.split('T')[0] }}</p>
-                               {% if product.Price %}
-                                   <p>Price: {{ product.Price }}</p>
-                               {% endif %}
-                           </div>
-                       </div>
-                   </div>
-               {% endfor %}
+           <div class="table-responsive">
+               <table class="table table-dark table-striped">
+                   <thead>
+                       <tr>
+                           <th>ID</th>
+                           <th>Product Name</th>
+                           <th>Code</th>
+                           <th>Updated On</th>
+                           <th>Price</th>
+                           <th>Classification</th>
+                           <th>Thread Gender</th>
+                           <th>Size A</th>
+                           <th>Size B</th>
+                           <th>Size C</th>
+                           <th>Size D</th>
+                           <th>Orientation</th>
+                           <th>Configuration</th>
+                           <th>Grade</th>
+                           <th>Manufacturer</th>
+                           <th>Application</th>
+                           <th>Web Category</th>
+                       </tr>
+                   </thead>
+                   <tbody>
+                       {% for product in products.Data %}
+                           <tr>
+                               <td>{{ product.ID }}</td>
+                               <td>{{ product.Description }}</td>
+                               <td>{{ product.Code }}</td>
+                               <td>{{ product.UpdatedOn.split('T')[0] }}</td>
+                               <td>{{ product.Price if product.Price else 'N/A' }}</td>
+                               <td>{{ product.D_Classification if product.D_Classification else 'N/A' }}</td>
+                               <td>{{ product.D_ThreadGender if product.D_ThreadGender else 'N/A' }}</td>
+                               <td>{{ product.D_SizeA if product.D_SizeA else 'N/A' }}</td>
+                               <td>{{ product.D_SizeB if product.D_SizeB else 'N/A' }}</td>
+                               <td>{{ product.D_SizeC if product.D_SizeC else 'N/A' }}</td>
+                               <td>{{ product.D_SizeD if product.D_SizeD else 'N/A' }}</td>
+                               <td>{{ product.D_Orientation if product.D_Orientation else 'N/A' }}</td>
+                               <td>{{ product.D_Configuration if product.D_Configuration else 'N/A' }}</td>
+                               <td>{{ product.D_Grade if product.D_Grade else 'N/A' }}</td>
+                               <td>{{ product.D_ManufacturerName if product.D_ManufacturerName else 'N/A' }}</td>
+                               <td>{{ product.D_Application if product.D_Application else 'N/A' }}</td>
+                               <td>{{ product.D_WebCategory if product.D_WebCategory else 'N/A' }}</td>
+                           </tr>
+                       {% endfor %}
+                   </tbody>
+               </table>
            </div>
        </div>
    </main>

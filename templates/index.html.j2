@@ -20,6 +20,8 @@
             flex: 1;
             display: flex;
             flex-direction: column;
+            align-items: center;
+            justify-content: center;
         }
 
         nav.navbar {
@@ -33,27 +35,16 @@
             text-shadow: 0 0 5px #00ff8c, 0 0 10px #ff8c00;
         }
 
-        .card {
-            background: #1a1a1a;
-            border: 1px solid #333;
-            color: #d6d6d6;
+        .category-container {
+            text-align: center;
             margin-bottom: 20px;
-            border-radius: 10px;
-            transition: transform 0.3s ease;
         }
 
-        .card:hover {
-            transform: scale(1.05);
-        }
-
-        .card-header {
-            background-color: #101010;
+        .category-name {
+            font-size: 2rem;
+            font-weight: bold;
             color: #ff8c00;
-            font-family: 'Orbitron', sans-serif;
-        }
-
-        .card-body {
-            background-color: #1a1a1a;
+            margin-bottom: 10px;
         }
 
         .btn-uni {
@@ -61,9 +52,11 @@
             color: #ff8c00;
             border: 2px solid #00ff8c;
             font-family: 'VT323', monospace;
-            font-size: 1rem;
+            font-size: 1.2rem;
+            padding: 8px 20px;
             transition: all 0.3s ease;
             cursor: pointer;
+            border-radius: 8px;
         }
 
         .btn-uni:hover {
@@ -86,13 +79,6 @@
             height: 3px;
             background-color: #00ff8c;
         }
-
-        .quote {
-            font-family: 'Orbitron', sans-serif;
-            font-size: 1.2rem;
-            color: #ff8c00;
-            margin-top: 10px;
-        }
     </style>
 </head>
 <body>
@@ -103,25 +89,15 @@
     </nav>
 
     <main>
-        <div class="container mt-5">
-            <div class="row">
-                {% for category in categories.Data %}
-                    <div class="col-md-4">
-                        <div class="card">
-                            <div class="card-header">
-                                <h5>{{ category.Description }}</h5>
-                            </div>
-                            <div class="card-body">
-                                <p>ID: {{ category.ID }}</p>
-                                <p>Code: {{ category.Code }}</p>
-                                <button class="btn-uni" onclick="window.location.href='/products/{{ category.ID }}'">
-                                    View Products
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                {% endfor %}
-            </div>
+        <div class="container mt-5 text-center">
+            {% for category in categories.Data %}
+                <div class="category-container">
+                    <div class="category-name">{{ category.Description }}</div>
+                    <button class="btn-uni" onclick="window.location.href='/products/{{ category.ID }}'">
+                        View Products
+                    </button>
+                </div>
+            {% endfor %}
         </div>
     </main>
 
