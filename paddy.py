@@ -51,13 +51,16 @@ def get_products_by_category(category_id):
 def index():
     """Home route that fetches and displays product categories."""
     categories = fetch_product_categories()
-    return render_template("index.html", categories=categories)
+    return render_template("index.html.j2", categories=categories)
 
 @app.route("/products/<int:category_id>")
 def products(category_id):
-    """API endpoint to get products by category."""
     products = get_products_by_category(category_id)
-    return jsonify(products)
+    category = next((c for c in fetch_product_categories()['Data'] 
+                    if c['ID'] == category_id), None)
+    return render_template("products.html.j2", 
+                         products=products, 
+                         category=category)
 
 if __name__ == "__main__":
     app.run(debug=True, host="0.0.0.0", port=5000)
