@@ -1,0 +1,134 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PADDY - Product Categories</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700&family=VT323&display=swap" rel="stylesheet">
+    <style>
+        body {
+            background-color: #0d0d0d;
+            color: #d6d6d6;
+            font-family: 'VT323', monospace;
+            display: flex;
+            flex-direction: column;
+            min-height: 100vh;
+        }
+
+        main {
+            flex: 1;
+            display: flex;
+            flex-direction: column;
+        }
+
+        nav.navbar {
+            background: linear-gradient(90deg, #ff8c00, #00ff8c);
+            border-bottom: 3px solid #101010;
+        }
+
+        nav a.navbar-brand {
+            color: #101010;
+            font-family: 'Orbitron', sans-serif;
+            text-shadow: 0 0 5px #00ff8c, 0 0 10px #ff8c00;
+        }
+
+        .card {
+            background: #1a1a1a;
+            border: 1px solid #333;
+            color: #d6d6d6;
+            margin-bottom: 20px;
+            border-radius: 10px;
+            transition: transform 0.3s ease;
+        }
+
+        .card:hover {
+            transform: scale(1.05);
+        }
+
+        .card-header {
+            background-color: #101010;
+            color: #ff8c00;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        .card-body {
+            background-color: #1a1a1a;
+        }
+
+        .btn-uni {
+            background-color: #101010;
+            color: #ff8c00;
+            border: 2px solid #00ff8c;
+            font-family: 'VT323', monospace;
+            font-size: 1rem;
+            transition: all 0.3s ease;
+            cursor: pointer;
+        }
+
+        .btn-uni:hover {
+            background-color: #ff8c00;
+            color: #000;
+        }
+
+        footer {
+            background-color: #101010;
+            color: #d6d6d6;
+            padding: 10px;
+            text-align: center;
+            width: 100%;
+            margin-top: auto;
+        }
+
+        footer::before {
+            content: "";
+            display: block;
+            height: 3px;
+            background-color: #00ff8c;
+        }
+
+        .quote {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.2rem;
+            color: #ff8c00;
+            margin-top: 10px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/">PADDY</a>
+        </div>
+    </nav>
+
+    <main>
+        <div class="container mt-5">
+            <div class="row">
+                {% for category in categories.Data %}
+                    <div class="col-md-4">
+                        <div class="card">
+                            <div class="card-header">
+                                <h5>{{ category.Name }}</h5>
+                            </div>
+                            <div class="card-body">
+                                <p>ID: {{ category.Id }}</p>
+                                <button class="btn-uni" onclick="window.location.href='/products/{{ category.Id }}'">
+                                    View Products
+                                </button>
+                            </div>
+                        </div>
+                    </div>
+                {% endfor %}
+            </div>
+        </div>
+    </main>
+
+    <footer>
+        <p>PADDY &copy; 2025 - Product Attribute Designer Deployment for You</p>
+        <p class="quote">"Designing product attributes made easy."</p>
+    </footer>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
