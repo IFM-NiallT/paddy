@@ -59,13 +59,20 @@ class APIClient:
             raise APIError(f"Failed to fetch data: {str(e)}")
 
     def get_categories(self) -> Dict:
-        """Fetch and cache product categories."""
-        try:
-            data = self._make_request("ProductCategories")
-            self._cache_categories(data)
-            return data
-        except APIError:
-            return self._get_cached_categories()
+        """Fetch and cache product categories. Calls API if cache file is missing."""
+        if not os.path.exists(Config.CACHE_FILE):  # Check if cache exists
+            logger.info("Cache file not found. Fetching categories from API.")
+            try:
+                data = self._make_request("ProductCategories")
+                self._cache_categories(data)  # Save new cache
+                return data
+            except APIError:
+                logger.error("API request failed, and no cached data is available.")
+                return {"TotalCount": 0, "Data": []}
+
+        # If cache exists, read from it
+        return self._get_cached_categories()
+
 
     def get_products(self, category_id: int) -> Dict:
         """Fetch products for a category."""
