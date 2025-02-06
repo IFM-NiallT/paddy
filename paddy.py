@@ -139,8 +139,9 @@ def create_app() -> Flask:
 
     return app
 
+
 if __name__ == "__main__":
     app = create_app()
     app.run(debug=True, host="0.0.0.0", port=5000)
 
-application = create_app()  # For WSGI server
+app = create_app()  # For WSGI server
