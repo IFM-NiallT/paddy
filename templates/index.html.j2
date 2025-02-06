@@ -109,11 +109,12 @@
                     <div class="col-md-4">
                         <div class="card">
                             <div class="card-header">
-                                <h5>{{ category.Name }}</h5>
+                                <h5>{{ category.Description }}</h5>
                             </div>
                             <div class="card-body">
-                                <p>ID: {{ category.Id }}</p>
-                                <button class="btn-uni" onclick="window.location.href='/products/{{ category.Id }}'">
+                                <p>ID: {{ category.ID }}</p>
+                                <p>Code: {{ category.Code }}</p>
+                                <button class="btn-uni" onclick="window.location.href='/products/{{ category.ID }}'">
                                     View Products
                                 </button>
                             </div>
