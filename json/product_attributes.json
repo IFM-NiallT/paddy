@@ -1,6 +1,7 @@
-
 {
-    "hydraulic_hose_": {
+    "21487721498616": {
+        "description": "HYD. HOSE",
+        "key": "hydraulic_hose_",
         "fields": {
             "D_Classification": {
                 "display": "Type",
@@ -64,7 +65,9 @@
             }
         }
     },
-    "industrial_hose": {
+    "21487721498617": {
+        "description": "IND. HOSE",
+        "key": "industrial_hose",
         "fields": {
             "D_Classification": {
                 "display": "Type",
@@ -128,7 +131,9 @@
             }
         }
     },
-    "adaptors": {
+    "21487721498618": {
+        "description": "ADAPTORS",
+        "key": "adaptors",
         "fields": {
             "D_Classification": {
                 "display": "Type",
@@ -192,7 +197,9 @@
             }
         }
     },
-    "couplings": {
+    "21487721498615": {
+        "description": "COUPLINGS",
+        "key": "couplings",
         "fields": {
             "D_Classification": {
                 "display": "Type",
@@ -256,7 +263,9 @@
             }
         }
     },
-    "quick_rel": {
+    "21487721498619": {
+        "description": "QUICK RELEASE",
+        "key": "quick_rel",
         "fields": {
             "D_Classification": {
                 "display": "Type",
@@ -320,7 +329,9 @@
             }
         }
     },
-    "filtration": {
+    "21487721498631": {
+        "description": "FILTERS",
+        "key": "filtration",
         "fields": {
             "D_Classification": {
                 "display": "Style",
@@ -384,7 +395,9 @@
             }
         }
     },
-    "grease": {
+    "21487721525215": {
+        "description": "GREASE",
+        "key": "grease",
         "fields": {
             "D_Classification": {
                 "display": "Type",
@@ -448,71 +461,9 @@
             }
         }
     },
-    "hydraulic_accessories": {
-        "fields": {
-            "D_Classification": {
-                "display": "Type",
-                "type": "String",
-                "used": true
-            },
-            "D_ThreadGender": {
-                "display": "Thread Gender",
-                "type": "Boolean",
-                "used": false
-            },
-            "D_SizeA": {
-                "display": "Size A",
-                "type": "Integer",
-                "used": true
-            },
-            "D_SizeB": {
-                "display": "Size B",
-                "type": "Integer",
-                "used": true
-            },
-            "D_SizeC": {
-                "display": "Size C",
-                "type": "Integer",
-                "used": true
-            },
-            "D_SizeD": {
-                "display": "Size D",
-                "type": "Integer",
-                "used": true
-            },
-            "D_Orientation": {
-                "display": "Orientation",
-                "type": "String",
-                "used": false
-            },
-            "D_Configuration": {
-                "display": "Configuration",
-                "type": "String",
-                "used": true
-            },
-            "D_Grade": {
-                "display": "Grade",
-                "type": "String",
-                "used": false
-            },
-            "D_ManufacturerName": {
-                "display": "Manufacturer",
-                "type": "String",
-                "used": false
-            },
-            "D_PackSize": {
-                "display": "Pack Size",
-                "type": "String",
-                "used": false
-            },
-            "D_Application": {
-                "display": "Application",
-                "type": "String",
-                "used": false
-            }
-        }
-    },
-    "induistrial_hose_accessories": {
+    "21487721498627": {
+        "description": "HOSE ASSEMBLIES",
+        "key": "induistrial_hose_accessories",
         "fields": {
             "D_Classification": {
                 "display": "Type",
@@ -576,71 +527,9 @@
             }
         }
     },
-    "wear_parts": {
-        "fields": {
-            "D_Classification": {
-                "display": "Type",
-                "type": "String",
-                "used": true
-            },
-            "D_ThreadGender": {
-                "display": "Thread Gender",
-                "type": "Boolean",
-                "used": false
-            },
-            "D_SizeA": {
-                "display": "Thread Size",
-                "type": "Integer",
-                "used": true
-            },
-            "D_SizeB": {
-                "display": "Length",
-                "type": "Integer",
-                "used": true
-            },
-            "D_SizeC": {
-                "display": "Edge Thickness",
-                "type": "Integer",
-                "used": true
-            },
-            "D_SizeD": {
-                "display": "Size D",
-                "type": "Integer",
-                "used": false
-            },
-            "D_Orientation": {
-                "display": "Orientation",
-                "type": "String",
-                "used": false
-            },
-            "D_Configuration": {
-                "display": "Configuration",
-                "type": "String",
-                "used": false
-            },
-            "D_Grade": {
-                "display": "Grade",
-                "type": "String",
-                "used": false
-            },
-            "D_ManufacturerName": {
-                "display": "Manufacturer",
-                "type": "String",
-                "used": true
-            },
-            "D_PackSize": {
-                "display": "Pack Size",
-                "type": "String",
-                "used": false
-            },
-            "D_Application": {
-                "display": "Application",
-                "type": "String",
-                "used": true
-            }
-        }
-    },
-    "jcb_parts": {
+    "21487721525363": {
+        "description": "JCB PARTS",
+        "key": "jcb_parts",
         "fields": {
             "D_Classification": {
                 "display": "Type",
@@ -704,7 +593,9 @@
             }
         }
     },
-    "oil": {
+    "21487721498624": {
+        "description": "OIL",
+        "key": "oil",
         "fields": {
             "D_Classification": {
                 "display": "Classification",
@@ -768,7 +659,9 @@
             }
         }
     },
-    "rubber_tracks": {
+    "21487721498633": {
+        "description": "TRACKS",
+        "key": "rubber_tracks",
         "fields": {
             "D_Classification": {
                 "display": "Classification",

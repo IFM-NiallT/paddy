@@ -30,8 +30,11 @@ class Config:
     API_BASE_URL = os.getenv('API_BASE_URL', 'http://100.100.0.102:1234')
     BEARER_TOKEN = os.getenv('BEARER_TOKEN', 'bearertoken')
     REQUEST_TIMEOUT = 5
-    CACHE_FILE = 'categories.json'
-    FIELD_CONFIG_FILE = 'product_attributes.json'
+    
+    # JSON directory and file paths
+    JSON_DIR = 'json'
+    CACHE_FILE = os.path.join(JSON_DIR, 'categories.json')
+    FIELD_CONFIG_FILE = os.path.join(JSON_DIR, 'product_attributes.json')
 
 class FieldConfig:
     """Handles field configuration and display name mapping."""
@@ -110,10 +113,22 @@ class APIClient:
         return self._get_cached_categories()
 
 
-    def get_products(self, category_id: int) -> Dict:
-        """Fetch products for a category."""
+    def get_products(self, category_id):
+        """Fetch products for a specific category."""
         try:
-            return self._make_request("Products", {'categoryId': category_id})
+            all_products = self._make_request("Products")
+            
+            # Filter products by category ID from the Category object
+            filtered_products = {
+                "TotalCount": 0,
+                "Data": [
+                    product for product in all_products.get('Data', []) 
+                    if product.get('Category', {}).get('ID') == category_id
+                ]
+            }
+            filtered_products['TotalCount'] = len(filtered_products['Data'])
+            
+            return filtered_products
         except APIError:
             return {"TotalCount": 0, "Data": []}
 
@@ -153,7 +168,6 @@ def create_app() -> Flask:
     def products(category_id):
         """Products route for specific category."""
         try:
-            products = api_client.get_products(category_id)
             categories = api_client.get_categories()
             category = next((c for c in categories['Data'] 
                         if c['ID'] == category_id), None)
@@ -162,7 +176,10 @@ def create_app() -> Flask:
                 logger.warning(f"Category not found: {category_id}")
                 return render_template("error.html.j2", 
                                     error="Category not found"), 404
-                
+            
+            # Fetch products using the category ID
+            products = api_client.get_products(category_id)
+            
             # Get field configuration for category
             active_fields = api_client.field_config.get_category_fields(
                 category['Description']
