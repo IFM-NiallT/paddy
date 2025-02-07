@@ -33,6 +33,8 @@ class APIError(Exception):
     """Custom exception for API-related errors."""
     pass
 
+#==================================================================================================
+
 class Config:
     """Application configuration."""
     API_BASE_URL = os.getenv('API_BASE_URL', 'http://100.100.0.102:1234')
@@ -42,6 +44,8 @@ class Config:
     JSON_DIR = 'json'
     CACHE_FILE = os.path.join(JSON_DIR, 'categories.json')
     FIELD_CONFIG_FILE = os.path.join(JSON_DIR, 'product_attributes.json')
+    
+#==================================================================================================
 
 class FieldConfig:
     """Handles field configuration and display name mapping."""
@@ -89,6 +93,8 @@ class FieldConfig:
             for field_name, field_info in category_config.items()
             if field_info.get('used', False)
         ]
+
+#==================================================================================================
 
 class APIClient:
     """Handles API interactions."""
@@ -172,6 +178,10 @@ class APIClient:
         except (IOError, json.JSONDecodeError) as e:
             logger.error(f"Failed to read cached categories: {str(e)}")
             return {"TotalCount": 0, "Data": []}
+
+#==================================================================================================
+# Flask application
+#==================================================================================================
 
 def create_app() -> Flask:
     """Application factory function."""
