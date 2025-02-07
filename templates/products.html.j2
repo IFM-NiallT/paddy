@@ -545,9 +545,16 @@ footer::before {
             const cells = row.querySelectorAll('td');
             const rowData = [];
             
-            cells.forEach(cell => {
+            cells.forEach((cell, index) => {
                 let cellData = cell.getAttribute('data-full-text') || cell.textContent;
-                cellData = '"' + cellData.replace(/"/g, '""') + '"';
+                
+                // For ID column (index 0), add leading apostrophe to force text format
+                if (index === 0) {
+                    cellData = `"'${cellData}"`;  // Add apostrophe before the number
+                } else {
+                    cellData = '"' + cellData.replace(/"/g, '""') + '"';
+                }
+                
                 rowData.push(cellData);
             });
             
