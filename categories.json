@@ -1,0 +1,365 @@
+{
+    "TotalCount": 37,
+    "Data": [
+        {
+            "ID": 21487721389700,
+            "UpdatedOn": "2023-07-05T08:04:16.093Z",
+            "CreatedOn": "0001-01-01T00:00:00Z",
+            "Code": "BK",
+            "Description": "COURIERS",
+            "Group": {
+                "ID": 21492016465908,
+                "Code": "D",
+                "Description": "Default"
+            }
+        },
+        {
+            "ID": 21487721409933,
+            "UpdatedOn": "2023-07-05T08:04:21.73Z",
+            "CreatedOn": "0001-01-01T00:00:00Z",
+            "Code": "SP",
+            "Description": "SPECIAL",
+            "Group": {
+                "ID": 21492016465908,
+                "Code": "D",
+                "Description": "Default"
+            }
+        },
+        {
+            "ID": 21487721444700,
+            "UpdatedOn": "2023-07-05T08:04:27.68Z",
+            "CreatedOn": "0001-01-01T00:00:00Z",
+            "Code": "VO",
+            "Description": "Vouchers",
+            "Group": {
+                "ID": 21492016465908,
+                "Code": "D",
+                "Description": "Default"
+            }
+        },
+        {
+            "ID": 21487721498615,
+            "UpdatedOn": "2023-07-04T10:06:36.467Z",
+            "CreatedOn": "0001-01-01T00:00:00Z",
+            "Code": "3A",
+            "Description": "COUPLINGS",
+            "Group": {
+                "ID": 21492016465908,
+                "Code": "D",
+                "Description": "Default"
+            }
+        },
+        {
+            "ID": 21487721498616,
+            "UpdatedOn": "2023-07-04T10:06:36.81Z",
+            "CreatedOn": "0001-01-01T00:00:00Z",
+            "Code": "3B",
+            "Description": "HYD. HOSE",
+            "Group": {
+                "ID": 21492016465908,
+                "Code": "D",
+                "Description": "Default"
+            }
+        },
+        {
+            "ID": 21487721498617,
+            "UpdatedOn": "2023-07-04T10:06:37.17Z",
+            "CreatedOn": "0001-01-01T00:00:00Z",
+            "Code": "3C",
+            "Description": "IND. HOSE",
+            "Group": {
+                "ID": 21492016465908,
+                "Code": "D",
+                "Description": "Default"
+            }
+        },
+        {
+            "ID": 21487721498618,
+            "UpdatedOn": "2023-07-04T10:05:40.29Z",
+            "CreatedOn": "0001-01-01T00:00:00Z",
+            "Code": "3D",
+            "Description": "ADAPTORS",
+            "Group": {
+                "ID": 21492016465908,
+                "Code": "D",
+                "Description": "Default"
+            }
+        },
+        {
+            "ID": 21487721498619,
+            "UpdatedOn": "2023-07-05T07:59:12.927Z",
+            "CreatedOn": "0001-01-01T00:00:00Z",
+            "Code": "3E",
+            "Description": "QUICK RELEASE",
+            "Group": {
+                "ID": 21492016465908,
+                "Code": "D",
+                "Description": "Default"
+            }
+        },
+        {
+            "ID": 21487721498620,
+            "UpdatedOn": "2023-07-05T07:59:28.453Z",
+            "CreatedOn": "0001-01-01T00:00:00Z",
+            "Code": "3F",
+            "Description": "CUTTING EDGES",
+            "Group": {
+                "ID": 21492016465908,
+                "Code": "D",
+                "Description": "Default"
+            }
+        },
+        {
+            "ID": 21487721498621,
+            "UpdatedOn": "2023-07-07T09:23:41.14Z",
+            "CreatedOn": "0001-01-01T00:00:00Z",
+            "Code": "3G",
+            "Description": "TEETH",
+            "Group": {
+                "ID": 21492016465908,
+                "Code": "D",
+                "Description": "Default"
+            }
+        },
+        {
+            "ID": 21487721498622,
+            "UpdatedOn": "2023-07-04T10:06:38.83Z",
+            "CreatedOn": "0001-01-01T00:00:00Z",
+            "Code": "3H",
+            "Description": "NUTS & BOLTS",
+            "Group": {
+                "ID": 21492016465908,
+                "Code": "D",
+                "Description": "Default"
+            }
+        },
+        {
+            "ID": 21487721498623,
+            "UpdatedOn": "2023-07-04T10:06:39.177Z",
+            "CreatedOn": "0001-01-01T00:00:00Z",
+            "Code": "3I",
+            "Description": "SELF ASSEMBLY EQUIP.",
+            "Group": {
+                "ID": 21492016465908,
+                "Code": "D",
+                "Description": "Default"
+            }
+        },
+        {
+            "ID": 21487721498624,
+            "UpdatedOn": "2023-07-04T10:06:39.52Z",
+            "CreatedOn": "0001-01-01T00:00:00Z",
+            "Code": "3J",
+            "Description": "OIL",
+            "Group": {
+                "ID": 21492016465908,
+                "Code": "D",
+                "Description": "Default"
+            }
+        },
+        {
+            "ID": 21487721498625,
+            "UpdatedOn": "2023-07-05T08:00:46.453Z",
+            "CreatedOn": "0001-01-01T00:00:00Z",
+            "Code": "3K",
+            "Description": "VALVES",
+            "Group": {
+                "ID": 21492016465908,
+                "Code": "D",
+                "Description": "Default"
+            }
+        },
+        {
+            "ID": 21487721498626,
+            "UpdatedOn": "2023-07-05T08:01:02.257Z",
+            "CreatedOn": "0001-01-01T00:00:00Z",
+            "Code": "3L",
+            "Description": "MISC.",
+            "Group": {
+                "ID": 21492016465908,
+                "Code": "D",
+                "Description": "Default"
+            }
+        },
+        {
+            "ID": 21487721498627,
+            "UpdatedOn": "2023-10-20T10:38:19.983Z",
+            "CreatedOn": "0001-01-01T00:00:00Z",
+            "Code": "3M",
+            "Description": "HOSE ASSEMBLIES",
+            "Group": {
+                "ID": 21492016465908,
+                "Code": "D",
+                "Description": "Default"
+            }
+        },
+        {
+            "ID": 21487721498628,
+            "UpdatedOn": "2023-07-04T10:06:40.913Z",
+            "CreatedOn": "0001-01-01T00:00:00Z",
+            "Code": "3N",
+            "Description": "GATES IND. HOSE",
+            "Group": {
+                "ID": 21492016465908,
+                "Code": "D",
+                "Description": "Default"
+            }
+        },
+        {
+            "ID": 21487721498629,
+            "UpdatedOn": "2023-07-05T08:37:02.67Z",
+            "CreatedOn": "0001-01-01T00:00:00Z",
+            "Code": "3P",
+            "Description": "CONSTRUCTION EQUIPMENT",
+            "Group": {
+                "ID": 21492016465908,
+                "Code": "D",
+                "Description": "Default"
+            }
+        },
+        {
+            "ID": 21487721498630,
+            "UpdatedOn": "2023-07-05T08:37:32.937Z",
+            "CreatedOn": "0001-01-01T00:00:00Z",
+            "Code": "3Q",
+            "Description": "TOOLS",
+            "Group": {
+                "ID": 21492016465908,
+                "Code": "D",
+                "Description": "Default"
+            }
+        },
+        {
+            "ID": 21487721498631,
+            "UpdatedOn": "2023-07-04T10:06:42.213Z",
+            "CreatedOn": "0001-01-01T00:00:00Z",
+            "Code": "3R",
+            "Description": "FILTERS",
+            "Group": {
+                "ID": 21492016465908,
+                "Code": "D",
+                "Description": "Default"
+            }
+        },
+        {
+            "ID": 21487721498632,
+            "UpdatedOn": "2023-07-05T08:02:35.267Z",
+            "CreatedOn": "0001-01-01T00:00:00Z",
+            "Code": "3S",
+            "Description": "COMBO",
+            "Group": {
+                "ID": 21492016465908,
+                "Code": "D",
+                "Description": "Default"
+            }
+        },
+        {
+            "ID": 21487721498633,
+            "UpdatedOn": "2023-07-05T08:02:41.617Z",
+            "CreatedOn": "0001-01-01T00:00:00Z",
+            "Code": "3T",
+            "Description": "TRACKS",
+            "Group": {
+                "ID": 21492016465908,
+                "Code": "D",
+                "Description": "Default"
+            }
+        },
+        {
+            "ID": 21487721525213,
+            "UpdatedOn": "2023-07-05T08:02:50.837Z",
+            "CreatedOn": "0001-01-01T00:00:00Z",
+            "Code": "3U",
+            "Description": "EMB",
+            "Group": {
+                "ID": 21492016465908,
+                "Code": "D",
+                "Description": "Default"
+            }
+        },
+        {
+            "ID": 21487721525215,
+            "UpdatedOn": "2023-07-04T10:05:54.39Z",
+            "CreatedOn": "0001-01-01T00:00:00Z",
+            "Code": "3V",
+            "Description": "GREASE",
+            "Group": {
+                "ID": 21492016465908,
+                "Code": "D",
+                "Description": "Default"
+            }
+        },
+        {
+            "ID": 21487721525217,
+            "UpdatedOn": "2023-07-05T08:03:05.26Z",
+            "CreatedOn": "0001-01-01T00:00:00Z",
+            "Code": "3W",
+            "Description": "WORKWEAR SAFETY",
+            "Group": {
+                "ID": 21492016465908,
+                "Code": "D",
+                "Description": "Default"
+            }
+        },
+        {
+            "ID": 21487721525363,
+            "UpdatedOn": "2023-07-04T10:06:43.99Z",
+            "CreatedOn": "0001-01-01T00:00:00Z",
+            "Code": "3X",
+            "Description": "JCB PARTS",
+            "Group": {
+                "ID": 21492016465908,
+                "Code": "D",
+                "Description": "Default"
+            }
+        },
+        {
+            "ID": 21487721525597,
+            "UpdatedOn": "2023-07-05T08:32:46.307Z",
+            "CreatedOn": "0001-01-01T00:00:00Z",
+            "Code": "3Y",
+            "Description": "CHISELS",
+            "Group": {
+                "ID": 21492016465908,
+                "Code": "D",
+                "Description": "Default"
+            }
+        },
+        {
+            "ID": 21487721525839,
+            "UpdatedOn": "2024-01-02T09:46:41.667Z",
+            "CreatedOn": "0001-01-01T00:00:00Z",
+            "Code": "3Z",
+            "Description": "MIRRORS",
+            "Group": {
+                "ID": 21492016465908,
+                "Code": "D",
+                "Description": "Default"
+            }
+        },
+        {
+            "ID": 21487721526369,
+            "UpdatedOn": "2024-01-02T09:46:21.807Z",
+            "CreatedOn": "0001-01-01T00:00:00Z",
+            "Code": "4A",
+            "Description": "LIGHTING & ELECTRICAL",
+            "Group": {
+                "ID": 21492016465908,
+                "Code": "D",
+                "Description": "Default"
+            }
+        },
+        {
+            "ID": 21487721526611,
+            "UpdatedOn": "2023-07-04T10:06:45.507Z",
+            "CreatedOn": "0001-01-01T00:00:00Z",
+            "Code": "4B",
+            "Description": "BATTERIES",
+            "Group": {
+                "ID": 21492016465908,
+                "Code": "D",
+                "Description": "Default"
+            }
+        }
+    ]
+}
