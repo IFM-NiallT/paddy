@@ -299,9 +299,12 @@ footer::before {
 
    <main>
        <div class="table-container">
-            <h4 class="text-center">{{ category.Description }} ({{ category.Code }})</h4>
-            <div class="table-responsive">
-                <table class="table table-bordered" id="productsTable">
+    <h4 class="text-center">
+        {{ category.Description }} ({{ category.Code }}) 
+        <small class="text-muted">{{ products.TotalCount }} Product{% if products.TotalCount != 1 %}s{% endif %}</small>
+    </h4>
+    <div class="table-responsive">
+        <table class="table table-bordered" id="productsTable">
                    <thead>
                        <tr>
                <th onclick="sortTable(0)">ID<div class="resizer" data-column="0"></div></th>
