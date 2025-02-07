@@ -68,6 +68,34 @@
        .table th {
            background-color: #B20000;
            color: #FFFFFF;
+           cursor: pointer;
+           position: relative;
+           padding-right: 20px !important;
+       }
+
+       .table th:hover {
+           background-color: #FF4040;
+       }
+
+       .table th::after {
+           content: '↕';
+           position: absolute;
+           right: 8px;
+           top: 50%;
+           transform: translateY(-50%);
+           color: #FFFFFF;
+       }
+
+       .table th.asc::after {
+           content: '↑';
+       }
+
+       .table th.desc::after {
+           content: '↓';
+       }
+
+       .table tbody tr:hover {
+           background-color: #FEE9E9;
        }
 
        .btn-uni {
@@ -86,7 +114,6 @@
    </style>
 </head>
 <body>
-
    <nav class="navbar navbar-expand-lg">
        <div class="container">
            <a class="navbar-brand" href="/">PADDY</a>
@@ -98,26 +125,26 @@
        <div class="container mt-5">
            <div class="table-container">
                <h4 class="text-center">{{ category.Description }} ({{ category.Code }})</h4>
-               <table class="table table-bordered">
+               <table class="table table-bordered" id="productsTable">
                    <thead>
                        <tr>
-                           <th>ID</th>
-                           <th>Product Name</th>
-                           <th>Code</th>
-                           <th>Updated On</th>
-                           <th>Price</th>
-                           <th>Classification</th>
-                           <th>Thread Gender</th>
-                           <th>Size A</th>
-                           <th>Size B</th>
-                           <th>Size C</th>
-                           <th>Size D</th>
-                           <th>Orientation</th>
-                           <th>Configuration</th>
-                           <th>Grade</th>
-                           <th>Manufacturer</th>
-                           <th>Application</th>
-                           <th>Web Category</th>
+                           <th onclick="sortTable(0)">ID</th>
+                           <th onclick="sortTable(1)">Product Name</th>
+                           <th onclick="sortTable(2)">Code</th>
+                           <th onclick="sortTable(3)">Updated On</th>
+                           <th onclick="sortTable(4)">Price</th>
+                           <th onclick="sortTable(5)">Classification</th>
+                           <th onclick="sortTable(6)">Thread Gender</th>
+                           <th onclick="sortTable(7)">Size A</th>
+                           <th onclick="sortTable(8)">Size B</th>
+                           <th onclick="sortTable(9)">Size C</th>
+                           <th onclick="sortTable(10)">Size D</th>
+                           <th onclick="sortTable(11)">Orientation</th>
+                           <th onclick="sortTable(12)">Configuration</th>
+                           <th onclick="sortTable(13)">Grade</th>
+                           <th onclick="sortTable(14)">Manufacturer</th>
+                           <th onclick="sortTable(15)">Application</th>
+                           <th onclick="sortTable(16)">Web Category</th>
                        </tr>
                    </thead>
                    <tbody>
@@ -154,6 +181,81 @@
    </footer>
 
    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+   
+   <script>
+       function sortTable(n) {
+           var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
+           table = document.getElementById("productsTable");
+           switching = true;
+           dir = "asc";
+           
+           // Remove existing sort indicators
+           var headers = table.getElementsByTagName("th");
+           for (i = 0; i < headers.length; i++) {
+               headers[i].classList.remove('asc', 'desc');
+           }
+
+           while (switching) {
+               switching = false;
+               rows = table.rows;
+               
+               for (i = 1; i < (rows.length - 1); i++) {
+                   shouldSwitch = false;
+                   x = rows[i].getElementsByTagName("td")[n];
+                   y = rows[i + 1].getElementsByTagName("td")[n];
+
+                   // Get the values to compare
+                   let xValue = x.innerHTML.trim();
+                   let yValue = y.innerHTML.trim();
+
+                   // Handle 'N/A' values
+                   if (xValue === 'N/A') xValue = '';
+                   if (yValue === 'N/A') yValue = '';
+
+                   // Special handling for dates (column 3 is Updated On)
+                   if (n === 3) {
+                       xValue = new Date(xValue);
+                       yValue = new Date(yValue);
+                   }
+                   // Special handling for numeric values (ID and Price)
+                   else if (n === 0 || n === 4) {
+                       xValue = xValue === '' ? -Infinity : parseFloat(xValue);
+                       yValue = yValue === '' ? -Infinity : parseFloat(yValue);
+                   }
+                   // For text values, convert to lowercase for comparison
+                   else {
+                       xValue = xValue.toLowerCase();
+                       yValue = yValue.toLowerCase();
+                   }
+
+                   if (dir === "asc") {
+                       if (xValue > yValue) {
+                           shouldSwitch = true;
+                           break;
+                       }
+                   } else if (dir === "desc") {
+                       if (xValue < yValue) {
+                           shouldSwitch = true;
+                           break;
+                       }
+                   }
+               }
+               
+               if (shouldSwitch) {
+                   rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
+                   switching = true;
+                   switchcount++;
+               } else {
+                   if (switchcount === 0 && dir === "asc") {
+                       dir = "desc";
+                       switching = true;
+                   }
+               }
+           }
+
+           // Add sort indicator to the clicked header
+           headers[n].classList.add(dir);
+       }
+   </script>
 </body>
 </html>
-
