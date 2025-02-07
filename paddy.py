@@ -42,13 +42,48 @@ class FieldConfig:
     def __init__(self):
         self.config = self._load_field_config()
 
-    def _load_field_config(self) -> Dict:
+    def _load_field_config(self):
         """Load field configuration from JSON file."""
         try:
+            logger.info(f"Attempting to load field configuration from: {Config.FIELD_CONFIG_FILE}")
+            logger.info(f"Current working directory: {os.getcwd()}")
+            
+            # Check if file exists
+            if not os.path.exists(Config.FIELD_CONFIG_FILE):
+                logger.error(f"Field configuration file NOT FOUND: {Config.FIELD_CONFIG_FILE}")
+                return {}
+
+            # Log file details
+            file_stats = os.stat(Config.FIELD_CONFIG_FILE)
+            logger.info(f"File size: {file_stats.st_size} bytes")
+            logger.info(f"Last modified: {datetime.fromtimestamp(file_stats.st_mtime)}")
+
+            # Attempt to open and read file
             with open(Config.FIELD_CONFIG_FILE, 'r') as f:
-                return json.load(f)
-        except (IOError, json.JSONDecodeError) as e:
-            logger.error(f"Failed to load field configuration: {str(e)}")
+                # Read first few lines to check content
+                first_lines = f.readlines(500)
+                logger.info("First few lines of the file:")
+                for line in first_lines:
+                    logger.info(line.strip())
+
+                # Reset file pointer and load JSON
+                f.seek(0)
+                config = json.load(f)
+                
+                # Log loaded configuration details
+                logger.info(f"Number of categories loaded: {len(config)}")
+                logger.info(f"Loaded category IDs: {list(config.keys())}")
+
+                return config
+
+        except IOError as e:
+            logger.error(f"IO Error reading field configuration: {str(e)}")
+            return {}
+        except json.JSONDecodeError as e:
+            logger.error(f"JSON Decode Error in field configuration: {str(e)}")
+            return {}
+        except Exception as e:
+            logger.error(f"Unexpected error loading field configuration: {str(e)}")
             return {}
 
     def get_category_fields(self, category_id):
@@ -57,8 +92,16 @@ class FieldConfig:
             # Convert category_id to string as keys in config are strings
             category_id_str = str(category_id)
             
-            if not self.config or category_id_str not in self.config:
-                logger.warning(f"No field configuration found for category ID: {category_id}")
+            # Debug logging
+            logger.info(f"Looking up category fields for ID: {category_id_str}")
+            logger.info(f"Available config keys: {list(self.config.keys())}")
+            
+            if not self.config:
+                logger.warning("Config is empty")
+                return []
+            
+            if category_id_str not in self.config:
+                logger.warning(f"Category ID {category_id_str} not found in config")
                 return []
 
             category_config = self.config[category_id_str]['fields']
