@@ -31,7 +31,42 @@ class Config:
     BEARER_TOKEN = os.getenv('BEARER_TOKEN', 'bearertoken')
     REQUEST_TIMEOUT = 5
     CACHE_FILE = 'categories.json'
+    FIELD_CONFIG_FILE = 'product_attributes.json'
 
+class FieldConfig:
+    """Handles field configuration and display name mapping."""
+    
+    def __init__(self):
+        self.config = self._load_field_config()
+
+    def _load_field_config(self) -> Dict:
+        """Load field configuration from JSON file."""
+        try:
+            with open(Config.FIELD_CONFIG_FILE, 'r') as f:
+                return json.load(f)
+        except (IOError, json.JSONDecodeError) as e:
+            logger.error(f"Failed to load field configuration: {str(e)}")
+            return {}
+
+    def get_category_fields(self, category_name: str) -> List[Dict]:
+        """Get active fields and their display names for a category."""
+        category_key = category_name.lower().replace(' ', '_')
+        
+        try:
+            if not self.config or category_key not in self.config:
+                logger.warning(f"No field configuration found for category: {category_name}")
+                return []
+
+            category_config = self.config[category_key]['fields']
+            return [
+                {'field': field_name, 'display': field_info['display']}
+                for field_name, field_info in category_config.items()
+                if field_info.get('used', False)
+            ]
+
+        except Exception as e:
+            logger.error(f"Error getting category fields: {str(e)}")
+            return []
 class APIClient:
     """Handles API interactions."""
     
@@ -42,6 +77,7 @@ class APIClient:
             "Accept": "application/json"
         }
         self.timeout = timeout
+        self.field_config = FieldConfig() 
 
     def _make_request(self, endpoint: str, params: Optional[Dict] = None) -> Dict:
         """Make API request with error handling."""
@@ -120,20 +156,26 @@ def create_app() -> Flask:
             products = api_client.get_products(category_id)
             categories = api_client.get_categories()
             category = next((c for c in categories['Data'] 
-                           if c['ID'] == category_id), None)
+                        if c['ID'] == category_id), None)
             
             if not category:
                 logger.warning(f"Category not found: {category_id}")
                 return render_template("error.html.j2", 
                                     error="Category not found"), 404
                 
+            # Get field configuration for category
+            active_fields = api_client.field_config.get_category_fields(
+                category['Description']
+            )
+
             return render_template("products.html.j2",
-                                 products=products,
-                                 category=category)
+                                products=products,
+                                category=category,
+                                active_fields=active_fields)
         except Exception as e:
             logger.error(f"Error in products route: {str(e)}")
             return render_template("error.html.j2", 
-                                 error="Failed to load products")
+                                error="Failed to load products")
 
     @app.errorhandler(404)
     def not_found_error(error):

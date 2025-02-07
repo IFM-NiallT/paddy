@@ -1,0 +1,835 @@
+
+{
+    "hydraulic_hose_": {
+        "fields": {
+            "D_Classification": {
+                "display": "Type",
+                "type": "String",
+                "used": true
+            },
+            "D_ThreadGender": {
+                "display": "Thread Gender",
+                "type": "Boolean",
+                "used": false
+            },
+            "D_SizeA": {
+                "display": "Inner Diameter",
+                "type": "Integer",
+                "used": true
+            },
+            "D_SizeB": {
+                "display": "Outer Diameter",
+                "type": "Integer",
+                "used": true
+            },
+            "D_SizeC": {
+                "display": "Thread Size C",
+                "type": "Integer",
+                "used": false
+            },
+            "D_SizeD": {
+                "display": "Thread Size D",
+                "type": "Integer",
+                "used": false
+            },
+            "D_Orientation": {
+                "display": "Orientation",
+                "type": "String",
+                "used": false
+            },
+            "D_Configuration": {
+                "display": "Braid",
+                "type": "String",
+                "used": true
+            },
+            "D_Grade": {
+                "display": "Grade",
+                "type": "String",
+                "used": false
+            },
+            "D_ManufacturerName": {
+                "display": "Manufacturer",
+                "type": "String",
+                "used": true
+            },
+            "D_PackSize": {
+                "display": "Pack Size",
+                "type": "String",
+                "used": false
+            },
+            "D_Application": {
+                "display": "Application",
+                "type": "String",
+                "used": false
+            }
+        }
+    },
+    "industrial_hose": {
+        "fields": {
+            "D_Classification": {
+                "display": "Type",
+                "type": "String",
+                "used": true
+            },
+            "D_ThreadGender": {
+                "display": "Thread Gender",
+                "type": "Boolean",
+                "used": false
+            },
+            "D_SizeA": {
+                "display": "Inner Diameter",
+                "type": "Integer",
+                "used": true
+            },
+            "D_SizeB": {
+                "display": "Outer Diameter",
+                "type": "Integer",
+                "used": true
+            },
+            "D_SizeC": {
+                "display": "Size C",
+                "type": "Integer",
+                "used": false
+            },
+            "D_SizeD": {
+                "display": "Size D",
+                "type": "Integer",
+                "used": false
+            },
+            "D_Orientation": {
+                "display": "Orientation",
+                "type": "String",
+                "used": false
+            },
+            "D_Configuration": {
+                "display": "Configuration",
+                "type": "String",
+                "used": true
+            },
+            "D_Grade": {
+                "display": "Grade",
+                "type": "String",
+                "used": false
+            },
+            "D_ManufacturerName": {
+                "display": "Manufacturer",
+                "type": "String",
+                "used": false
+            },
+            "D_PackSize": {
+                "display": "Pack Size",
+                "type": "String",
+                "used": false
+            },
+            "D_Application": {
+                "display": "Application",
+                "type": "String",
+                "used": false
+            }
+        }
+    },
+    "adaptors": {
+        "fields": {
+            "D_Classification": {
+                "display": "Type",
+                "type": "String",
+                "used": true
+            },
+            "D_ThreadGender": {
+                "display": "Thread Gender",
+                "type": "Boolean",
+                "used": true
+            },
+            "D_SizeA": {
+                "display": "Thread Size A",
+                "type": "Integer",
+                "used": true
+            },
+            "D_SizeB": {
+                "display": "Thread Size B",
+                "type": "Integer",
+                "used": true
+            },
+            "D_SizeC": {
+                "display": "Thread Size C",
+                "type": "Integer",
+                "used": true
+            },
+            "D_SizeD": {
+                "display": "Thread Size D",
+                "type": "Integer",
+                "used": true
+            },
+            "D_Orientation": {
+                "display": "Orientation",
+                "type": "String",
+                "used": true
+            },
+            "D_Configuration": {
+                "display": "Configuration",
+                "type": "String",
+                "used": true
+            },
+            "D_Grade": {
+                "display": "Grade",
+                "type": "String",
+                "used": false
+            },
+            "D_ManufacturerName": {
+                "display": "Manufacturer",
+                "type": "String",
+                "used": false
+            },
+            "D_PackSize": {
+                "display": "Pack Size",
+                "type": "String",
+                "used": false
+            },
+            "D_Application": {
+                "display": "Application",
+                "type": "String",
+                "used": false
+            }
+        }
+    },
+    "couplings": {
+        "fields": {
+            "D_Classification": {
+                "display": "Type",
+                "type": "String",
+                "used": true
+            },
+            "D_ThreadGender": {
+                "display": "Thread Gender",
+                "type": "Boolean",
+                "used": true
+            },
+            "D_SizeA": {
+                "display": "Thread Size",
+                "type": "Integer",
+                "used": true
+            },
+            "D_SizeB": {
+                "display": "Diameter",
+                "type": "Integer",
+                "used": true
+            },
+            "D_SizeC": {
+                "display": "Size C",
+                "type": "Integer",
+                "used": false
+            },
+            "D_SizeD": {
+                "display": "Size D",
+                "type": "Integer",
+                "used": false
+            },
+            "D_Orientation": {
+                "display": "Orientation",
+                "type": "String",
+                "used": true
+            },
+            "D_Configuration": {
+                "display": "Configuration",
+                "type": "String",
+                "used": false
+            },
+            "D_Grade": {
+                "display": "Grade",
+                "type": "String",
+                "used": false
+            },
+            "D_ManufacturerName": {
+                "display": "Manufacturer",
+                "type": "String",
+                "used": false
+            },
+            "D_PackSize": {
+                "display": "Pack Size",
+                "type": "String",
+                "used": false
+            },
+            "D_Application": {
+                "display": "Application",
+                "type": "String",
+                "used": false
+            }
+        }
+    },
+    "quick_rel": {
+        "fields": {
+            "D_Classification": {
+                "display": "Type",
+                "type": "String",
+                "used": true
+            },
+            "D_ThreadGender": {
+                "display": "Thread Gender",
+                "type": "Boolean",
+                "used": true
+            },
+            "D_SizeA": {
+                "display": "Thread Size",
+                "type": "Integer",
+                "used": true
+            },
+            "D_SizeB": {
+                "display": "Size B",
+                "type": "Integer",
+                "used": false
+            },
+            "D_SizeC": {
+                "display": "Size C",
+                "type": "Integer",
+                "used": false
+            },
+            "D_SizeD": {
+                "display": "Size D",
+                "type": "Integer",
+                "used": false
+            },
+            "D_Orientation": {
+                "display": "Orientation",
+                "type": "String",
+                "used": false
+            },
+            "D_Configuration": {
+                "display": "Configuration",
+                "type": "String",
+                "used": true
+            },
+            "D_Grade": {
+                "display": "Grade",
+                "type": "String",
+                "used": false
+            },
+            "D_ManufacturerName": {
+                "display": "Manufacturer",
+                "type": "String",
+                "used": false
+            },
+            "D_PackSize": {
+                "display": "Pack Size",
+                "type": "String",
+                "used": false
+            },
+            "D_Application": {
+                "display": "Application",
+                "type": "String",
+                "used": false
+            }
+        }
+    },
+    "filtration": {
+        "fields": {
+            "D_Classification": {
+                "display": "Style",
+                "type": "String",
+                "used": true
+            },
+            "D_ThreadGender": {
+                "display": "Thread Gender",
+                "type": "Boolean",
+                "used": false
+            },
+            "D_SizeA": {
+                "display": "Thread Size",
+                "type": "Integer",
+                "used": true
+            },
+            "D_SizeB": {
+                "display": "Outer Diameter",
+                "type": "Integer",
+                "used": true
+            },
+            "D_SizeC": {
+                "display": "Length",
+                "type": "Integer",
+                "used": true
+            },
+            "D_SizeD": {
+                "display": "Size D",
+                "type": "Integer",
+                "used": false
+            },
+            "D_Orientation": {
+                "display": "Orientation",
+                "type": "String",
+                "used": false
+            },
+            "D_Configuration": {
+                "display": "Configuration",
+                "type": "String",
+                "used": false
+            },
+            "D_Grade": {
+                "display": "Grade",
+                "type": "String",
+                "used": false
+            },
+            "D_ManufacturerName": {
+                "display": "Manufacturer",
+                "type": "String",
+                "used": true
+            },
+            "D_PackSize": {
+                "display": "Pack Size",
+                "type": "String",
+                "used": false
+            },
+            "D_Application": {
+                "display": "Application",
+                "type": "String",
+                "used": false
+            }
+        }
+    },
+    "grease": {
+        "fields": {
+            "D_Classification": {
+                "display": "Type",
+                "type": "String",
+                "used": true
+            },
+            "D_ThreadGender": {
+                "display": "Thread Gender",
+                "type": "Boolean",
+                "used": false
+            },
+            "D_SizeA": {
+                "display": "Size A",
+                "type": "Integer",
+                "used": false
+            },
+            "D_SizeB": {
+                "display": "Size B",
+                "type": "Integer",
+                "used": false
+            },
+            "D_SizeC": {
+                "display": "Size C",
+                "type": "Integer",
+                "used": false
+            },
+            "D_SizeD": {
+                "display": "Size D",
+                "type": "Integer",
+                "used": false
+            },
+            "D_Orientation": {
+                "display": "Orientation",
+                "type": "String",
+                "used": false
+            },
+            "D_Configuration": {
+                "display": "Configuration",
+                "type": "String",
+                "used": false
+            },
+            "D_Grade": {
+                "display": "Grade",
+                "type": "String",
+                "used": true
+            },
+            "D_ManufacturerName": {
+                "display": "Manufacturer",
+                "type": "String",
+                "used": true
+            },
+            "D_PackSize": {
+                "display": "Pack Size",
+                "type": "String",
+                "used": true
+            },
+            "D_Application": {
+                "display": "Application",
+                "type": "String",
+                "used": false
+            }
+        }
+    },
+    "hydraulic_accessories": {
+        "fields": {
+            "D_Classification": {
+                "display": "Type",
+                "type": "String",
+                "used": true
+            },
+            "D_ThreadGender": {
+                "display": "Thread Gender",
+                "type": "Boolean",
+                "used": false
+            },
+            "D_SizeA": {
+                "display": "Size A",
+                "type": "Integer",
+                "used": true
+            },
+            "D_SizeB": {
+                "display": "Size B",
+                "type": "Integer",
+                "used": true
+            },
+            "D_SizeC": {
+                "display": "Size C",
+                "type": "Integer",
+                "used": true
+            },
+            "D_SizeD": {
+                "display": "Size D",
+                "type": "Integer",
+                "used": true
+            },
+            "D_Orientation": {
+                "display": "Orientation",
+                "type": "String",
+                "used": false
+            },
+            "D_Configuration": {
+                "display": "Configuration",
+                "type": "String",
+                "used": true
+            },
+            "D_Grade": {
+                "display": "Grade",
+                "type": "String",
+                "used": false
+            },
+            "D_ManufacturerName": {
+                "display": "Manufacturer",
+                "type": "String",
+                "used": false
+            },
+            "D_PackSize": {
+                "display": "Pack Size",
+                "type": "String",
+                "used": false
+            },
+            "D_Application": {
+                "display": "Application",
+                "type": "String",
+                "used": false
+            }
+        }
+    },
+    "induistrial_hose_accessories": {
+        "fields": {
+            "D_Classification": {
+                "display": "Type",
+                "type": "String",
+                "used": true
+            },
+            "D_ThreadGender": {
+                "display": "Thread Gender",
+                "type": "Boolean",
+                "used": false
+            },
+            "D_SizeA": {
+                "display": "Inner Diameter",
+                "type": "Integer",
+                "used": true
+            },
+            "D_SizeB": {
+                "display": "Outer Diameter",
+                "type": "Integer",
+                "used": true
+            },
+            "D_SizeC": {
+                "display": "Size C",
+                "type": "Integer",
+                "used": false
+            },
+            "D_SizeD": {
+                "display": "Size D",
+                "type": "Integer",
+                "used": false
+            },
+            "D_Orientation": {
+                "display": "Orientation",
+                "type": "String",
+                "used": false
+            },
+            "D_Configuration": {
+                "display": "Configuration",
+                "type": "String",
+                "used": true
+            },
+            "D_Grade": {
+                "display": "Grade",
+                "type": "String",
+                "used": false
+            },
+            "D_ManufacturerName": {
+                "display": "Manufacturer",
+                "type": "String",
+                "used": false
+            },
+            "D_PackSize": {
+                "display": "Pack Size",
+                "type": "String",
+                "used": false
+            },
+            "D_Application": {
+                "display": "Application",
+                "type": "String",
+                "used": false
+            }
+        }
+    },
+    "wear_parts": {
+        "fields": {
+            "D_Classification": {
+                "display": "Type",
+                "type": "String",
+                "used": true
+            },
+            "D_ThreadGender": {
+                "display": "Thread Gender",
+                "type": "Boolean",
+                "used": false
+            },
+            "D_SizeA": {
+                "display": "Thread Size",
+                "type": "Integer",
+                "used": true
+            },
+            "D_SizeB": {
+                "display": "Length",
+                "type": "Integer",
+                "used": true
+            },
+            "D_SizeC": {
+                "display": "Edge Thickness",
+                "type": "Integer",
+                "used": true
+            },
+            "D_SizeD": {
+                "display": "Size D",
+                "type": "Integer",
+                "used": false
+            },
+            "D_Orientation": {
+                "display": "Orientation",
+                "type": "String",
+                "used": false
+            },
+            "D_Configuration": {
+                "display": "Configuration",
+                "type": "String",
+                "used": false
+            },
+            "D_Grade": {
+                "display": "Grade",
+                "type": "String",
+                "used": false
+            },
+            "D_ManufacturerName": {
+                "display": "Manufacturer",
+                "type": "String",
+                "used": true
+            },
+            "D_PackSize": {
+                "display": "Pack Size",
+                "type": "String",
+                "used": false
+            },
+            "D_Application": {
+                "display": "Application",
+                "type": "String",
+                "used": true
+            }
+        }
+    },
+    "jcb_parts": {
+        "fields": {
+            "D_Classification": {
+                "display": "Type",
+                "type": "String",
+                "used": true
+            },
+            "D_ThreadGender": {
+                "display": "Thread Gender",
+                "type": "Boolean",
+                "used": false
+            },
+            "D_SizeA": {
+                "display": "Size A",
+                "type": "Integer",
+                "used": false
+            },
+            "D_SizeB": {
+                "display": "Size B",
+                "type": "Integer",
+                "used": false
+            },
+            "D_SizeC": {
+                "display": "Size C",
+                "type": "Integer",
+                "used": false
+            },
+            "D_SizeD": {
+                "display": "Size D",
+                "type": "Integer",
+                "used": false
+            },
+            "D_Orientation": {
+                "display": "Orientation",
+                "type": "String",
+                "used": false
+            },
+            "D_Configuration": {
+                "display": "Configuration",
+                "type": "String",
+                "used": false
+            },
+            "D_Grade": {
+                "display": "Grade",
+                "type": "String",
+                "used": false
+            },
+            "D_ManufacturerName": {
+                "display": "Manufacturer",
+                "type": "String",
+                "used": false
+            },
+            "D_PackSize": {
+                "display": "Pack Size",
+                "type": "String",
+                "used": false
+            },
+            "D_Application": {
+                "display": "Application",
+                "type": "String",
+                "used": false
+            }
+        }
+    },
+    "oil": {
+        "fields": {
+            "D_Classification": {
+                "display": "Classification",
+                "type": "String",
+                "used": true
+            },
+            "D_ThreadGender": {
+                "display": "Thread Gender",
+                "type": "Boolean",
+                "used": false
+            },
+            "D_SizeA": {
+                "display": "Size A",
+                "type": "Integer",
+                "used": false
+            },
+            "D_SizeB": {
+                "display": "Size B",
+                "type": "Integer",
+                "used": false
+            },
+            "D_SizeC": {
+                "display": "Size C",
+                "type": "Integer",
+                "used": false
+            },
+            "D_SizeD": {
+                "display": "Size D",
+                "type": "Integer",
+                "used": false
+            },
+            "D_Orientation": {
+                "display": "Orientation",
+                "type": "String",
+                "used": false
+            },
+            "D_Configuration": {
+                "display": "Configuration",
+                "type": "String",
+                "used": true
+            },
+            "D_Grade": {
+                "display": "ACEA Grade",
+                "type": "String",
+                "used": true
+            },
+            "D_ManufacturerName": {
+                "display": "Manufacturer",
+                "type": "String",
+                "used": true
+            },
+            "D_PackSize": {
+                "display": "Pack Size",
+                "type": "String",
+                "used": true
+            },
+            "D_Application": {
+                "display": "Application",
+                "type": "String",
+                "used": false
+            }
+        }
+    },
+    "rubber_tracks": {
+        "fields": {
+            "D_Classification": {
+                "display": "Classification",
+                "type": "String",
+                "used": false
+            },
+            "D_ThreadGender": {
+                "display": "Thread Gender",
+                "type": "Boolean",
+                "used": false
+            },
+            "D_SizeA": {
+                "display": "Width",
+                "type": "Integer",
+                "used": true
+            },
+            "D_SizeB": {
+                "display": "Links",
+                "type": "Integer",
+                "used": true
+            },
+            "D_SizeC": {
+                "display": "Size C",
+                "type": "Integer",
+                "used": false
+            },
+            "D_SizeD": {
+                "display": "Size D",
+                "type": "Integer",
+                "used": false
+            },
+            "D_Orientation": {
+                "display": "Orientation",
+                "type": "String",
+                "used": false
+            },
+            "D_Configuration": {
+                "display": "Configuration",
+                "type": "String",
+                "used": false
+            },
+            "D_Grade": {
+                "display": "Grade",
+                "type": "String",
+                "used": false
+            },
+            "D_ManufacturerName": {
+                "display": "Manufacturer",
+                "type": "String",
+                "used": false
+            },
+            "D_PackSize": {
+                "display": "Pack Size",
+                "type": "String",
+                "used": false
+            },
+            "D_Application": {
+                "display": "Application",
+                "type": "String",
+                "used": false
+            }
+        }
+    }
+}
