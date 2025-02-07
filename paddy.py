@@ -51,16 +51,17 @@ class FieldConfig:
             logger.error(f"Failed to load field configuration: {str(e)}")
             return {}
 
-    def get_category_fields(self, category_name: str) -> List[Dict]:
+    def get_category_fields(self, category_id):
         """Get active fields and their display names for a category."""
-        category_key = category_name.lower().replace(' ', '_')
-        
         try:
-            if not self.config or category_key not in self.config:
-                logger.warning(f"No field configuration found for category: {category_name}")
+            # Convert category_id to string as keys in config are strings
+            category_id_str = str(category_id)
+            
+            if not self.config or category_id_str not in self.config:
+                logger.warning(f"No field configuration found for category ID: {category_id}")
                 return []
 
-            category_config = self.config[category_key]['fields']
+            category_config = self.config[category_id_str]['fields']
             return [
                 {'field': field_name, 'display': field_info['display']}
                 for field_name, field_info in category_config.items()
@@ -70,6 +71,7 @@ class FieldConfig:
         except Exception as e:
             logger.error(f"Error getting category fields: {str(e)}")
             return []
+        
 class APIClient:
     """Handles API interactions."""
     
@@ -168,6 +170,7 @@ def create_app() -> Flask:
     def products(category_id):
         """Products route for specific category."""
         try:
+            products = api_client.get_products(category_id)
             categories = api_client.get_categories()
             category = next((c for c in categories['Data'] 
                         if c['ID'] == category_id), None)
@@ -176,14 +179,9 @@ def create_app() -> Flask:
                 logger.warning(f"Category not found: {category_id}")
                 return render_template("error.html.j2", 
                                     error="Category not found"), 404
-            
-            # Fetch products using the category ID
-            products = api_client.get_products(category_id)
-            
-            # Get field configuration for category
-            active_fields = api_client.field_config.get_category_fields(
-                category['Description']
-            )
+                
+            # Get field configuration for category using category ID
+            active_fields = api_client.field_config.get_category_fields(category_id)
 
             return render_template("products.html.j2",
                                 products=products,
