@@ -1,0 +1,344 @@
+/*******************************
+ * PADDY - Main Stylesheet
+ * A comprehensive stylesheet for the PADDY application
+ *******************************/
+
+/* Base Layout Styles */
+body {
+    background-color: #FEE9E9;
+    font-family: 'Liter', sans-serif;
+    color: #000;
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+}
+
+main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    max-width: 90% !important;
+    width: 90%;
+    margin: 0 auto;
+}
+
+/* Navigation Components */
+.navbar {
+    background-color: #FEE9E9;
+    border-bottom: 3px solid #B20000;
+}
+
+.navbar-brand {
+    font-size: 2rem;
+    font-weight: bold;
+    color: #B20000;
+    text-shadow: 2px 2px 5px #B20000, -2px -2px 5px #FF4040;
+}
+
+/* Footer Styles */
+footer {
+    background-color: #FE0000;
+    color: #FFFFFF;
+    padding: 10px;
+    text-align: center;
+    width: 100%;
+    margin-top: auto;
+}
+
+footer::before {
+    content: "";
+    display: block;
+    height: 3px;
+    background-color: #B20000;
+    margin-bottom: 10px;
+}
+
+.quote {
+    font-size: 1.2rem;
+    font-style: italic;
+}
+
+/* Search Components */
+.search-container {
+    margin: 20px auto;
+    max-width: 600px;
+    display: flex;
+    gap: 10px;
+}
+
+.search-input {
+    flex: 1;
+    padding: 12px 20px;
+    border: 2px solid #B20000;
+    border-radius: 5px;
+    font-size: 1.1rem;
+    background-color: white;
+    transition: all 0.3s ease;
+}
+
+.search-input:focus {
+    outline: none;
+    box-shadow: 0 0 5px #B20000;
+}
+
+.search-button {
+    background-color: #B20000;
+    color: #FFFFFF;
+    border: none;
+    padding: 12px 25px;
+    border-radius: 5px;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    white-space: nowrap;
+}
+
+.search-button:hover {
+    background-color: #FF4040;
+}
+
+/* Table Container Styles */
+.table-container {
+    background: #FFFFFF;
+    border: 1px solid #B20000;
+    padding: 20px;
+    border-radius: 10px;
+    margin: 10px auto;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: auto;
+    max-width: 95%;
+}
+
+/* Table Responsive Wrapper */
+.table-responsive {
+    overflow-x: auto;
+    margin: 0;
+    padding: 0;
+    width: 100%;
+}
+
+/* Table Base Styles */
+.table {
+    width: 100%;
+    margin-bottom: 0;
+    font-size: 0.85rem;
+    table-layout: auto;
+    border-collapse: collapse;
+}
+
+/* Table Header Styles */
+.table th {
+    position: relative;
+    background-color: #B20000;
+    color: #FFFFFF;
+    cursor: pointer;
+    padding: 8px 25px 8px 8px !important;
+    font-size: 0.85rem;
+    vertical-align: middle;
+    min-width: 100px;
+    user-select: none;
+}
+
+.table th a {
+    color: inherit;
+    text-decoration: none;
+    display: block;
+}
+
+/* Column Resizer Styles */
+.table th .resizer {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 8px;
+    background-color: transparent;
+    cursor: col-resize;
+    z-index: 1;
+}
+
+.table th .resizer:hover,
+.table th .resizing {
+    background-color: #FF4040;
+}
+
+/* Column Width Specifications */
+.table th:nth-child(1),
+.table td:nth-child(1) { min-width: 60px; }
+.table th:nth-child(2),
+.table td:nth-child(2) { min-width: 180px; }
+.table th:nth-child(3),
+.table td:nth-child(3) { min-width: 80px; }
+.table th:nth-child(4),
+.table td:nth-child(4) { min-width: 90px; }
+.table th:nth-child(5),
+.table td:nth-child(5) { min-width: 70px; }
+
+/* Table Cell Styles */
+.table td {
+    padding: 8px !important;
+    white-space: normal;
+    word-wrap: break-word;
+    overflow: hidden;
+    vertical-align: middle;
+    border: 1px solid #dee2e6;
+    background-color: #fff;
+}
+
+/* Sort Indicator Styles */
+.table th::after {
+    content: '';
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.table th:not(.current-sort)::after {
+    content: '⇅';
+    font-size: 14px;
+    color: #FFFFFF;
+}
+
+.table th.current-sort.asc::after {
+    content: '↑';
+    font-size: 16px;
+    color: #FFFFFF;
+}
+
+.table th.current-sort.dsc::after {
+    content: '↓';
+    font-size: 16px;
+    color: #FFFFFF;
+}
+
+/* Row Hover Effects */
+.table tbody tr:hover { background-color: #FEE9E9; }
+.table tbody tr:hover td { background-color: #FEE9E9; }
+
+/* Truncated Cell Styles */
+.table td.truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: relative;
+}
+
+.table td.truncate:hover::after {
+    content: attr(data-full-text);
+    position: absolute;
+    left: 0;
+    top: 100%;
+    background: #FFF;
+    border: 1px solid #B20000;
+    padding: 5px;
+    z-index: 1000;
+    white-space: normal;
+    max-width: 300px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Button Styles */
+.btn-uni {
+    background-color: #B20000;
+    color: #FFFFFF;
+    border: none;
+    padding: 10px 20px;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.btn-uni:hover { background-color: #FF4040; }
+
+/* Table Header Hover States */
+.table th:hover { background-color: #FF4040; }
+
+/* Utility Classes */
+.me-2 { margin-right: 10px; }
+
+/* Pagination Styles */
+.pagination-container {
+    display: inline-flex;
+    align-items: center;
+    gap: 10px;
+    margin-left: 15px;
+}
+
+.pagination-arrow {
+    text-decoration: none;
+    color: #B20000;
+    font-size: 24px;
+}
+
+.pagination-arrow:hover {
+    color: #FF4040;
+}
+
+.pagination-count {
+    font-size: 0.9em;
+    color: #666;
+}
+
+/* Category Grid Styles
+ * Specific styles for the category listing page.
+ * These control the grid of category cards and their interactions.
+ */
+ .category-container {
+    background: #FFFFFF;
+    border: 1px solid #B20000;
+    padding: 15px;
+    border-radius: 10px;
+    text-align: center;
+    transition: transform 0.3s ease;
+    margin-bottom: 20px;
+    height: 100%;
+}
+
+.category-container:hover {
+    transform: scale(1.05);
+}
+
+.category-name {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #B20000;
+    margin-bottom: 15px;
+}
+
+/* Error Page Styles
+ * Specific styles for error page presentation.
+ * Centers error content and maintains consistent styling.
+ */
+.error-message {
+    font-size: 1.5rem;
+    font-weight: bold;
+    color: #B20000;
+}
+
+main .error-message {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+/* Category Page Main Content Adjustments
+ * These styles ensure proper spacing and layout for the category grid page.
+ */
+main .category-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 20px;
+    padding: 20px 0;
+}
+
+.category-item {
+    display: flex;
+    flex-direction: column;
+}

@@ -1,601 +1,124 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-   <meta charset="UTF-8">
-   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-   <title>PADDY - Products</title>
-   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-   <link href="https://fonts.googleapis.com/css2?family=Liter:wght@400;700&display=swap" rel="stylesheet">
-   
-    <style>
-    /* Base styles */
-    body {
-        background-color: #FEE9E9;
-        font-family: 'Liter', sans-serif;
-        color: #000;
-        display: flex;
-        flex-direction: column;
-        min-height: 100vh;
-    }
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PADDY - Products</title>
 
-    main {
-        flex: 1;
-        display: flex;
-        flex-direction: column;
-    }
-
-    .container {
-        max-width: 90% !important; /* Adjusted to reduce width */
-        width: 90%;  /* Adjust as needed */
-        margin: 0 auto;
-    }
-
-    /* Navbar styles */
-    .navbar {
-        background-color: #FEE9E9;
-        border-bottom: 3px solid #B20000;
-    }
-
-    .navbar-brand {
-        font-size: 2rem;
-        font-weight: bold;
-        color: #B20000;
-        text-shadow: 2px 2px 5px #B20000, -2px -2px 5px #FF4040;
-    }
-
-    /* Footer styles */
-    footer {
-        background-color: #FE0000;
-        color: #FFFFFF;
-        padding: 10px;
-        text-align: center;
-        width: 100%;
-        margin-top: auto;
-    }
-
-    footer::before {
-        content: "";
-        display: block;
-        height: 3px;
-        background-color: #B20000;
-        margin-bottom: 10px;
-    }
-
-    .quote {
-        font-size: 1.2rem;
-        font-style: italic;
-    }
-
-    /* Search styles */
-    .search-container {
-        margin: 20px auto;
-        max-width: 600px;
-        display: flex;
-        gap: 10px;
-    }
-
-    .search-input {
-        flex: 1;
-        padding: 12px 20px;
-        border: 2px solid #B20000;
-        border-radius: 5px;
-        font-size: 1.1rem;
-        background-color: white;
-        transition: all 0.3s ease;
-    }
-
-    .search-input:focus {
-        outline: none;
-        box-shadow: 0 0 5px #B20000;
-    }
-
-    .search-button {
-        background-color: #B20000;
-        color: #FFFFFF;
-        border: none;
-        padding: 12px 25px;
-        border-radius: 5px;
-        font-size: 1.1rem;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        white-space: nowrap;
-    }
-
-    .search-button:hover {
-        background-color: #FF4040;
-    }
-
-    /* Table container styles */
-    .table-container {
-        background: #FFFFFF;
-        border: 1px solid #B20000;
-        padding: 20px;
-        border-radius: 10px;
-        margin: 10px auto;
-        width: 100%;
-        box-sizing: border-box;
-        overflow: auto;
-        max-width: 95%; /* Adjusted to reduce width */
-    }
-
-    /* Table responsive wrapper */
-    .table-responsive {
-        overflow-x: auto;
-        margin: 0;
-        padding: 0;
-        width: 100%;
-    }
-
-    /* Table styles */
-    .table {
-        width: 100%;
-        margin-bottom: 0;
-        font-size: 0.85rem;
-        table-layout: auto;
-        border-collapse: collapse;
-    }
-
-    /* Table header styles */
-    .table th {
-        position: relative;
-        background-color: #B20000;
-        color: #FFFFFF;
-        cursor: pointer;
-        padding: 8px 25px 8px 8px !important;
-        font-size: 0.85rem;
-        vertical-align: middle;
-        min-width: 100px;
-        user-select: none;
-    }
-
-    /* Resizer styles */
-    .table th .resizer {
-        position: absolute;
-        right: 0;
-        top: 0;
-        bottom: 0;
-        width: 8px;
-        background-color: transparent;
-        cursor: col-resize;
-        z-index: 1;
-    }
-
-    .table th .resizer:hover,
-    .table th .resizing {
-        background-color: #FF4040;
-    }
-
-    /* Column width specifications */
-    .table th:nth-child(1), 
-    .table td:nth-child(1) {
-        min-width: 60px;
-    }
-
-    .table th:nth-child(2), 
-    .table td:nth-child(2) {
-        min-width: 180px;
-    }
-
-    .table th:nth-child(3), 
-    .table td:nth-child(3) {
-        min-width: 80px;
-    }
-
-    .table th:nth-child(4), 
-    .table td:nth-child(4) {
-        min-width: 90px;
-    }
-
-    .table th:nth-child(5), 
-    .table td:nth-child(5) {
-        min-width: 70px;
-    }
-
-    /* Table cell styles */
-    .table td {
-        padding: 8px !important;
-        white-space: normal;
-        word-wrap: break-word;
-        overflow: hidden;
-        vertical-align: middle;
-        border: 1px solid #dee2e6;
-        background-color: #fff;
-    }
-
-    /* Sort indicator styles */
-    .table th::after {
-        content: '↕';
-        position: absolute;
-        right: 12px;
-        color: #FFFFFF;
-    }
-
-    .table th.asc::after {
-        content: '↑';
-    }
-
-    .table th.desc::after {
-        content: '↓';
-    }
-
-    /* Row hover effect */
-    .table tbody tr:hover {
-        background-color: #FEE9E9;
-    }
-
-    .table tbody tr:hover td {
-        background-color: #FEE9E9;
-    }
-
-    /* Truncated cell styles */
-    .table td.truncate {
-        white-space: nowrap;
-        overflow: hidden;
-        text-overflow: ellipsis;
-        position: relative;
-    }
-
-    /* Tooltip styles */
-    .table td.truncate:hover::after {
-        content: attr(data-full-text);
-        position: absolute;
-        left: 0;
-        top: 100%;
-        background: #FFF;
-        border: 1px solid #B20000;
-        padding: 5px;
-        z-index: 1000;
-        white-space: normal;
-        max-width: 300px;
-        border-radius: 4px;
-        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
-    }
-
-    /* Button styles */
-    .btn-uni {
-        background-color: #B20000;
-        color: #FFFFFF;
-        border: none;
-        padding: 10px 20px;
-        border-radius: 5px;
-        transition: all 0.3s ease;
-        cursor: pointer;
-    }
-
-    .btn-uni:hover {
-        background-color: #FF4040;
-    }
-
-    /* Hover states */
-    .table th:hover {
-        background-color: #FF4040;
-    }
-
-    .me-2 {
-        margin-right: 10px;
-    }
-
-    .pagination-container {
-        display: inline-flex;
-        align-items: center;
-        gap: 10px;
-        margin-left: 15px;
-    }
-    .pagination-arrow {
-        text-decoration: none;
-        color: #333;
-    }
-    .pagination-count {
-        font-size: 0.9em;
-        color: #666;
-    }
-    </style>
-
+    <!-- External Libraries -->
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://fonts.googleapis.com/css2?family=Liter:wght@400;700&display=swap" rel="stylesheet">
+    
+    <!-- Our Custom Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/paddy.css') }}">
 </head>
+
 <body>
-   <nav class="navbar navbar-expand-lg">
-    <div class="container">
-        <a class="navbar-brand" href="/">PADDY</a>
-        <div>
-            <button class="btn-uni me-2" onclick="exportTableToCSV()">Export to CSV</button>
-            <button class="btn-uni" onclick="window.location.href='/'">Back to Categories</button>
+    <!-- Navigation Bar -->
+    <nav class="navbar navbar-expand-lg">
+        <div class="container">
+            <a class="navbar-brand" href="/">PADDY</a>
+            <div>
+                <button class="btn-uni me-2" onclick="exportTableToCSV()">Export to CSV</button>
+                <button class="btn-uni" onclick="window.location.href='/'">Back to Categories</button>
+            </div>
         </div>
-    </div>
     </nav>
 
-   <div class="container">
-       <div class="search-container">
-           <input type="text" 
-                  class="search-input" 
-                  id="productSearch" 
-                  placeholder="Search products...">
-           <button class="search-button" onclick="searchProducts()">Search</button>
-       </div>
-   </div>
-
-<main>
-    <div class="table-container">
-    <h4 class="text-center">
-        {{ category.Description }} ({{ category.Code }})
-        <div class="pagination-container">
-            {% if products.CurrentPage > 1 %}
-            <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage-1) }}" class="pagination-arrow">&lt;--</a>
-            {% endif %}
-            
-            {% set start_item = (products.CurrentPage - 1) * products.ItemsPerPage + 1 %}
-            {% set end_item = [products.CurrentPage * products.ItemsPerPage, products.TotalCount] | min %}
-            <span class="pagination-count">{{ start_item }}-{{ end_item }}/{{ products.TotalCount }}</span>
-            
-            {% set total_pages = ((products.TotalCount + products.ItemsPerPage - 1) // products.ItemsPerPage) | int %}
-            {% if products.CurrentPage < total_pages %}
-            <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage+1) }}" class="pagination-arrow">--&gt;</a>
-            {% endif %}
+    <!-- Main Content -->
+    <main>
+        <!-- Search Container -->
+        <div class="container">
+            <div class="search-container">
+                <input type="text" class="search-input" id="productSearch" placeholder="Search products...">
+                <button class="search-button" onclick="searchProducts()">Search</button>
+            </div>
         </div>
-    </h4>
 
-    <div class="table-responsive">
-            <table class="table table-bordered" id="productsTable">
-                <thead>
-                    <tr>
-                        <th onclick="sortTable(0)">Code<div class="resizer" data-column="0"></div></th>
-                        <th onclick="sortTable(1)">Product Name<div class="resizer" data-column="1"></div></th>
-                        {% for field in active_fields %}
-                            <th onclick="sortTable({{ loop.index + 2 }})">{{ field.display }}<div class="resizer" data-column="{{ loop.index + 2 }}"></div></th>
-                        {% endfor %}
-                        <th onclick="sortTable({{ active_fields|length + 2 }})">Updated<div class="resizer" data-column="{{ active_fields|length + 2 }}"></div></th>
-                        <th onclick="sortTable({{ active_fields|length + 3 }})">Web Category<div class="resizer" data-column="{{ active_fields|length + 3 }}"></div></th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for product in products.Data %}
-                        <tr class="product-row">
-                            <td>{{ product.Code }}</td>
-                            <td data-full-text="{{ product.Description }}">{{ product.Description }}</td>
-                            {% for field in active_fields %}
-                                <td data-full-text="{{ product[field.field] if product[field.field] else 'N/A' }}">
-                                    {{ product[field.field] if product[field.field] else 'N/A' }}
-                                </td>
-                            {% endfor %}
-                            <td>{{ product.UpdatedOn.split('T')[0] }}</td>
-                            <td data-full-text="{{ product.D_WebCategory if product.D_WebCategory else 'N/A' }}">
-                                {{ product.D_WebCategory if product.D_WebCategory else 'N/A' }}
-                            </td>
-                        </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
-        </div>
-    </div>
-</main>
-
-
-   <footer>
-       <p>PADDY &copy; 2025 - IFM</p>
-       <p class="quote">"Product Attribute Designer Deployment (for) You"</p>
-   </footer>
-
-   <!-- Your other scripts (Bootstrap etc.) -->
-<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-
-<script>
-    // Table sorting functionality
-    function sortTable(n) {
-        var table, rows, switching, i, x, y, shouldSwitch, dir, switchcount = 0;
-        table = document.getElementById("productsTable");
-        switching = true;
-        dir = "asc";
-        
-        // Remove existing sort indicators
-        var headers = table.getElementsByTagName("th");
-        for (i = 0; i < headers.length; i++) {
-            headers[i].classList.remove('asc', 'desc');
-        }
-
-        while (switching) {
-            switching = false;
-            rows = table.rows;
-            
-            for (i = 1; i < (rows.length - 1); i++) {
-                shouldSwitch = false;
-                x = rows[i].getElementsByTagName("td")[n];
-                y = rows[i + 1].getElementsByTagName("td")[n];
-
-                let xValue = x.innerHTML.trim();
-                let yValue = y.innerHTML.trim();
-
-                if (xValue === 'N/A') xValue = '';
-                if (yValue === 'N/A') yValue = '';
-
-                if (n === 3) {
-                    xValue = new Date(xValue);
-                    yValue = new Date(yValue);
-                }
-                else if (n === 0 || n === 4) {
-                    xValue = xValue === '' ? -Infinity : parseFloat(xValue);
-                    yValue = yValue === '' ? -Infinity : parseFloat(yValue);
-                }
-                else {
-                    xValue = xValue.toLowerCase();
-                    yValue = yValue.toLowerCase();
-                }
-
-                if (dir === "asc") {
-                    if (xValue > yValue) {
-                        shouldSwitch = true;
-                        break;
-                    }
-                } else if (dir === "desc") {
-                    if (xValue < yValue) {
-                        shouldSwitch = true;
-                        break;
-                    }
-                }
-            }
-            
-            if (shouldSwitch) {
-                rows[i].parentNode.insertBefore(rows[i + 1], rows[i]);
-                switching = true;
-                switchcount++;
-            } else {
-                if (switchcount === 0 && dir === "asc") {
-                    dir = "desc";
-                    switching = true;
-                }
-            }
-        }
-
-        headers[n].classList.add(dir);
-    }
-
-    // Search functionality
-    function searchProducts() {
-        const searchInput = document.getElementById('productSearch');
-        const filter = searchInput.value.toLowerCase();
-        const rows = document.getElementsByClassName('product-row');
-
-        for (let row of rows) {
-            const cells = row.getElementsByTagName('td');
-            let found = false;
-
-            for (let cell of cells) {
-                const text = cell.textContent || cell.innerText;
-                if (text.toLowerCase().indexOf(filter) > -1) {
-                    found = true;
-                    break;
-                }
-            }
-
-            if (found) {
-                row.style.display = "";
-            } else {
-                row.style.display = "none";
-            }
-        }
-    }
-
-    // Column resize functionality
-    document.addEventListener('DOMContentLoaded', function() {
-        const table = document.getElementById('productsTable');
-        let currentResizer = null;
-
-        function initResizers() {
-            const cols = table.querySelectorAll('th');
-            
-            cols.forEach((col) => {
-                const resizer = col.querySelector('.resizer');
-                let x = 0;
-                let w = 0;
-
-                function mouseDownHandler(e) {
-                    x = e.clientX;
-                    const styles = window.getComputedStyle(col);
-                    w = parseInt(styles.width, 10);
-
-                    document.addEventListener('mousemove', mouseMoveHandler);
-                    document.addEventListener('mouseup', mouseUpHandler);
-                    resizer.classList.add('resizing');
-                }
-
-                function mouseMoveHandler(e) {
-                    const dx = e.clientX - x;
-                    const newWidth = w + dx;
+        <!-- Table Container -->
+        <div class="table-container">
+            <!-- Header with Category Info and Pagination -->
+            <h4 class="text-center">
+                {{ category.Description }} ({{ category.Code }})
+                <div class="pagination-container">
+                    {% if products.CurrentPage > 1 %}
+                        <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage-1, sort=current_sort) }}" class="pagination-arrow">⬅️</a>
+                    {% endif %}
                     
-                    if (newWidth > 50) {
-                        col.style.width = `${newWidth}px`;
-                        const index = Array.from(col.parentElement.children).indexOf(col);
-                        const cells = table.querySelectorAll(`td:nth-child(${index + 1})`);
-                        cells.forEach(cell => {
-                            cell.style.width = `${newWidth}px`;
-                        });
-                    }
-                }
+                    {% set start_item = (products.CurrentPage - 1) * products.ItemsPerPage + 1 %}
+                    {% set end_item = [products.CurrentPage * products.ItemsPerPage, products.TotalCount] | min %}
+                    <span class="pagination-count">{{ start_item }}-{{ end_item }}/{{ products.TotalCount }}</span>
+                    
+                    {% if products.CurrentPage < products.TotalPages %}
+                        <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage+1, sort=current_sort) }}" class="pagination-arrow">➡️</a>
+                    {% endif %}
+                </div>
+            </h4>
 
-                function mouseUpHandler() {
-                    resizer.classList.remove('resizing');
-                    document.removeEventListener('mousemove', mouseMoveHandler);
-                    document.removeEventListener('mouseup', mouseUpHandler);
-                }
+            <!-- Table Content -->
+            <div class="table-responsive">
+                <table class="table table-bordered" id="productsTable">
+                    <!-- Table Headers -->
+                    <thead>
+                        <tr>
+                            <!-- Code Column -->
+                            <th class="{{ 'current-sort ' + ('asc' if current_sort == '(Code)[asc]' else 'dsc' if current_sort == '(Code)[dsc]' else '') }}">
+                                <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage, sort='(Code)[' + ('dsc' if current_sort == '(Code)[asc]' else 'asc') + ']') }}">Code</a>
+                                <div class="resizer" data-column="0"></div>
+                            </th>
 
-                resizer.addEventListener('mousedown', mouseDownHandler);
-            });
-        }
+                            <!-- Description Column -->
+                            <th class="{{ 'current-sort ' + ('asc' if current_sort == '(Description)[asc]' else 'dsc' if current_sort == '(Description)[dsc]' else '') }}">
+                                <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage, sort='(Description)[' + ('dsc' if current_sort == '(Description)[asc]' else 'asc') + ']') }}">Product Name</a>
+                                <div class="resizer" data-column="1"></div>
+                            </th>
 
-        initResizers();
+                            <!-- Dynamic Fields Columns -->
+                            {% for field in active_fields %}
+                                <th class="{{ 'current-sort ' + ('asc' if current_sort == '(' + field.field + ')[asc]' else 'dsc' if current_sort == '(' + field.field + ')[dsc]' else '') }}">
+                                    <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage, sort='(' + field.field + ')[' + ('dsc' if current_sort == '(' + field.field + ')[asc]' else 'asc') + ']') }}">{{ field.display }}</a>
+                                    <div class="resizer" data-column="{{ loop.index + 2 }}"></div>
+                                </th>
+                            {% endfor %}
 
-        // Prevent sorting when resizing
-        table.querySelectorAll('.resizer').forEach(resizer => {
-            resizer.addEventListener('mousedown', (e) => {
-                e.stopPropagation();
-            });
-        });
-    });
+                            <!-- Web Category Column -->
+                            <th class="{{ 'current-sort ' + ('asc' if current_sort == '(D_WebCategory)[asc]' else 'dsc' if current_sort == '(D_WebCategory)[dsc]' else '') }}">
+                                <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage, sort='(D_WebCategory)[' + ('dsc' if current_sort == '(D_WebCategory)[asc]' else 'asc') + ']') }}">Web Category</a>
+                                <div class="resizer" data-column="{{ active_fields|length + 3 }}"></div>
+                            </th>
+                        </tr>
+                    </thead>
 
-    // Export to CSV functionality
-    function exportTableToCSV() {
-        const table = document.getElementById('productsTable');
-        
-        // Get headers
-        const headers = [];
-        const headerCells = table.querySelectorAll('th');
-        headerCells.forEach(headerCell => {
-            let headerText = headerCell.textContent.replace(/[↕↑↓]/, '').trim();
-            headers.push('"' + headerText + '"');
-        });
+                    <!-- Table Body -->
+                    <tbody>
+                        {% for product in products.Data %}
+                            <tr class="product-row">
+                                <td>{{ product.Code }}</td>
+                                <td data-full-text="{{ product.Description }}">{{ product.Description }}</td>
+                                {% for field in active_fields %}
+                                    <td data-full-text="{{ product[field.field] if product[field.field] else 'N/A' }}">
+                                        {{ product[field.field] if product[field.field] else 'N/A' }}
+                                    </td>
+                                {% endfor %}
+                                <td data-full-text="{{ product.D_WebCategory if product.D_WebCategory else 'N/A' }}">
+                                    {{ product.D_WebCategory if product.D_WebCategory else 'N/A' }}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </main>
 
-        let csvContent = headers.join(',') + '\n';
+    <!-- Footer -->
+    <footer>
+        <p>PADDY &copy; 2025 - IFM</p>
+        <p class="quote">"Product Attribute Designer Deployment (for) You"</p>
+    </footer>
 
-        // Get visible rows
-        const rows = table.querySelectorAll('tbody tr:not([style*="display: none"])');
-        
-        rows.forEach(row => {
-            const cells = row.querySelectorAll('td');
-            const rowData = [];
-            
-            cells.forEach((cell, index) => {
-                let cellData = cell.getAttribute('data-full-text') || cell.textContent;
-                
-                // For ID column (index 0), add leading apostrophe to force text format
-                if (index === 0) {
-                    cellData = `"'${cellData}"`;  // Add apostrophe before the number
-                } else {
-                    cellData = '"' + cellData.replace(/"/g, '""') + '"';
-                }
-                
-                rowData.push(cellData);
-            });
-            
-            csvContent += rowData.join(',') + '\n';
-        });
-
-        // Create and trigger download
-        const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
-        const link = document.createElement('a');
-        
-        const categoryDesc = document.querySelector('h4').textContent.split('(')[0].trim();
-        const date = new Date().toISOString().split('T')[0];
-        const fileName = `${categoryDesc}_${date}.csv`;
-
-        if (navigator.msSaveBlob) {
-            navigator.msSaveBlob(blob, fileName);
-        } else {
-            link.href = window.URL.createObjectURL(blob);
-            link.setAttribute('download', fileName);
-            document.body.appendChild(link);
-            link.click();
-            document.body.removeChild(link);
-        }
-    }
-
-    // Event listeners for search
-    document.getElementById('productSearch').addEventListener('input', function(e) {
-        searchProducts();
-    });
-
-    document.getElementById('productSearch').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter') {
-            searchProducts();
-        }
-    });
-</script>
+    <!-- Scripts -->
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/products.js') }}"></script>
 </body>
 </html>
