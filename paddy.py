@@ -144,7 +144,11 @@ class APIClient:
         """Fetch products for a specific category."""
         try:
             logger.info(f"Fetching products for category ID: {category_id}")
-            params = {"Category[eq]": category_id}  # Adding the filter for the category
+            # Updated params to include sort parameter
+            params = {
+                "Category[eq]": category_id,
+                "sort": "Code[asc]"  # Add sorting by Code ascending
+            }
             all_products = self._make_request("Products", params=params)
 
             filtered_products = {
