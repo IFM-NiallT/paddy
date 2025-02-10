@@ -1,0 +1,29 @@
+# Directories to ignore
+/logs/
+/app/__pycache__/
+
+# Python related files
+*.pyc
+*.pyo
+*.pyd
+*.so
+*.egg
+*.egg-info
+dist/
+build/
+*.egg-info/
+*.eggs/
+
+# Environment
+.env
+.venv
+env/
+venv/
+ENV/
+
+# IDE specific files
+.idea/
+.vscode/
+*.swp
+*.swo
+.DS_Store
