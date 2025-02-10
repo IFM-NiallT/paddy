@@ -1,111 +1,107 @@
 """
-Logging Module
+Logging Module for PADDY Application
 
-This module configures application-wide logging with rotation capabilities
-and consistent formatting.
+Provides a centralized, configurable logging solution with 
+support for console and file logging.
 """
 
+import os
 import logging
 from logging.handlers import RotatingFileHandler
-import os
-import time
+from datetime import datetime
 
 
-class LoggerSetup:
+class PaddyLogger:
     """
-    Logger configuration class that handles logging setup and management.
+    Custom logger configuration for the PADDY application.
     
-    This class provides a centralized way to configure logging with rotation
-    and consistent formatting across the application.
-    
-    Attributes:
-        LOG_DIR (str): Directory for log files
-        LOG_FILE (str): Name of the main log file
-        MAX_BYTES (int): Maximum size of each log file
-        BACKUP_COUNT (int): Number of backup files to maintain
+    Provides a centralized logging mechanism with:
+      - Console output
+      - Rotating file logging
+      - Configurable log levels
     """
     
-    LOG_DIR: str = 'logs'
-    LOG_FILE: str = 'paddy.log'
-    MAX_BYTES: int = 10000
-    BACKUP_COUNT: int = 3
-    
-    @classmethod
-    def setup_logging(cls) -> logging.Logger:
-        """
-        Configure and return a logger instance with rotation handling.
-        
-        Returns:
-            logging.Logger: Configured logger instance
-        """
-        # Create logs directory if it doesn't exist
-        if not os.path.exists(cls.LOG_DIR):
-            os.makedirs(cls.LOG_DIR)
-        
-        # Configure logger
-        logger = logging.getLogger(__name__)
-        logger.setLevel(logging.INFO)
-        
-        # Only add handler if it hasn't been added before
-        if not logger.handlers:
-            try:
-                # Configure rotating file handler with delayed creation
-                log_file = os.path.join(cls.LOG_DIR, cls.LOG_FILE)
-                
-                # Try to acquire file lock with retries
-                max_retries = 3
-                for attempt in range(max_retries):
-                    try:
-                        handler = RotatingFileHandler(
-                            log_file,
-                            maxBytes=cls.MAX_BYTES,
-                            backupCount=cls.BACKUP_COUNT,
-                            delay=True  # Delay file creation until first log
-                        )
-                        break
-                    except PermissionError:
-                        if attempt < max_retries - 1:
-                            time.sleep(0.1)  # Wait briefly before retry
-                        else:
-                            # Fall back to console logging
-                            return cls._setup_console_logger(logger)
-                
-                # Set formatter
-                formatter = logging.Formatter(
-                    '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
-                )
-                handler.setFormatter(formatter)
-                logger.addHandler(handler)
-                
-            except Exception as e:
-                return cls._setup_console_logger(logger, str(e))
-        
-        return logger
-
     @staticmethod
-    def _setup_console_logger(
-        logger: logging.Logger,
-        error_msg: str = "Could not create log file"
-    ) -> logging.Logger:
+    def setup_logger(
+        name='paddy', 
+        log_dir='logs', 
+        log_level=logging.INFO,
+        max_file_size_bytes=10 * 1024 * 1024,  # 10 MB
+        backup_count=5
+    ):
         """
-        Set up console logging as a fallback.
+        Set up a comprehensive logging configuration.
         
         Args:
-            logger (logging.Logger): Logger instance to configure
-            error_msg (str): Error message to log
-            
+            name (str): Name of the logger.
+            log_dir (str): Directory to store log files.
+            log_level (int): Logging level (e.g., logging.INFO, logging.DEBUG).
+            max_file_size_bytes (int): Maximum size of a log file before rotation.
+            backup_count (int): Number of backup log files to keep.
+        
         Returns:
-            logging.Logger: Configured logger instance
+            logging.Logger: Configured logger instance.
         """
-        console_handler = logging.StreamHandler()
+        # Ensure the log directory exists
+        os.makedirs(log_dir, exist_ok=True)
+        
+        # Create logger and set its level
+        logger = logging.getLogger(name)
+        logger.setLevel(log_level)
+        
+        # Clear any existing handlers to prevent duplicate logging
+        logger.handlers.clear()
+        
+        # Define a formatter for log messages
         formatter = logging.Formatter(
-            '%(asctime)s - %(name)s - %(levelname)s - %(message)s'
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+            datefmt='%Y-%m-%d %H:%M:%S'
         )
+        
+        # Configure console handler for outputting logs to the console
+        console_handler = logging.StreamHandler()
+        console_handler.setLevel(log_level)
         console_handler.setFormatter(formatter)
         logger.addHandler(console_handler)
-        logger.warning(f"{error_msg}. Falling back to console logging.")
+        
+        # Configure file handler with rotation
+        log_filename = os.path.join(
+            log_dir, 
+            f'paddy_{datetime.now().strftime("%Y%m%d")}.log'
+        )
+        file_handler = RotatingFileHandler(
+            log_filename, 
+            maxBytes=max_file_size_bytes, 
+            backupCount=backup_count
+        )
+        file_handler.setLevel(log_level)
+        file_handler.setFormatter(formatter)
+        logger.addHandler(file_handler)
+        
         return logger
 
 
-# Create logger instance
-logger = LoggerSetup.setup_logging()
+# Create a default logger instance
+logger = PaddyLogger.setup_logger()
+
+
+def set_log_level(level):
+    """
+    Dynamically set the logging level for the default logger.
+    
+    Args:
+        level (int): Logging level (e.g., logging.INFO, logging.DEBUG).
+    """
+    logger.setLevel(level)
+    for handler in logger.handlers:
+        handler.setLevel(level)
+
+
+def get_logger():
+    """
+    Retrieve the configured default logger instance.
+    
+    Returns:
+        logging.Logger: The default logger.
+    """
+    return logger
