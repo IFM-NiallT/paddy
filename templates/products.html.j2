@@ -274,6 +274,21 @@
     .me-2 {
         margin-right: 10px;
     }
+
+    .pagination-container {
+        display: inline-flex;
+        align-items: center;
+        gap: 10px;
+        margin-left: 15px;
+    }
+    .pagination-arrow {
+        text-decoration: none;
+        color: #333;
+    }
+    .pagination-count {
+        font-size: 0.9em;
+        color: #666;
+    }
     </style>
 
 </head>
@@ -300,11 +315,25 @@
 
 <main>
     <div class="table-container">
-        <h4 class="text-center">
-            {{ category.Description }} ({{ category.Code }})
-            <small class="text-muted">{{ products.TotalCount }} Product{% if products.TotalCount != 1 %}s{% endif %}</small>
-        </h4>
-        <div class="table-responsive">
+    <h4 class="text-center">
+        {{ category.Description }} ({{ category.Code }})
+        <div class="pagination-container">
+            {% if products.CurrentPage > 1 %}
+            <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage-1) }}" class="pagination-arrow">&lt;--</a>
+            {% endif %}
+            
+            {% set start_item = (products.CurrentPage - 1) * products.ItemsPerPage + 1 %}
+            {% set end_item = [products.CurrentPage * products.ItemsPerPage, products.TotalCount] | min %}
+            <span class="pagination-count">{{ start_item }}-{{ end_item }}/{{ products.TotalCount }}</span>
+            
+            {% set total_pages = ((products.TotalCount + products.ItemsPerPage - 1) // products.ItemsPerPage) | int %}
+            {% if products.CurrentPage < total_pages %}
+            <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage+1) }}" class="pagination-arrow">--&gt;</a>
+            {% endif %}
+        </div>
+    </h4>
+
+    <div class="table-responsive">
             <table class="table table-bordered" id="productsTable">
                 <thead>
                     <tr>
