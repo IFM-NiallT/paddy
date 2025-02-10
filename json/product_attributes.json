@@ -461,138 +461,6 @@
             }
         }
     },
-    "21487721498627": {
-        "description": "HOSE ASSEMBLIES",
-        "key": "induistrial_hose_accessories",
-        "fields": {
-            "D_Classification": {
-                "display": "Type",
-                "type": "String",
-                "used": true
-            },
-            "D_ThreadGender": {
-                "display": "Thread Gender",
-                "type": "Boolean",
-                "used": false
-            },
-            "D_SizeA": {
-                "display": "Inner Diameter",
-                "type": "Integer",
-                "used": true
-            },
-            "D_SizeB": {
-                "display": "Outer Diameter",
-                "type": "Integer",
-                "used": true
-            },
-            "D_SizeC": {
-                "display": "Size C",
-                "type": "Integer",
-                "used": false
-            },
-            "D_SizeD": {
-                "display": "Size D",
-                "type": "Integer",
-                "used": false
-            },
-            "D_Orientation": {
-                "display": "Orientation",
-                "type": "String",
-                "used": false
-            },
-            "D_Configuration": {
-                "display": "Configuration",
-                "type": "String",
-                "used": true
-            },
-            "D_Grade": {
-                "display": "Grade",
-                "type": "String",
-                "used": false
-            },
-            "D_ManufacturerName": {
-                "display": "Manufacturer",
-                "type": "String",
-                "used": false
-            },
-            "D_PackSize": {
-                "display": "Pack Size",
-                "type": "String",
-                "used": false
-            },
-            "D_Application": {
-                "display": "Application",
-                "type": "String",
-                "used": false
-            }
-        }
-    },
-    "21487721525363": {
-        "description": "JCB PARTS",
-        "key": "jcb_parts",
-        "fields": {
-            "D_Classification": {
-                "display": "Type",
-                "type": "String",
-                "used": true
-            },
-            "D_ThreadGender": {
-                "display": "Thread Gender",
-                "type": "Boolean",
-                "used": false
-            },
-            "D_SizeA": {
-                "display": "Size A",
-                "type": "Integer",
-                "used": false
-            },
-            "D_SizeB": {
-                "display": "Size B",
-                "type": "Integer",
-                "used": false
-            },
-            "D_SizeC": {
-                "display": "Size C",
-                "type": "Integer",
-                "used": false
-            },
-            "D_SizeD": {
-                "display": "Size D",
-                "type": "Integer",
-                "used": false
-            },
-            "D_Orientation": {
-                "display": "Orientation",
-                "type": "String",
-                "used": false
-            },
-            "D_Configuration": {
-                "display": "Configuration",
-                "type": "String",
-                "used": false
-            },
-            "D_Grade": {
-                "display": "Grade",
-                "type": "String",
-                "used": false
-            },
-            "D_ManufacturerName": {
-                "display": "Manufacturer",
-                "type": "String",
-                "used": false
-            },
-            "D_PackSize": {
-                "display": "Pack Size",
-                "type": "String",
-                "used": false
-            },
-            "D_Application": {
-                "display": "Application",
-                "type": "String",
-                "used": false
-            }
-        }
-    },
     "21487721498624": {
         "description": "OIL",
         "key": "oil",
@@ -687,6 +555,204 @@
                 "display": "Size C",
                 "type": "Integer",
                 "used": false
+            },
+            "D_SizeD": {
+                "display": "Size D",
+                "type": "Integer",
+                "used": false
+            },
+            "D_Orientation": {
+                "display": "Orientation",
+                "type": "String",
+                "used": false
+            },
+            "D_Configuration": {
+                "display": "Configuration",
+                "type": "String",
+                "used": false
+            },
+            "D_Grade": {
+                "display": "Grade",
+                "type": "String",
+                "used": false
+            },
+            "D_ManufacturerName": {
+                "display": "Manufacturer",
+                "type": "String",
+                "used": false
+            },
+            "D_PackSize": {
+                "display": "Pack Size",
+                "type": "String",
+                "used": false
+            },
+            "D_Application": {
+                "display": "Application",
+                "type": "String",
+                "used": false
+            }
+        }
+    },
+    "21487721525363": {
+        "description": "JCB PARTS",
+        "key": "jcb_parts",
+        "fields": {
+            "D_Classification": {
+                "display": "Type",
+                "type": "String",
+                "used": true
+            },
+            "D_ThreadGender": {
+                "display": "Thread Gender",
+                "type": "Boolean",
+                "used": false
+            },
+            "D_SizeA": {
+                "display": "Size A",
+                "type": "Integer",
+                "used": false
+            },
+            "D_SizeB": {
+                "display": "Size B",
+                "type": "Integer",
+                "used": false
+            },
+            "D_SizeC": {
+                "display": "Size C",
+                "type": "Integer",
+                "used": false
+            },
+            "D_SizeD": {
+                "display": "Size D",
+                "type": "Integer",
+                "used": false
+            },
+            "D_Orientation": {
+                "display": "Orientation",
+                "type": "String",
+                "used": false
+            },
+            "D_Configuration": {
+                "display": "Configuration",
+                "type": "String",
+                "used": false
+            },
+            "D_Grade": {
+                "display": "Grade",
+                "type": "String",
+                "used": false
+            },
+            "D_ManufacturerName": {
+                "display": "Manufacturer",
+                "type": "String",
+                "used": false
+            },
+            "D_PackSize": {
+                "display": "Pack Size",
+                "type": "String",
+                "used": false
+            },
+            "D_Application": {
+                "display": "Application",
+                "type": "String",
+                "used": false
+            }
+        }
+    },
+    "21487721498627": {
+        "description": "HOSE ASSEMBLIES",
+        "key": "induistrial_hose_accessories",
+        "fields": {
+            "D_Classification": {
+                "display": "Type",
+                "type": "String",
+                "used": true
+            },
+            "D_ThreadGender": {
+                "display": "Thread Gender",
+                "type": "Boolean",
+                "used": false
+            },
+            "D_SizeA": {
+                "display": "Inner Diameter",
+                "type": "Integer",
+                "used": true
+            },
+            "D_SizeB": {
+                "display": "Outer Diameter",
+                "type": "Integer",
+                "used": true
+            },
+            "D_SizeC": {
+                "display": "Size C",
+                "type": "Integer",
+                "used": false
+            },
+            "D_SizeD": {
+                "display": "Size D",
+                "type": "Integer",
+                "used": false
+            },
+            "D_Orientation": {
+                "display": "Orientation",
+                "type": "String",
+                "used": false
+            },
+            "D_Configuration": {
+                "display": "Configuration",
+                "type": "String",
+                "used": true
+            },
+            "D_Grade": {
+                "display": "Grade",
+                "type": "String",
+                "used": false
+            },
+            "D_ManufacturerName": {
+                "display": "Manufacturer",
+                "type": "String",
+                "used": false
+            },
+            "D_PackSize": {
+                "display": "Pack Size",
+                "type": "String",
+                "used": false
+            },
+            "D_Application": {
+                "display": "Application",
+                "type": "String",
+                "used": false
+            }
+        }
+    },
+    "21487721526611": {
+        "description": "BATTERIES",
+        "key": "batteries",
+        "fields": {
+            "D_Classification": {
+                "display": "Type",
+                "type": "String",
+                "used": false
+            },
+            "D_ThreadGender": {
+                "display": "Thread Gender",
+                "type": "Boolean",
+                "used": false
+            },
+            "D_SizeA": {
+                "display": "Voltage",
+                "type": "Integer",
+                "used": true
+            },
+            "D_SizeB": {
+                "display": "AMP hr",
+                "type": "Integer",
+                "used": true
+            },
+            "D_SizeC": {
+                "display": "CCA",
+                "type": "Integer",
+                "used": true
             },
             "D_SizeD": {
                 "display": "Size D",
