@@ -161,18 +161,40 @@ class PaddyApp:
             - If no valid sort parameter is provided, returns (None, 'asc')
             - Uses regex to parse the complex sort parameter format
         """
+        # Define explicitly allowed sort fields
+        allowed_sort_fields = [
+            'Code', 'Description', 'ImageCount', 'D_WebCategory', 
+            'D_Classification', 'D_ThreadGender', 'D_SizeA', 
+            'D_SizeB', 'D_SizeC', 'D_SizeD', 'D_Orientation', 
+            'D_Configuration', 'D_Grade', 'D_ManufacturerName', 
+            'D_Application'
+        ]
+
         if not sort_param:
             return None, 'asc'
+
         try:
             # Regex to match the specific sort parameter format: (Field)[direction]
-            # Supports any word characters for the field name and direction
             match = re.match(r'\((\w+)\)\[([^]]+)\]', sort_param)
             if match:
                 field, direction = match.group(1), match.group(2)
+                
+                # Validate field and direction
+                if field not in allowed_sort_fields:
+                    logger.warning(f"Attempted to sort by unsupported field: {field}")
+                    return None, 'asc'
+                
+                if direction not in ['asc', 'desc']:
+                    logger.warning(f"Invalid sort direction: {direction}. Defaulting to 'asc'")
+                    direction = 'asc'
+                
                 logger.debug(f"Parsed sort - Field: {field}, Direction: {direction}")
                 return field, direction
+            
+            logger.warning(f"Invalid sort parameter format: {sort_param}")
         except Exception as e:
-            logger.warning("Failed to parse sort parameter: %s", e)
+            logger.error(f"Unexpected error parsing sort parameter: {e}")
+        
         return None, 'asc'
 
     def _not_found_error(self, error):

@@ -86,6 +86,12 @@
                                 <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage, sort='(D_WebCategory)[' + ('dsc' if current_sort == '(D_WebCategory)[asc]' else 'asc') + ']') }}">Web Category</a>
                                 <div class="resizer" data-column="{{ active_fields|length + 3 }}"></div>
                             </th>
+
+                            <!-- Image Count Column -->
+                            <th class="{{ 'current-sort ' + ('asc' if current_sort == '(ImageCount)[asc]' else 'dsc' if current_sort == '(ImageCount)[dsc]' else '') }}">
+                                <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage, sort='(ImageCount)[' + ('dsc' if current_sort == '(ImageCount)[asc]' else 'asc') + ']') }}">Image Count</a>
+                                <div class="resizer" data-column="{{ active_fields|length + 3 }}"></div>
+                            </th>
                             <!-- Edit Column -->
                             <th>Actions</th>
                         </tr>
@@ -105,6 +111,9 @@
                                 {% endfor %}
                                 <td data-full-text="{{ product.D_WebCategory if product.D_WebCategory else 'N/A' }}">
                                     {{ product.D_WebCategory if product.D_WebCategory else 'N/A' }}
+                                </td>
+                                <td data-full-text="{{ product.ImageCount if product.ImageCount else 'N/A' }}">
+                                    {{ product.ImageCount if product.ImageCount else 'N/A' }}
                                 </td>
                                 <td>
                                     <button class="btn-uni edit-product-btn" data-product-id="{{ product.ID }}">
