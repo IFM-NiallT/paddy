@@ -507,3 +507,59 @@ main .category-grid {
 #popupDynamicFields .form-group {
     margin-bottom: 0;
 }
+
+/* Success Popup Styles */
+.success-popup {
+    display: none;
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: #FEE9E9;
+    border: 2px solid #B20000;
+    border-radius: 5px;
+    padding: 15px 20px;
+    z-index: 9999;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    animation: slideInAndFade 0.3s ease-out forwards;
+    max-width: 300px;
+}
+
+.success-popup .success-icon {
+    color: #B20000;
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.success-popup .success-content {
+    color: #B20000;
+    font-weight: 500;
+}
+
+@keyframes slideInAndFade {
+    0% {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.success-popup.fade-out {
+    animation: fadeOut 0.3s ease-out forwards;
+}
+
+@keyframes fadeOut {
+    0% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-10px);
+        opacity: 0;
+    }
+}

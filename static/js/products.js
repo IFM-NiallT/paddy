@@ -455,9 +455,11 @@ function submitProductEdit(event) {
         return response.json();
     })
     .then(data => {
-        alert('Product updated successfully!');
+        showSuccessPopup('Product updated successfully!');
         closeEditForm();
-        window.location.reload();
+        setTimeout(() => {
+            window.location.reload();
+        }, 1000); // Give time for the user to see the success message
     })
     .catch(error => {
         console.error('Error updating product:', error);
@@ -520,6 +522,113 @@ function createFieldInput(field) {
     return input;
 }
 
+/**
+ * Shows a success popup message that automatically disappears
+ * @param {string} message - The message to display
+ * @param {number} duration - How long to show the message (in ms)
+ */
+function showSuccessPopup(message = 'Operation completed successfully', duration = 3000) {
+    const popup = document.getElementById('successPopup');
+    if (!popup) return; // Exit if popup element doesn't exist
+    
+    const content = popup.querySelector('.success-content');
+    if (!content) return; // Exit if content element doesn't exist
+    
+    // Set the message
+    content.textContent = message;
+    
+    // Remove any existing fade-out class
+    popup.classList.remove('fade-out');
+    
+    // Show the popup
+    popup.style.display = 'flex';
+    
+    // Set a timeout to start the fade out animation
+    setTimeout(() => {
+        popup.classList.add('fade-out');
+        
+        // Hide the popup after animation completes
+        setTimeout(() => {
+            popup.style.display = 'none';
+            popup.classList.remove('fade-out');
+        }, 300); // Match this with CSS animation duration
+    }, duration);
+}
+
+// Only show success popup after form submission
+function submitProductEdit(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const submitButton = form.querySelector('button[type="submit"]');
+    const cancelButton = form.querySelector('button.cancel');
+    const productId = document.getElementById('popupProductId').value;
+    
+    submitButton.textContent = 'Saving...';
+    submitButton.disabled = true;
+    cancelButton.disabled = true;
+    
+    const formData = new FormData(form);
+    const updatedFields = {};
+    
+    for (let [key, value] of formData.entries()) {
+        if (value.trim() !== '') {
+            updatedFields[key] = value;
+        }
+    }
+    
+    updatedFields.product_id = productId;
+    
+    fetch(`/product/${productId}/update`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedFields)
+    })
+    .then(response => {
+        if (!response.ok) {
+            return response.text().then(text => {
+                throw new Error(text || 'Failed to update product');
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        // First show success popup
+        const popup = document.getElementById('successPopup');
+        if (popup) {
+            const content = popup.querySelector('.success-content');
+            content.textContent = 'Product updated successfully!';
+            popup.style.display = 'flex';
+            popup.classList.remove('fade-out');
+            
+            // Hide popup after 3 seconds
+            setTimeout(() => {
+                popup.classList.add('fade-out');
+                setTimeout(() => {
+                    popup.style.display = 'none';
+                }, 300);
+            }, 3000);
+        }
+        
+        // Close form and reload page after brief delay
+        closeEditForm();
+        setTimeout(() => {
+            window.location.reload();
+        }, 1000);
+    })
+    .catch(error => {
+        console.error('Error updating product:', error);
+        alert(`Failed to update product: ${error.message}`);
+    })
+    .finally(() => {
+        submitButton.textContent = 'Save Changes';
+        submitButton.disabled = false;
+        cancelButton.disabled = false;
+    });
+}
+
 // ===================
 // Event Initializers
 // ===================
@@ -567,6 +676,9 @@ function initEditFormHandlers() {
     if (editForm) {
         const form = editForm.querySelector('form');
         if (form) {
+            // Remove any existing handlers to prevent duplicates
+            form.removeEventListener('submit', submitProductEdit);
+            // Add the submit handler
             form.addEventListener('submit', submitProductEdit);
         }
     }
@@ -609,4 +721,37 @@ function initOverlayHandler() {
     if (overlay) {
         overlay.addEventListener('click', closeEditForm);
     }
+}
+
+/**
+ * Shows a success popup message that automatically disappears
+ * @param {string} message - The message to display
+ * @param {number} duration - How long to show the message (in ms)
+ */
+function showSuccessPopup(message = 'Operation completed successfully', duration = 300) {
+    const popup = document.getElementById('successPopup');
+    if (!popup) return; // Exit if popup element doesn't exist
+    
+    const content = popup.querySelector('.success-content');
+    if (!content) return; // Exit if content element doesn't exist
+    
+    // Set the message
+    content.textContent = message;
+    
+    // Remove any existing fade-out class
+    popup.classList.remove('fade-out');
+    
+    // Show the popup
+    popup.style.display = 'flex';
+    
+    // Set a timeout to start the fade out animation
+    setTimeout(() => {
+        popup.classList.add('fade-out');
+        
+        // Hide the popup after animation completes
+        setTimeout(() => {
+            popup.style.display = 'none';
+            popup.classList.remove('fade-out');
+        }, 300); // Match this with CSS animation duration
+    }, duration);
 }
