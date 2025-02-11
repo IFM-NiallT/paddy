@@ -353,20 +353,30 @@ function populateCurrentDetails(product, dynamicFields) {
     const container = document.getElementById('currentProductDetails');
     if (!container) return;
 
+    // Define all possible fields and their display labels
+    const allFields = [
+        { field: 'Code', label: 'Product Code' },
+        { field: 'Description', label: 'Description' },
+        { field: 'D_Classification', label: 'Classification' },
+        { field: 'D_ThreadGender', label: 'Thread Gender' },
+        { field: 'D_SizeA', label: 'Size A' },
+        { field: 'D_SizeB', label: 'Size B' },
+        { field: 'D_SizeC', label: 'Size C' },
+        { field: 'D_SizeD', label: 'Size D' },
+        { field: 'D_Orientation', label: 'Orientation' },
+        { field: 'D_Configuration', label: 'Configuration' },
+        { field: 'D_Grade', label: 'Grade' },
+        { field: 'D_ManufacturerName', label: 'Manufacturer Name' },
+        { field: 'D_Application', label: 'Application' },
+        { field: 'D_WebCategory', label: 'Web Category' }
+    ];
+
     container.innerHTML = `
         <table class="table table-bordered">
-            <tr>
-                <th>Product Code</th>
-                <td>${product.Code || 'N/A'}</td>
-            </tr>
-            <tr>
-                <th>Description</th>
-                <td>${product.Description || 'N/A'}</td>
-            </tr>
-            ${(dynamicFields || []).map(field => `
+            ${allFields.map(field => `
                 <tr>
-                    <th>${field.label || field.name}</th>
-                    <td>${field.value || 'N/A'}</td>
+                    <th>${field.label}</th>
+                    <td>${product[field.field] || 'N/A'}</td>
                 </tr>
             `).join('')}
         </table>
@@ -388,9 +398,16 @@ function populateEditForm(product, productId, dynamicFields) {
     if (!container) return;
 
     container.innerHTML = '';
-    dynamicFields.forEach(field => {
-        container.appendChild(createFieldGroup(field));
-    });
+    
+    // Use the dynamic_fields from the API response
+    // Each field already contains: name, label, type, value, and options
+    if (Array.isArray(dynamicFields)) {
+        dynamicFields.forEach(field => {
+            // Assign the current product value to the field
+            field.value = product[field.name] || '';
+            container.appendChild(createFieldGroup(field));
+        });
+    }
 }
 
 /**
@@ -479,6 +496,14 @@ function submitProductEdit(event) {
  */
 function createFieldInput(field) {
     let input;
+
+    // Add debug log to see exact field configuration
+    console.log('Creating input field:', {
+        name: field.name,
+        type: field.type,
+        value: field.value,
+        options: field.options
+    });
 
     // Ensure the type is in lowercase for consistency.
     const fieldType = (field.type || 'text').toLowerCase();

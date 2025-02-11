@@ -10,7 +10,7 @@
             },
             "D_ThreadGender": {
                 "display": "Thread Gender",
-                "type": "Boolean",
+                "type": "String",
                 "used": false
             },
             "D_SizeA": {
@@ -76,7 +76,7 @@
             },
             "D_ThreadGender": {
                 "display": "Thread Gender",
-                "type": "Boolean",
+                "type": "String",
                 "used": false
             },
             "D_SizeA": {
@@ -142,7 +142,7 @@
             },
             "D_ThreadGender": {
                 "display": "Thread Gender",
-                "type": "Boolean",
+                "type": "String",
                 "used": true
             },
             "D_SizeA": {
@@ -208,7 +208,7 @@
             },
             "D_ThreadGender": {
                 "display": "Thread Gender",
-                "type": "Boolean",
+                "type": "String",
                 "used": true
             },
             "D_SizeA": {
@@ -274,7 +274,7 @@
             },
             "D_ThreadGender": {
                 "display": "Thread Gender",
-                "type": "Boolean",
+                "type": "String",
                 "used": true
             },
             "D_SizeA": {
@@ -340,7 +340,7 @@
             },
             "D_ThreadGender": {
                 "display": "Thread Gender",
-                "type": "Boolean",
+                "type": "String",
                 "used": false
             },
             "D_SizeA": {
@@ -406,7 +406,7 @@
             },
             "D_ThreadGender": {
                 "display": "Thread Gender",
-                "type": "Boolean",
+                "type": "String",
                 "used": false
             },
             "D_SizeA": {
@@ -472,7 +472,7 @@
             },
             "D_ThreadGender": {
                 "display": "Thread Gender",
-                "type": "Boolean",
+                "type": "String",
                 "used": false
             },
             "D_SizeA": {
@@ -538,7 +538,7 @@
             },
             "D_ThreadGender": {
                 "display": "Thread Gender",
-                "type": "Boolean",
+                "type": "String",
                 "used": false
             },
             "D_SizeA": {
@@ -604,7 +604,7 @@
             },
             "D_ThreadGender": {
                 "display": "Thread Gender",
-                "type": "Boolean",
+                "type": "String",
                 "used": false
             },
             "D_SizeA": {
@@ -670,7 +670,7 @@
             },
             "D_ThreadGender": {
                 "display": "Thread Gender",
-                "type": "Boolean",
+                "type": "String",
                 "used": false
             },
             "D_SizeA": {
@@ -736,7 +736,7 @@
             },
             "D_ThreadGender": {
                 "display": "Thread Gender",
-                "type": "Boolean",
+                "type": "String",
                 "used": false
             },
             "D_SizeA": {
