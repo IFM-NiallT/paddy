@@ -516,11 +516,12 @@ function createFieldInput(field) {
         // Set the checkbox state based on the field value.
         input.checked = field.value === true || field.value === 'true';
     } else if (fieldType === 'integer' || fieldType === 'number') {
-        // Create a number input for integer/number fields.
+        // Changed to text type to allow special characters
         input = document.createElement('input');
-        input.type = 'number';
+        input.type = 'text';  // Changed from 'number' to 'text'
         input.name = field.name;
         input.value = field.value !== null && field.value !== undefined ? field.value : '';
+        input.setAttribute('data-type', 'number'); // Mark as originally a number field
     } else if (field.options && field.options.length > 0) {
         // If options are provided, create a select element.
         input = document.createElement('select');
@@ -596,14 +597,17 @@ function submitProductEdit(event) {
     
     submitButton.textContent = 'Saving...';
     submitButton.disabled = true;
-    cancelButton.disabled = true;
+    cancelButton.disabled = false;
     
     const formData = new FormData(form);
     const updatedFields = {};
     
     for (let [key, value] of formData.entries()) {
         if (value.trim() !== '') {
-            updatedFields[key] = value;
+            // Get the input element to check its original type
+            const input = form.querySelector(`[name="${key}"]`);
+            // Convert to string to preserve special characters
+            updatedFields[key] = String(value).trim();
         }
     }
     
