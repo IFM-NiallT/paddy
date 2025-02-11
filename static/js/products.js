@@ -459,7 +459,7 @@ function submitProductEdit(event) {
         closeEditForm();
         setTimeout(() => {
             window.location.reload();
-        }, 1000); // Give time for the user to see the success message
+        }, 10); // Give time for the user to see the success message
     })
     .catch(error => {
         console.error('Error updating product:', error);
@@ -529,29 +529,34 @@ function createFieldInput(field) {
  */
 function showSuccessPopup(message = 'Operation completed successfully', duration = 3000) {
     const popup = document.getElementById('successPopup');
-    if (!popup) return; // Exit if popup element doesn't exist
+    if (!popup) return;
     
     const content = popup.querySelector('.success-content');
-    if (!content) return; // Exit if content element doesn't exist
+    if (!content) return;
+    
+    // Clear any existing timeouts
+    if (popup.hideTimeout) {
+        clearTimeout(popup.hideTimeout);
+    }
+    if (popup.fadeTimeout) {
+        clearTimeout(popup.fadeTimeout);
+    }
     
     // Set the message
     content.textContent = message;
     
-    // Remove any existing fade-out class
+    // Remove any existing fade-out class and ensure display is flex
     popup.classList.remove('fade-out');
-    
-    // Show the popup
     popup.style.display = 'flex';
     
-    // Set a timeout to start the fade out animation
-    setTimeout(() => {
+    // Set timeouts for fade out and hide
+    popup.fadeTimeout = setTimeout(() => {
         popup.classList.add('fade-out');
         
-        // Hide the popup after animation completes
-        setTimeout(() => {
+        popup.hideTimeout = setTimeout(() => {
             popup.style.display = 'none';
             popup.classList.remove('fade-out');
-        }, 300); // Match this with CSS animation duration
+        }, 300);
     }, duration);
 }
 

@@ -133,7 +133,7 @@ class PaddyApp:
                 return render_template("error.html.j2", error="Category not found"), 404
 
             active_fields = self.api_client.field_config.get_category_fields(category_id)
-            logger.info("Products retrieved. Total: %s, Active Fields: %s", products.get('TotalCount', 0), active_fields)
+            logger.info("Products retrieved. Total: %s", products.get('TotalCount', 0),)
 
             return render_template("products.html.j2", products=products, category=category, active_fields=active_fields, current_sort=sort_param)
         except Exception as e:
