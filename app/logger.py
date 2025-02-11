@@ -1,8 +1,24 @@
 """
 Logging Module for PADDY Application
 
-Provides a centralized, configurable logging solution with 
-support for console and file logging.
+Provides a comprehensive, flexible logging solution designed to:
+- Support detailed application monitoring
+- Manage log file rotation
+- Provide configurable logging levels
+- Ensure consistent logging across the application
+
+Key Features:
+- Console and file-based logging
+- Automatic log file rotation
+- Dynamic log level configuration
+- Date-stamped log files
+- Configurable log retention
+
+This module serves as the central logging mechanism for the PADDY application,
+offering robust logging capabilities with minimal configuration overhead.
+
+***
+Author: Luke Doyle - 2025 Intern
 """
 
 import os
@@ -13,12 +29,20 @@ from datetime import datetime
 
 class PaddyLogger:
     """
-    Custom logger configuration for the PADDY application.
+    Advanced logging configuration for the PADDY application.
     
-    Provides a centralized logging mechanism with:
-      - Console output
-      - Rotating file logging
-      - Configurable log levels
+    Provides a sophisticated logging system with:
+    - Multi-target logging (console and file)
+    - Automatic log file management
+    - Flexible configuration options
+    - Performance-oriented design
+
+    Logging Targets:
+    - Console: Real-time log output
+    - File: Persistent log storage with rotation
+    
+    Attributes:
+        Default logging configuration optimized for development and production use
     """
     
     @staticmethod
@@ -30,17 +54,34 @@ class PaddyLogger:
         backup_count=5
     ):
         """
-        Set up a comprehensive logging configuration.
+        Initialize a comprehensive logger with multiple handlers.
+        
+        Configures logging with advanced features:
+        - Creates log directory if not exists
+        - Sets up console and file logging
+        - Implements log rotation
+        - Provides consistent log formatting
         
         Args:
-            name (str): Name of the logger.
-            log_dir (str): Directory to store log files.
-            log_level (int): Logging level (e.g., logging.INFO, logging.DEBUG).
-            max_file_size_bytes (int): Maximum size of a log file before rotation.
-            backup_count (int): Number of backup log files to keep.
+            name (str): Identifier for the logger. Defaults to 'paddy'.
+            log_dir (str): Directory for storing log files. Defaults to 'logs'.
+            log_level (int): Logging verbosity level. Defaults to INFO.
+            max_file_size_bytes (int): Maximum log file size before rotation. 
+                Defaults to 10 MB.
+            backup_count (int): Number of rotated log files to retain. 
+                Defaults to 5.
         
         Returns:
-            logging.Logger: Configured logger instance.
+            logging.Logger: Fully configured logger instance
+        
+        Logging Configuration Details:
+        - Log format includes timestamp, logger name, log level, and message
+        - Console handler for immediate visibility
+        - File handler with date-stamped filename
+        - Supports dynamic log level adjustment
+        
+        Example Log Message:
+        '2025-02-11 15:30:45 - paddy - INFO - Application started'
         """
         # Ensure the log directory exists
         os.makedirs(log_dir, exist_ok=True)
@@ -52,19 +93,19 @@ class PaddyLogger:
         # Clear any existing handlers to prevent duplicate logging
         logger.handlers.clear()
         
-        # Define a formatter for log messages
+        # Define a comprehensive log message formatter
         formatter = logging.Formatter(
             '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
             datefmt='%Y-%m-%d %H:%M:%S'
         )
         
-        # Configure console handler for outputting logs to the console
+        # Configure console handler for real-time log output
         console_handler = logging.StreamHandler()
         console_handler.setLevel(log_level)
         console_handler.setFormatter(formatter)
         logger.addHandler(console_handler)
         
-        # Configure file handler with rotation
+        # Configure file handler with advanced rotation
         log_filename = os.path.join(
             log_dir, 
             f'paddy_{datetime.now().strftime("%Y%m%d")}.log'
@@ -81,16 +122,25 @@ class PaddyLogger:
         return logger
 
 
-# Create a default logger instance
+# Create a default logger instance for application-wide use
 logger = PaddyLogger.setup_logger()
 
 
 def set_log_level(level):
     """
-    Dynamically set the logging level for the default logger.
+    Dynamically adjust the logging level across all handlers.
+    
+    Allows runtime modification of logging verbosity:
+    - Useful for debugging
+    - Can increase or decrease log detail
+    - Applies change to all logger handlers
     
     Args:
-        level (int): Logging level (e.g., logging.INFO, logging.DEBUG).
+        level (int): Logging level constant (e.g., logging.INFO, logging.DEBUG)
+    
+    Example Usage:
+        set_log_level(logging.DEBUG)  # Enable verbose logging
+        set_log_level(logging.ERROR)  # Log only critical errors
     """
     logger.setLevel(level)
     for handler in logger.handlers:
@@ -99,9 +149,16 @@ def set_log_level(level):
 
 def get_logger():
     """
-    Retrieve the configured default logger instance.
+    Retrieve the default configured logger instance.
+    
+    Provides a consistent way to access the application's logger.
     
     Returns:
-        logging.Logger: The default logger.
+        logging.Logger: The default PADDY application logger
+    
+    Recommended Usage:
+        from app.logger import get_logger
+        log = get_logger()
+        log.info("Starting application")
     """
     return logger

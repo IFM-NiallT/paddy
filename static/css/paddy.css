@@ -289,7 +289,7 @@ footer::before {
  * Specific styles for the category listing page.
  * These control the grid of category cards and their interactions.
  */
- .category-container {
+.category-container {
     background: #FFFFFF;
     border: 1px solid #B20000;
     padding: 15px;
@@ -341,4 +341,169 @@ main .category-grid {
 .category-item {
     display: flex;
     flex-direction: column;
+}
+
+/* Edit Products Form Styles
+ * These styles control the appearance of the edit product form.
+ * Includes overlay, modal, and form element styling.
+ */
+
+/* Modal Overlay */
+.form-popup-overlay {
+    display: none;
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 1000;
+    transition: opacity 0.3s ease;
+    opacity: 0;
+}
+
+.form-popup-overlay.active {
+    opacity: 1;
+}
+
+/* Popup Modal Container */
+.form-popup {
+    display: none;
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -55%);
+    border: 3px solid #B20000;
+    z-index: 1001;
+    background-color: white;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    width: 90%;
+    max-width: 900px;
+    transition: transform 0.3s ease, opacity 0.3s ease;
+    opacity: 0;
+}
+
+.form-popup.active {
+    transform: translate(-50%, -50%);
+    opacity: 1;
+}
+
+/* Responsive: Use more horizontal space on larger screens */
+@media (min-width: 768px) {
+    .form-popup {
+        width: 90%;
+        max-width: 1400px;
+    }
+}
+
+/* Form Header Section */
+.form-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 15px 20px;
+    border-bottom: 1px solid #dee2e6;
+}
+
+.close-button {
+    background: none;
+    border: none;
+    font-size: 24px;
+    color: #666;
+    cursor: pointer;
+    padding: 0 10px;
+}
+
+.close-button:hover {
+    color: #B20000;
+}
+
+/* Form Content Container */
+.form-container {
+    padding: 20px;
+    background-color: white;
+}
+
+/* Form Group Styling */
+.form-group {
+    margin-bottom: 15px;
+}
+
+/* Form Input Styling */
+.form-container input[type=text],
+.form-container input[type=number],
+.form-container select {
+    width: 100%;
+    padding: 12px;
+    margin: 5px 0 22px 0;
+    border: 1px solid #B20000;
+    background: #f9f9f9;
+}
+
+.form-container input[type=text]:focus,
+.form-container input[type=number]:focus,
+.form-container select:focus {
+    background-color: #f1f1f1;
+    outline: none;
+}
+
+/* Button Styling */
+.form-container .btn {
+    background-color: #B20000;
+    color: white;
+    padding: 14px 20px;
+    border: none;
+    cursor: pointer;
+    width: 100%;
+    margin-top: 10px;
+    opacity: 0.8;
+    transition: opacity 0.2s ease;
+}
+
+.form-container .cancel {
+    background-color: #666;
+}
+
+.form-container .btn:hover {
+    opacity: 1;
+}
+
+/* Form Layout */
+.form-container .row {
+    display: flex;
+}
+
+.form-container .col-6 {
+    width: 50%;
+    padding: 0 10px;
+}
+
+/* Form Actions Section */
+.form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 20px;
+    padding: 15px 20px;
+    border-top: 1px solid #dee2e6;
+    background-color: #f8f9fa;
+}
+
+.form-actions .btn {
+    width: auto;
+    flex: 1;
+    margin-top: 0;
+    min-width: 120px;
+}
+
+/* NEW: Grid Layout for Editable Dynamic Fields */
+/* This styles the container for dynamic fields (with id "popupDynamicFields") as a grid of 4 columns */
+#popupDynamicFields {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 20px;
+}
+
+/* Optionally, adjust child field groups to remove extra margin */
+#popupDynamicFields .form-group {
+    margin-bottom: 0;
 }

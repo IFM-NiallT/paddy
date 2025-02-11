@@ -86,13 +86,16 @@
                                 <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage, sort='(D_WebCategory)[' + ('dsc' if current_sort == '(D_WebCategory)[asc]' else 'asc') + ']') }}">Web Category</a>
                                 <div class="resizer" data-column="{{ active_fields|length + 3 }}"></div>
                             </th>
+                            <!-- Edit Column -->
+                            <th>Actions</th>
                         </tr>
                     </thead>
 
                     <!-- Table Body -->
                     <tbody>
+                        <!-- Add this inside the <tbody> where the product rows are defined -->
                         {% for product in products.Data %}
-                            <tr class="product-row">
+                            <tr class="product-row" data-product-id="{{ product.ID }}">
                                 <td>{{ product.Code }}</td>
                                 <td data-full-text="{{ product.Description }}">{{ product.Description }}</td>
                                 {% for field in active_fields %}
@@ -103,11 +106,72 @@
                                 <td data-full-text="{{ product.D_WebCategory if product.D_WebCategory else 'N/A' }}">
                                     {{ product.D_WebCategory if product.D_WebCategory else 'N/A' }}
                                 </td>
+                                <td>
+                                    <button class="btn-uni edit-product-btn" data-product-id="{{ product.ID }}">
+                                        Edit Product
+                                    </button>
+                                </td>
                             </tr>
                         {% endfor %}
                     </tbody>
                 </table>
             </div>
+        </div>
+
+        <!-- Edit Product Popup Form -->
+        <div class="form-popup-overlay" id="editFormOverlay"></div>
+        <div class="form-popup" id="editProductForm" role="dialog" aria-labelledby="editFormTitle" aria-modal="true">
+            <form class="form-container">
+                
+                <!-- Form Header -->
+                <div class="form-header">
+                    <h2 id="editFormTitle">Edit Product</h2>
+                    <button type="button" class="close-button" onclick="closeEditForm()" aria-label="Close">×</button>
+                </div>
+                
+                <div class="row">
+                    <!-- Current Product Details Column -->
+                    <div class="col-6">
+                        <h6>Current Product Details</h6>
+                        <div id="currentProductDetails" role="region" aria-label="Current product information"></div>
+                    </div>
+                    
+                    <!-- Edit Product Column -->
+                    <div class="col-6">
+                        <h6>Update Product Details</h6>
+                        
+                        <!-- Product ID (hidden) -->
+                        <input type="hidden" id="popupProductId" name="product_id">
+                        
+                        <!-- Basic Product Information -->
+                        <div class="form-group">
+                            <label for="popupProductCode"><b>Update Product Code</b></label>
+                            <input type="text" 
+                                id="popupProductCode" 
+                                name="Code" 
+                                placeholder="Leave blank to keep current code"
+                                aria-label="Update Product Code">
+                        </div>
+                        
+                        <div class="form-group">
+                            <label for="popupProductDescription"><b>Update Description</b></label>
+                            <input type="text" 
+                                id="popupProductDescription" 
+                                name="Description" 
+                                placeholder="Leave blank to keep current description"
+                                aria-label="Update Product Description">
+                        </div>
+                        
+                        <!-- Dynamic Fields Container -->
+                        <div id="popupDynamicFields" role="region" aria-label="Additional product fields"></div>
+                    </div>
+                </div>
+                
+                <div class="form-actions">
+                    <button type="submit" class="btn" aria-label="Save product changes">Save Changes</button>
+                    <button type="button" class="btn cancel" onclick="closeEditForm()" aria-label="Cancel editing">Cancel</button>
+                </div>
+            </form>
         </div>
     </main>
 
