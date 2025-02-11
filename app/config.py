@@ -48,8 +48,8 @@ class Config:
     # API Connection Configuration
     # NOTE: In production, replace these with secure environment variable loading
     API_BASE_URL = os.getenv('API_BASE_URL', 'http://100.100.0.102:1234')
-    BEARER_TOKEN = os.getenv('BEARER_TOKEN', 'ODk2MzNkMjUtN2RlYi00ODM2LTlkMT')
-    REQUEST_TIMEOUT = int(os.getenv('REQUEST_TIMEOUT', '5'))
+    BEARER_TOKEN = os.getenv('BEARER_TOKEN', '')
+    REQUEST_TIMEOUT = int(os.getenv('REQUEST_TIMEOUT', '15'))
     
     # File System Configuration
     JSON_DIR = 'json'
