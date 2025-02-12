@@ -15,13 +15,13 @@
 <body>
     <!-- Navbar -->
     <nav class="navbar navbar-expand-lg">
-        <div class="container">
+        <div class="container-fluid px-4">
             <a class="navbar-brand" href="#">PADDY</a>
         </div>
     </nav>
 
     <!-- Search Bar -->
-    <div class="container">
+    <div class="container-fluid px-4">
         <div class="search-container">
             <input type="text" class="search-input" id="categorySearch" placeholder="Search categories...">
         </div>
@@ -29,15 +29,19 @@
 
     <!-- Main Content -->
     <main>
-        <div class="container mt-5">
-            <div class="row" id="category-grid">
+        <div class="container-fluid px-4 mt-5">
+            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 row-cols-lg-6 row-cols-xxl-8 g-4" id="category-grid">
                 {% for category in categories.Data %}
-                    <div class="col-md-4 category-item">
+                    <div class="col category-item">
                         <div class="category-container">
-                            <div class="category-name">{{ category.Description }}</div>
-                            <button class="btn-uni" onclick="window.location.href='/products/{{ category.ID }}'">
-                                View Products
-                            </button>
+                            <div class="category-content">
+                                <div class="category-name">{{ category.Description }}</div>
+                                <div class="category-button">
+                                    <button class="btn-uni" onclick="window.location.href='/products/{{ category.ID }}'">
+                                        View Products
+                                    </button>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 {% endfor %}

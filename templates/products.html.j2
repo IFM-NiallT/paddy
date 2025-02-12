@@ -16,7 +16,7 @@
 <body>
     <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg">
-        <div class="container">
+        <div class="container-fluid px-4">
             <a class="navbar-brand" href="/">PADDY</a>
             <div>
                 <button class="btn-uni me-2" onclick="exportTableToCSV()">Export to CSV</button>
@@ -28,7 +28,7 @@
     <!-- Main Content -->
     <main>
         <!-- Search Container -->
-        <div class="container">
+        <div class="container-fluid px-4">
             <div class="search-container">
                 <input type="text" class="search-input" id="productSearch" placeholder="Search products...">
             </div>
@@ -41,15 +41,15 @@
                 {{ category.Description }} ({{ category.Code }})
                 <div class="pagination-container">
                     {% if products.CurrentPage > 1 %}
-                        <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage-1, sort=current_sort) }}" class="pagination-arrow">⬅️</a>
+                        <a href="{{ url_for('products', category_id=category.ID, page=1, sort=current_sort) }}" class="pagination-arrow" aria-label="Skip to first page">⏮️</a>
+                        <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage-1, sort=current_sort) }}" class="pagination-arrow" aria-label="Previous page">⬅️</a>
                     {% endif %}
-                    
                     {% set start_item = (products.CurrentPage - 1) * products.ItemsPerPage + 1 %}
                     {% set end_item = [products.CurrentPage * products.ItemsPerPage, products.TotalCount] | min %}
                     <span class="pagination-count">{{ start_item }}-{{ end_item }}/{{ products.TotalCount }}</span>
-                    
                     {% if products.CurrentPage < products.TotalPages %}
-                        <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage+1, sort=current_sort) }}" class="pagination-arrow">➡️</a>
+                        <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage+1, sort=current_sort) }}" class="pagination-arrow" aria-label="Next page">➡️</a>
+                        <a href="{{ url_for('products', category_id=category.ID, page=products.TotalPages, sort=current_sort) }}" class="pagination-arrow" aria-label="Skip to last page">⏭️</a>
                     {% endif %}
                 </div>
             </h4>

@@ -310,11 +310,56 @@ function getColumnCount() {
  * @param {Object} data - The API response data
  */
 function updatePaginationInfo(data) {
-    const paginationCount = document.querySelector('.pagination-count');
-    if (paginationCount) {
+    const paginationContainer = document.querySelector('.pagination-container');
+    if (paginationContainer) {
         const start = (data.CurrentPage - 1) * data.ItemsPerPage + 1;
         const end = Math.min(data.CurrentPage * data.ItemsPerPage, data.TotalCount);
-        paginationCount.textContent = `${start}-${end}/${data.TotalCount}`;
+        
+        let html = '';
+        
+        // First page and Previous page buttons
+        if (data.CurrentPage > 1) {
+            html += `<a href="#" class="pagination-arrow" data-page="1" aria-label="Skip to first page">⏮️</a>`;
+            html += `<a href="#" class="pagination-arrow" data-page="${data.CurrentPage-1}" aria-label="Previous page">⬅️</a>`;
+        }
+        
+        // Page count
+        html += `<span class="pagination-count">${start}-${end}/${data.TotalCount}</span>`;
+        
+        // Next page and Last page buttons
+        if (data.CurrentPage < data.TotalPages) {
+            html += `<a href="#" class="pagination-arrow" data-page="${data.CurrentPage+1}" aria-label="Next page">➡️</a>`;
+            html += `<a href="#" class="pagination-arrow" data-page="${data.TotalPages}" aria-label="Skip to last page">⏭️</a>`;
+        }
+        
+        paginationContainer.innerHTML = html;
+        
+        // Add click handlers for pagination
+        paginationContainer.querySelectorAll('.pagination-arrow').forEach(arrow => {
+            arrow.addEventListener('click', async (e) => {
+                e.preventDefault();
+                const page = parseInt(e.target.dataset.page);
+                
+                // Get current URL and update page parameter
+                const urlParams = new URLSearchParams(window.location.search);
+                urlParams.set('page', page);
+                const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
+                
+                try {
+                    const response = await fetch(newUrl);
+                    if (!response.ok) throw new Error('Failed to fetch data');
+                    const data = await response.json();
+                    
+                    // Update URL without page reload
+                    window.history.pushState({}, '', newUrl);
+                    
+                    // Update table with new data
+                    updateTableWithResults(data);
+                } catch (error) {
+                    console.error('Error changing page:', error);
+                }
+            });
+        });
     }
 }
 

@@ -377,10 +377,19 @@ footer::before {
     transition: transform 0.3s ease;
     margin-bottom: 20px;
     height: 100%;
+    display: flex; /* Added */
+    flex-direction: column; /* Added */
 }
 
 .category-container:hover {
     transform: scale(1.05);
+}
+
+.category-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    min-height: 150px; /* Set a minimum height */
 }
 
 .category-name {
@@ -388,12 +397,19 @@ footer::before {
     font-weight: bold;
     color: var(--primary-color);
     margin-bottom: 15px;
+    flex-grow: 1; /* Added to allow name to take available space */
+    word-wrap: break-word; /* Ensure long names wrap properly */
 }
 
-/* Responsive Category Grid */
+.category-button {
+    margin-top: auto; /* Push button to bottom */
+    text-align: center;
+}
+
+/* Existing responsive styles remain the same */
 @media (max-width: 768px) {
     main .category-grid {
-        grid-template-columns: 1fr; /* Single column on small screens */
+        grid-template-columns: 1fr;
     }
 }
 
