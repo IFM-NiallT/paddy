@@ -104,7 +104,7 @@
                                     {% for field in active_fields %}
                                         <td data-full-text="{{ product[field.field] if product[field.field] else 'N/A' }}">
                                             {% if field.field in ['D_SizeA', 'D_SizeB', 'D_SizeC', 'D_SizeD'] %}
-                                                {{ product[field.field]|round|int if product[field.field] is number else 'N/A' }}
+                                                {{ product[field.field]if product[field.field] else 'N/A' }}
                                             {% else %}
                                                 {{ product[field.field] if product[field.field] else 'N/A' }}
                                             {% endif %}
