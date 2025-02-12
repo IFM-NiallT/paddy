@@ -21,8 +21,7 @@ providing a clean interface for the PADDY application to interact with backend s
 Author: Luke Doyle - 2025 Intern
 """
 
-import time  # Add this import
-#from datetime import time as datetime_time  # Optional: only if you need datetime.time
+import time
 import requests
 import json
 import os
@@ -34,6 +33,9 @@ from .field_config import FieldConfig
 
 class APIClient:
     """Client for handling API interactions with advanced features."""
+    
+    # Class Variables
+    MAX_ITEMS_PER_PAGE = 30
     
     def __init__(self, base_url, token, timeout=20):
         """Initialize APIClient with configuration and authentication."""
@@ -421,3 +423,94 @@ class APIClient:
                 exc_info=True
             )
             return f"Error updating product: {str(e)}"
+        
+    def search_products_api(self, category=None, code_query=None, page=1, items_per_page=30):
+        """
+        Search products directly via the API with filtering capabilities.
+        
+        Args:
+            category (str, optional): Product category to filter by
+            code_query (str, optional): Code search query
+            page (int): Page number for pagination
+            items_per_page (int): Number of items per page
+            
+        Returns:
+            dict: API response containing search results
+        """
+        try:
+            items_per_page = min(items_per_page, self.MAX_ITEMS_PER_PAGE)
+            params = {}
+            
+            # Add category filter if provided
+            if category:
+                params['Category[eq]'] = category
+                
+            # Add code search if provided
+            if code_query:
+                params['Code[cnt]'] = code_query
+                
+            # Add pagination parameters
+            params['offset'] = (page - 1) * items_per_page
+            params['fetch'] = items_per_page
+            
+            # Add default sorting
+            params['sort'] = 'Code[asc]'
+            
+            logger.info(
+                "Executing API product search",
+                extra={
+                    'category': category,
+                    'code_query': code_query,
+                    'page': page,
+                    'items_per_page': items_per_page,
+                    'params': params
+                }
+            )
+            
+            response = self._make_request(
+                "Products",
+                params=params
+            )
+            
+            # Process and format the response
+            total_count = response.get('TotalCount', 0)
+            total_pages = (total_count + items_per_page - 1) // items_per_page
+            
+            formatted_response = {
+                "TotalCount": total_count,
+                "CurrentPage": page,
+                "ItemsPerPage": items_per_page,
+                "TotalPages": total_pages,
+                "Data": response.get('Data', [])
+            }
+            
+            logger.info(
+                "API search completed successfully",
+                extra={
+                    'total_results': total_count,
+                    'returned_results': len(formatted_response["Data"]),
+                    'page': page,
+                    'total_pages': total_pages
+                }
+            )
+            
+            return formatted_response
+            
+        except Exception as e:
+            logger.error(
+                "API search error",
+                extra={
+                    'error_type': type(e).__name__,
+                    'error_detail': str(e),
+                    'category': category,
+                    'code_query': code_query
+                },
+                exc_info=True
+            )
+            return {
+                "TotalCount": 0,
+                "CurrentPage": page,
+                "ItemsPerPage": items_per_page,
+                "TotalPages": 0,
+                "Data": []
+            }

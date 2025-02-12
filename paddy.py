@@ -90,13 +90,15 @@ class PaddyApp:
         - Home/index page
         - Product listing by category
         - Product editing and updating
+        - API search functionality
         """
         try:
             routes = [
                 ("/", "index", self._index_route),
                 ("/products/<int:category_id>", "products", self._products_route),
                 ("/product/<int:product_id>/edit", "edit_product", self._edit_product_route, ['GET']),
-                ("/product/<int:product_id>/update", "update_product", self._update_product_route, ['POST'])
+                ("/product/<int:product_id>/update", "update_product", self._update_product_route, ['POST']),
+                ("/api/search", "api_search", self._api_search_route, ['GET'])  # New API search route
             ]
             
             for route in routes:
@@ -513,9 +515,19 @@ class PaddyApp:
                 "D_Grade", "D_ManufacturerName", "D_Application", "D_WebCategory"
             ]
 
-            # Remove empty fields and filter for only allowed fields
+            # Numeric fields to round
+            numeric_fields = ["D_SizeA", "D_SizeB", "D_SizeC", "D_SizeD", "ImageCount"]
+
+            # Custom rounding function
+            def round_numeric_field(value):
+                if isinstance(value, (int, float)):
+                    return round(value)
+                return value
+
+            # Remove empty fields, filter for only allowed fields, and round numeric fields
             update_payload = {
-                key: value for key, value in update_data.items()
+                key: round_numeric_field(value) if key in numeric_fields else value 
+                for key, value in update_data.items()
                 if value not in [None, ""] and key in allowed_fields
             }
 
@@ -584,6 +596,76 @@ class PaddyApp:
                 "Error in update product route",
                 extra={
                     'product_id': product_id,
+                    'error_type': type(e).__name__,
+                    'error_detail': str(e)
+                },
+                exc_info=True
+            )
+            return jsonify({'error': str(e)}), 500
+        
+    def _api_search_route(self):
+        """
+        Handle API search requests.
+        
+        Supports:
+        - Category filtering
+        - Code search
+        - Pagination
+        
+        Returns:
+            JSON response with search results
+        """
+        try:
+            category = request.args.get('category')
+            code_query = request.args.get('code')
+            page = request.args.get('page', 1, type=int)
+            items_per_page = min(
+                request.args.get('per_page', 30, type=int),
+                self.api_client.MAX_ITEMS_PER_PAGE
+            )
+            
+            logger.info(
+                "Processing API search request",
+                extra={
+                    'category': category,
+                    'code_query': code_query,
+                    'page': page,
+                    'items_per_page': items_per_page,
+                    'client_ip': request.remote_addr,
+                    'max_items_allowed': self.api_client.MAX_ITEMS_PER_PAGE
+                }
+            )
+            
+            if not category and not code_query:
+                logger.warning(
+                    "Search request with no parameters",
+                    extra={'client_ip': request.remote_addr}
+                )
+                return jsonify({
+                    'error': 'At least one search parameter (category or code) is required'
+                }), 400
+            
+            results = self.api_client.search_products_api(
+                category=category,
+                code_query=code_query,
+                page=page,
+                items_per_page=items_per_page
+            )
+            
+            logger.info(
+                "Search request completed",
+                extra={
+                    'total_results': results['TotalCount'],
+                    'returned_results': len(results['Data'])
+                }
+            )
+            
+            return jsonify(results)
+            
+        except Exception as e:
+            logger.error(
+                "Error in API search route",
+                extra={
                     'error_type': type(e).__name__,
                     'error_detail': str(e)
                 },

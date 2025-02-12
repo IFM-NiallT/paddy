@@ -9,24 +9,156 @@
  */
 
 // ====================
-// Search Functionality
+// Sort Functionality
 // ====================
 
 /**
- * Filters the product table based on search input
- * Searches across all columns and hides non-matching rows
+ * Initializes sorting functionality for the table headers
  */
-function searchProducts() {
+function initSortHandlers() {
+    const headers = document.querySelectorAll('#productsTable th a');
+    headers.forEach(header => {
+        header.addEventListener('click', handleSortClick);
+    });
+}
+
+/**
+ * Handles the sort operation when a header link is clicked
+ * @param {Event} event - The click event
+ */
+function handleSortClick(event) {
+    event.preventDefault();
+    const url = event.target.href;
+    
+    fetchSortedData(url)
+        .then(data => {
+            if (data && data.Data) {
+                // Update the URL without reloading
+                window.history.pushState({}, '', url);
+                // Update table with new data
+                updateTableWithResults(data);
+                // Update sort indicators based on the new URL
+                updateSortIndicators();
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching sorted data:', error);
+        });
+}
+
+/**
+ * Fetches sorted data from the server
+ * @param {string} url - The URL with sort parameters
+ * @returns {Promise} Promise resolving to the sorted data
+ */
+async function fetchSortedData(url) {
+    const response = await fetch(url);
+    if (!response.ok) {
+        throw new Error(`Sort request failed: ${response.status}`);
+    }
+    return response.json();
+}
+
+/**
+ * Updates sort indicators based on current URL parameters
+ */
+function updateSortIndicators() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentSort = urlParams.get('sort');
+    
+    // Remove all current-sort classes
+    document.querySelectorAll('#productsTable th').forEach(th => {
+        th.classList.remove('current-sort', 'asc', 'dsc');
+    });
+    
+    if (currentSort) {
+        // Extract field and direction from sort parameter
+        const match = currentSort.match(/\((.*?)\)\[(.*?)\]/);
+        if (match) {
+            const [, field, direction] = match;
+            // Find and update the corresponding header
+            const header = Array.from(document.querySelectorAll('#productsTable th')).find(th => {
+                const link = th.querySelector('a');
+                return link && link.href.includes(`(${field})`);
+            });
+            
+            if (header) {
+                header.classList.add('current-sort', direction);
+            }
+        }
+    }
+}
+
+// ====================
+// Search Functionality
+// ====================
+
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+/**
+ * Filters the product table based on search input
+ * Searches using API first, falls back to local search if needed
+ */
+async function searchProducts() {
     const searchInput = document.getElementById('productSearch');
-    const filter = searchInput.value.toLowerCase();
+    const filter = searchInput.value.toLowerCase().trim();
+    
+    // Get current category ID from URL
+    const pathParts = window.location.pathname.split('/');
+    const categoryId = pathParts[pathParts.indexOf('products') + 1];
+    
+    console.log('Search Details:', {
+        filter: filter,
+        categoryId: categoryId,
+        searchURL: `/api/search?category=${categoryId}&code=${encodeURIComponent(filter)}`
+    });
+    
+    try {
+        const response = await fetch(`/api/search?category=${categoryId}&code=${encodeURIComponent(filter)}`);
+        console.log('Full Response:', response);
+        
+        if (!response.ok) {
+            throw new Error(`Search failed: ${response.status}`);
+        }
+        
+        const data = await response.json();
+        console.log('Parsed Data:', data);
+        
+        if (!data || !data.Data) {
+            console.error('Invalid response format', data);
+            throw new Error('Invalid response format');
+        }
+        
+        updateTableWithResults(data);
+        
+    } catch (error) {
+        console.error('Complete Search Error:', error);
+        // Fall back to local search
+        performLocalSearch(filter);
+    }
+}
+
+/**
+ * Performs local search as fallback when API search fails
+ * @param {string} filter - The search term
+ */
+function performLocalSearch(filter) {
     const rows = document.getElementsByClassName('product-row');
     
-    // Iterate through each row to check for matches
     for (let row of rows) {
         const cells = row.getElementsByTagName('td');
         let found = false;
         
-        // Check each cell in the row for matching text
         for (let cell of cells) {
             const text = cell.textContent || cell.innerText;
             if (text.toLowerCase().indexOf(filter) > -1) {
@@ -35,8 +167,169 @@ function searchProducts() {
             }
         }
         
-        // Show/hide the row based on search match
         row.style.display = found ? "" : "none";
+    }
+}
+
+/**
+ * Updates the table with search results
+ * @param {Object} data - The API response data
+ */
+function updateTableWithResults(data) {
+    const tbody = document.querySelector('#productsTable tbody');
+    if (!tbody) {
+        console.error('Table body not found');
+        return;
+    }
+    
+    // Clear existing rows
+    tbody.innerHTML = '';
+    
+    if (!data.Data || data.Data.length === 0) {
+        // Add a "no results" row
+        const noResultsRow = document.createElement('tr');
+        noResultsRow.innerHTML = `
+            <td colspan="${getColumnCount()}" class="text-center py-4">
+                No results found
+            </td>
+        `;
+        tbody.appendChild(noResultsRow);
+        return;
+    }
+    
+    // Add new rows
+    data.Data.forEach(product => {
+        const row = createProductRow(product);
+        tbody.appendChild(row);
+    });
+    
+    // Update pagination if it exists
+    updatePaginationInfo(data);
+}
+
+/**
+ * Creates a table row from product data
+ * @param {Object} product - The product data
+ * @returns {HTMLElement} The created table row
+ */
+function createProductRow(product) {
+    const row = document.createElement('tr');
+    row.className = 'product-row';
+    row.setAttribute('data-product-id', product.ID);
+    
+    // Get headers to match the column structure
+    const headers = Array.from(document.querySelectorAll('#productsTable thead th'));
+    
+    let rowHTML = `
+        <td>${escapeHtml(product.Code || '')}</td>
+        <td data-full-text="${escapeHtml(product.Description || '')}">${escapeHtml(product.Description || '')}</td>
+    `;
+    
+    // Add dynamic fields (skip first 2 columns [Code, Description] and last column [Actions])
+    headers.slice(2, -1).forEach(header => {
+        const fieldName = header.textContent.trim().replace(/[↕↑↓]/g, '').trim();
+        let value = 'N/A';
+        
+        // Handle special cases
+        if (fieldName === 'Web Category') {
+            value = product.D_WebCategory || 'N/A';
+        } else if (fieldName === 'Image Count') {
+            value = product.ImageCount || 'N/A';
+        } else {
+            // Look for matching field in product data
+            const fieldKey = Object.keys(product).find(key => {
+                if (key.startsWith('D_')) {
+                    const cleanKey = key.replace('D_', '').toLowerCase();
+                    const cleanHeader = fieldName.replace(/\s+/g, '').toLowerCase();
+                    return cleanKey === cleanHeader;
+                }
+                return false;
+            });
+            
+            if (fieldKey) {
+                value = product[fieldKey] || 'N/A';
+            }
+        }
+        
+        rowHTML += `
+            <td data-full-text="${escapeHtml(value)}">
+                ${escapeHtml(value)}
+            </td>
+        `;
+    });
+    
+    // Add Edit button
+    rowHTML += `
+        <td>
+            <button class="btn-uni edit-product-btn" data-product-id="${product.ID}">
+                Edit Product
+            </button>
+        </td>
+    `;
+    
+    row.innerHTML = rowHTML;
+    
+    // Add edit button event listener
+    const editBtn = row.querySelector('.edit-product-btn');
+    if (editBtn) {
+        editBtn.addEventListener('click', (event) => {
+            event.stopPropagation();
+            fetchProductDetails(product.ID);
+        });
+    }
+    
+    return row;
+}
+
+/**
+ * Get the total number of columns in the table
+ * @returns {number} The column count
+ */
+function getColumnCount() {
+    const headers = document.querySelectorAll('#productsTable thead th');
+    return headers.length;
+}
+
+/**
+ * Updates pagination information after search
+ * @param {Object} data - The API response data
+ */
+function updatePaginationInfo(data) {
+    const paginationCount = document.querySelector('.pagination-count');
+    if (paginationCount) {
+        const start = (data.CurrentPage - 1) * data.ItemsPerPage + 1;
+        const end = Math.min(data.CurrentPage * data.ItemsPerPage, data.TotalCount);
+        paginationCount.textContent = `${start}-${end}/${data.TotalCount}`;
+    }
+}
+
+/**
+ * Escapes HTML special characters
+ * @param {string} str - The string to escape
+ * @returns {string} The escaped string
+ */
+function escapeHtml(str) {
+    if (str === null || str === undefined) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
+// Initialize search handlers
+function initSearchHandlers() {
+    const searchInput = document.getElementById('productSearch');
+    if (searchInput) {
+        // Debounced search for typing
+        const debouncedSearch = debounce(searchProducts, 300);
+        searchInput.addEventListener('input', debouncedSearch);
+        
+        // Immediate search on Enter
+        searchInput.addEventListener('keypress', function(e) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                searchProducts();
+            }
+        });
     }
 }
 
@@ -670,17 +963,19 @@ function submitProductEdit(event) {
 /**
  * Initialize all event listeners when the DOM is loaded
  * Sets up all necessary event handlers for the application's functionality
- * This includes search, column resizing, form submission, and edit buttons
  */
 document.addEventListener('DOMContentLoaded', function() {
-    // Initialize column resizing functionality for the main products table
+    // Initialize column resizing functionality
     initColumnResizers();
     
-    // Set up search functionality with both input and Enter key handling
+    // Set up search functionality
     initSearchHandlers();
     
-    // Initialize all edit form related functionality
+    // Initialize edit form functionality
     initEditFormHandlers();
+    
+    // Initialize sorting functionality
+    initSortHandlers();
 });
 
 /**
@@ -690,12 +985,16 @@ document.addEventListener('DOMContentLoaded', function() {
 function initSearchHandlers() {
     const searchInput = document.getElementById('productSearch');
     if (searchInput) {
-        // Real-time search as user types
-        searchInput.addEventListener('input', searchProducts);
+        // Real-time search as user types (with debounce)
+        const debouncedSearch = debounce(searchProducts, 300);
+        searchInput.addEventListener('input', debouncedSearch);
         
         // Handle Enter key for immediate search
         searchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') searchProducts();
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                searchProducts();
+            }
         });
     }
 }
@@ -717,24 +1016,20 @@ function initEditFormHandlers() {
         }
     }
 
-    // Set up edit button handlers for each product row
+    // Set up edit button handlers
     initEditButtons();
     
-    // Set up overlay click handler for form dismissal
+    // Set up overlay click handler
     initOverlayHandler();
 }
 
 /**
  * Initializes click handlers for all edit buttons in the product table
- * Each button triggers the product edit form with the correct product data
  */
 function initEditButtons() {
     document.querySelectorAll('.edit-product-btn').forEach(button => {
         button.addEventListener('click', function(event) {
-            // Prevent event bubbling
             event.stopPropagation();
-            
-            // Find the parent row to get the product ID
             const row = event.target.closest('.product-row');
             if (row) {
                 const productId = row.getAttribute('data-product-id');
@@ -747,8 +1042,7 @@ function initEditButtons() {
 }
 
 /**
- * Initializes the overlay click handler
- * Allows users to close the form by clicking outside of it
+ * Initializes the overlay click handler for closing the edit form
  */
 function initOverlayHandler() {
     const overlay = document.getElementById('editFormOverlay');
@@ -758,34 +1052,281 @@ function initOverlayHandler() {
 }
 
 /**
- * Shows a success popup message that automatically disappears
+ * Initializes sorting functionality for the table headers
+ */
+function initSortHandlers() {
+    const headers = document.querySelectorAll('#productsTable th a');
+    headers.forEach(header => {
+        header.addEventListener('click', handleSortClick);
+    });
+}
+
+/**
+ * Handles the sort operation when a header link is clicked
+ * @param {Event} event - The click event
+ */
+function handleSortClick(event) {
+    event.preventDefault();
+    const url = event.target.href;
+    
+    // Show loading state
+    const tableBody = document.querySelector('#productsTable tbody');
+    if (tableBody) {
+        tableBody.style.opacity = '0.5';
+    }
+    
+    fetchSortedData(url)
+        .then(data => {
+            if (data && data.Data) {
+                // Update the URL without reloading
+                window.history.pushState({}, '', url);
+                // Update table with new data
+                updateTableWithResults(data);
+                // Update sort indicators based on the new URL
+                updateSortIndicators();
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching sorted data:', error);
+        })
+        .finally(() => {
+            // Remove loading state
+            if (tableBody) {
+                tableBody.style.opacity = '1';
+            }
+        });
+}
+
+/**
+ * Fetches sorted data from the server
+ * @param {string} url - The URL with sort parameters
+ * @returns {Promise} Promise resolving to the sorted data
+ */
+async function fetchSortedData(url) {
+    const response = await fetch(url);
+    if (!response.ok) {
+        throw new Error(`Sort request failed: ${response.status}`);
+    }
+    return response.json();
+}
+
+/**
+ * Updates sort indicators based on current URL parameters
+ */
+function updateSortIndicators() {
+    const urlParams = new URLSearchParams(window.location.search);
+    const currentSort = urlParams.get('sort');
+    
+    // Remove all current-sort classes
+    document.querySelectorAll('#productsTable th').forEach(th => {
+        th.classList.remove('current-sort', 'asc', 'dsc');
+    });
+    
+    if (currentSort) {
+        // Extract field and direction from sort parameter
+        const match = currentSort.match(/\((.*?)\)\[(.*?)\]/);
+        if (match) {
+            const [, field, direction] = match;
+            // Find and update the corresponding header
+            const header = Array.from(document.querySelectorAll('#productsTable th')).find(th => {
+                const link = th.querySelector('a');
+                return link && link.href.includes(`(${field})`);
+            });
+            
+            if (header) {
+                header.classList.add('current-sort', direction);
+            }
+        }
+    }
+}
+
+/**
+ * Updates the table with new results
+ * @param {Object} data - The data containing products and pagination info
+ */
+function updateTableWithResults(data) {
+    console.log('Updating table with data:', data);
+    
+    const tbody = document.querySelector('#productsTable tbody');
+    if (!tbody) {
+        console.error('Table body not found');
+        return;
+    }
+    
+    // Clear existing rows
+    tbody.innerHTML = '';
+    
+    if (!data.Data || data.Data.length === 0) {
+        console.warn('No results found');
+        // Add a "no results" row
+        const noResultsRow = document.createElement('tr');
+        noResultsRow.innerHTML = `
+            <td colspan="${getColumnCount()}" class="text-center py-4">
+                No results found
+            </td>
+        `;
+        tbody.appendChild(noResultsRow);
+        return;
+    }
+    
+    // Add new rows
+    data.Data.forEach(product => {
+        const row = createProductRow(product);
+        tbody.appendChild(row);
+    });
+    
+    // Update pagination if it exists
+    updatePaginationInfo(data);
+    
+    // Re-initialize edit buttons for new rows
+    initEditButtons();
+}
+
+/**
+ * Updates pagination information
+ * @param {Object} data - The data containing pagination details
+ */
+function updatePaginationInfo(data) {
+    const paginationCount = document.querySelector('.pagination-count');
+    if (paginationCount) {
+        const start = (data.CurrentPage - 1) * data.ItemsPerPage + 1;
+        const end = Math.min(data.CurrentPage * data.ItemsPerPage, data.TotalCount);
+        paginationCount.textContent = `${start}-${end}/${data.TotalCount}`;
+    }
+    
+    // Update pagination arrows if they exist
+    const prevArrow = document.querySelector('.pagination-arrow:first-child');
+    const nextArrow = document.querySelector('.pagination-arrow:last-child');
+    
+    if (prevArrow) {
+        prevArrow.style.visibility = data.CurrentPage > 1 ? 'visible' : 'hidden';
+    }
+    if (nextArrow) {
+        nextArrow.style.visibility = data.CurrentPage < data.TotalPages ? 'visible' : 'hidden';
+    }
+}
+
+/**
+ * Utility function to get the total number of columns in the table
+ * @returns {number} The number of columns
+ */
+function getColumnCount() {
+    const headers = document.querySelectorAll('#productsTable thead th');
+    return headers.length;
+}
+
+/**
+ * Creates a row element for a product
+ * @param {Object} product - The product data
+ * @returns {HTMLElement} The created row element
+ */
+function createProductRow(product) {
+    const row = document.createElement('tr');
+    row.className = 'product-row';
+    row.setAttribute('data-product-id', product.ID);
+    
+    // Get headers to match the column structure
+    const headers = Array.from(document.querySelectorAll('#productsTable thead th'));
+    
+    let rowHTML = `
+        <td>${escapeHtml(product.Code || '')}</td>
+        <td data-full-text="${escapeHtml(product.Description || '')}">${escapeHtml(product.Description || '')}</td>
+    `;
+    
+    // Add dynamic fields (skip first 2 columns [Code, Description] and last column [Actions])
+    headers.slice(2, -1).forEach(header => {
+        const fieldName = header.textContent.trim().replace(/[↕↑↓]/g, '').trim();
+        let value = 'N/A';
+        
+        // Handle special cases
+        if (fieldName === 'Web Category') {
+            value = product.D_WebCategory || 'N/A';
+        } else if (fieldName === 'Image Count') {
+            value = product.ImageCount || 'N/A';
+        } else {
+            // Look for matching field in product data
+            const fieldKey = Object.keys(product).find(key => {
+                if (key.startsWith('D_')) {
+                    const cleanKey = key.replace('D_', '').toLowerCase();
+                    const cleanHeader = fieldName.replace(/\s+/g, '').toLowerCase();
+                    return cleanKey === cleanHeader;
+                }
+                return false;
+            });
+            
+            if (fieldKey) {
+                value = product[fieldKey] || 'N/A';
+            }
+        }
+        
+        rowHTML += `
+            <td data-full-text="${escapeHtml(value)}">
+                ${escapeHtml(value)}
+            </td>
+        `;
+    });
+    
+    // Add Edit button
+    rowHTML += `
+        <td>
+            <button class="btn-uni edit-product-btn" data-product-id="${product.ID}">
+                Edit Product
+            </button>
+        </td>
+    `;
+    
+    row.innerHTML = rowHTML;
+    
+    // Add edit button event listener
+    const editBtn = row.querySelector('.edit-product-btn');
+    if (editBtn) {
+        editBtn.addEventListener('click', (event) => {
+            event.stopPropagation();
+            fetchProductDetails(product.ID);
+        });
+    }
+    
+    return row;
+}
+/**
+ * Utility function to debounce function calls
+ * @param {Function} func - The function to debounce
+ * @param {number} wait - The debounce delay in milliseconds
+ * @returns {Function} The debounced function
+ */
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
+}
+
+/**
+ * Shows a success popup message
  * @param {string} message - The message to display
  * @param {number} duration - How long to show the message (in ms)
  */
 function showSuccessPopup(message = 'Operation completed successfully', duration = 300) {
     const popup = document.getElementById('successPopup');
-    if (!popup) return; // Exit if popup element doesn't exist
+    if (!popup) return;
     
     const content = popup.querySelector('.success-content');
-    if (!content) return; // Exit if content element doesn't exist
+    if (!content) return;
     
-    // Set the message
     content.textContent = message;
-    
-    // Remove any existing fade-out class
     popup.classList.remove('fade-out');
-    
-    // Show the popup
     popup.style.display = 'flex';
     
-    // Set a timeout to start the fade out animation
     setTimeout(() => {
         popup.classList.add('fade-out');
-        
-        // Hide the popup after animation completes
         setTimeout(() => {
             popup.style.display = 'none';
             popup.classList.remove('fade-out');
-        }, 300); // Match this with CSS animation duration
+        }, 300);
     }, duration);
 }

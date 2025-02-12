@@ -31,7 +31,6 @@
         <div class="container">
             <div class="search-container">
                 <input type="text" class="search-input" id="productSearch" placeholder="Search products...">
-                <button class="search-button" onclick="searchProducts()">Search</button>
             </div>
         </div>
 
@@ -97,31 +96,32 @@
                         </tr>
                     </thead>
 
-                    <!-- Table Body -->
-                    <tbody>
-                        <!-- Add this inside the <tbody> where the product rows are defined -->
-                        {% for product in products.Data %}
-                            <tr class="product-row" data-product-id="{{ product.ID }}">
-                                <td>{{ product.Code }}</td>
-                                <td data-full-text="{{ product.Description }}">{{ product.Description }}</td>
-                                {% for field in active_fields %}
-                                    <td data-full-text="{{ product[field.field] if product[field.field] else 'N/A' }}">
-                                        {{ product[field.field] if product[field.field] else 'N/A' }}
+                        <tbody>
+                            {% for product in products.Data %}
+                                <tr class="product-row" data-product-id="{{ product.ID }}">
+                                    <td>{{ product.Code }}</td>
+                                    <td data-full-text="{{ product.Description }}">{{ product.Description }}</td>
+                                    {% for field in active_fields %}
+                                        <td data-full-text="{{ product[field.field] if product[field.field] else 'N/A' }}">
+                                            {% if field.field in ['D_SizeA', 'D_SizeB', 'D_SizeC', 'D_SizeD'] %}
+                                                {{ product[field.field]|round|int if product[field.field] is number else 'N/A' }}
+                                            {% else %}
+                                                {{ product[field.field] if product[field.field] else 'N/A' }}
+                                            {% endif %}
+                                        </td>
+                                    {% endfor %}
+                                    <td data-full-text="{{ product.D_WebCategory if product.D_WebCategory else 'N/A' }}">
+                                        {{ product.D_WebCategory if product.D_WebCategory else 'N/A' }}
                                     </td>
-                                {% endfor %}
-                                <td data-full-text="{{ product.D_WebCategory if product.D_WebCategory else 'N/A' }}">
-                                    {{ product.D_WebCategory if product.D_WebCategory else 'N/A' }}
-                                </td>
-                                <td data-full-text="{{ product.ImageCount if product.ImageCount else 'N/A' }}">
-                                    {{ product.ImageCount if product.ImageCount else 'N/A' }}
-                                </td>
-                                <td>
-                                    <button class="btn-uni edit-product-btn" data-product-id="{{ product.ID }}">
-                                        Edit Product
-                                    </button>
-                                </td>
-                            </tr>
-                        {% endfor %}
+                                    <td data-full-text="{{ product.ImageCount if product.ImageCount else 'N/A' }}">
+                                        {{ product.ImageCount|round|int if product.ImageCount is number else 'N/A' }}
+                                    </td>
+                                    <td>
+                                        <button class="btn-uni edit-product-btn" data-product-id="{{ product.ID }}" aria-label="Edit {{ product.ID }}"> Edit </button>
+                                    </td>
+                                </tr>
+                            {% endfor %}
+                        </tbody>
                     </tbody>
                 </table>
             </div>
