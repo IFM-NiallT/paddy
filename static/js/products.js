@@ -113,6 +113,21 @@ async function searchProducts() {
     const searchInput = document.getElementById('productSearch');
     const filter = searchInput.value.toLowerCase().trim();
     
+    // If filter is less than 3 characters, perform local search or reset table
+    if (filter.length < 3) {
+        if (filter.length === 0) {
+            // If completely empty, show all rows
+            const rows = document.getElementsByClassName('product-row');
+            for (let row of rows) {
+                row.style.display = "";
+            }
+        } else {
+            // If less than 3 characters, perform local search
+            performLocalSearch(filter);
+        }
+        return;
+    }
+    
     // Get current category ID from URL
     const pathParts = window.location.pathname.split('/');
     const categoryId = pathParts[pathParts.indexOf('products') + 1];
@@ -320,7 +335,7 @@ function initSearchHandlers() {
     const searchInput = document.getElementById('productSearch');
     if (searchInput) {
         // Debounced search for typing
-        const debouncedSearch = debounce(searchProducts, 300);
+        const debouncedSearch = debounce(searchProducts, 500);
         searchInput.addEventListener('input', debouncedSearch);
         
         // Immediate search on Enter
