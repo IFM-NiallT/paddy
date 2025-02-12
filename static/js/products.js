@@ -698,22 +698,39 @@ function populateCurrentDetails(product, dynamicFields) {
  * @param {Array} dynamicFields - Array of dynamic field configurations
  */
 function populateEditForm(product, productId, dynamicFields) {
+    // Set the product code in the header and hidden input
+    document.getElementById('popupProductCode').textContent = product.Code || '';
     document.getElementById('popupProductId').value = productId;
-    document.getElementById('popupProductCode').value = product.Code || '';
-    document.getElementById('popupProductDescription').value = product.Description || '';
 
-    const container = document.getElementById('popupDynamicFields');
-    if (!container) return;
+    // Get the first and second columns for dynamic fields
+    const firstColumn = document.getElementById('popupFirstColumn');
+    const secondColumn = document.getElementById('popupSecondColumn');
 
-    container.innerHTML = '';
-    
+    // Clear any existing content
+    firstColumn.innerHTML = '';
+    secondColumn.innerHTML = '';
+
     // Use the dynamic_fields from the API response
-    // Each field already contains: name, label, type, value, and options
     if (Array.isArray(dynamicFields)) {
-        dynamicFields.forEach(field => {
+        // Split fields between two columns
+        const midpoint = Math.ceil(dynamicFields.length / 2);
+        const firstColumnFields = dynamicFields.slice(0, midpoint);
+        const secondColumnFields = dynamicFields.slice(midpoint);
+
+        // Populate first column
+        firstColumnFields.forEach(field => {
             // Assign the current product value to the field
             field.value = product[field.name] || '';
-            container.appendChild(createFieldGroup(field));
+            const fieldGroup = createFieldGroup(field);
+            firstColumn.appendChild(fieldGroup);
+        });
+
+        // Populate second column
+        secondColumnFields.forEach(field => {
+            // Assign the current product value to the field
+            field.value = product[field.name] || '';
+            const fieldGroup = createFieldGroup(field);
+            secondColumn.appendChild(fieldGroup);
         });
     }
 }
