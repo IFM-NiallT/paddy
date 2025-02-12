@@ -19,7 +19,7 @@ Author: Luke Doyle - 2025 Intern
 """
 
 import os
-import logging
+from .logger import logger
 
 
 class Config:
@@ -31,22 +31,9 @@ class Config:
     - Provides sensible default values
     - Supports runtime configuration
     - Ensures necessary directories exist
-    
-    Configuration Sources (in order of precedence):
-    1. Environment Variables
-    2. Hardcoded Defaults
-    
-    Attributes:
-        API_BASE_URL (str): Base URL for API connections
-        BEARER_TOKEN (str): Authentication token for API access
-        REQUEST_TIMEOUT (int): Default timeout for API requests
-        JSON_DIR (str): Directory for storing JSON files
-        CACHE_FILE (str): Path to categories cache file
-        FIELD_CONFIG_FILE (str): Path to product attributes configuration
     """
     
     # API Connection Configuration
-    # NOTE: In production, replace these with secure environment variable loading
     API_BASE_URL = os.getenv('API_BASE_URL', 'http://100.100.0.102:1234')
     BEARER_TOKEN = os.getenv('BEARER_TOKEN', 'ODk2MzNkMjUtN2RlYi00ODM2LTlkMT')
     REQUEST_TIMEOUT = int(os.getenv('REQUEST_TIMEOUT', '15'))
@@ -60,89 +47,147 @@ class Config:
     def ensure_directories(cls):
         """
         Ensure all required application directories exist.
-        
-        Creates necessary directories for:
-        - JSON file storage
-        - Caching
-        - Configuration files
-        
-        Notes:
-        - Uses os.makedirs with exist_ok to prevent errors if directory exists
-        - Logs directory creation for traceability
         """
         try:
             # Create JSON directory and any necessary parent directories
             os.makedirs(cls.JSON_DIR, exist_ok=True)
-            logging.info(f"Ensured JSON directory exists: {cls.JSON_DIR}")
+            logger.info(
+                "Directory structure verified",
+                extra={
+                    'directory': cls.JSON_DIR,
+                    'absolute_path': os.path.abspath(cls.JSON_DIR),
+                    'permissions': oct(os.stat(cls.JSON_DIR).st_mode)[-3:]
+                }
+            )
+        except PermissionError as e:
+            logger.critical(
+                "Permission denied while creating directory",
+                extra={
+                    'directory': cls.JSON_DIR,
+                    'error': str(e),
+                    'user': os.getenv('USER'),
+                    'current_permissions': oct(os.stat(os.path.dirname(cls.JSON_DIR)).st_mode)[-3:] if os.path.exists(os.path.dirname(cls.JSON_DIR)) else None
+                },
+                exc_info=True
+            )
+            raise
         except Exception as e:
-            logging.error(f"Failed to create JSON directory: {e}")
+            logger.critical(
+                "Failed to create directory structure",
+                extra={
+                    'directory': cls.JSON_DIR,
+                    'error_type': type(e).__name__,
+                    'error_msg': str(e)
+                },
+                exc_info=True
+            )
             raise
 
     @classmethod
     def validate_configuration(cls):
         """
         Validate critical configuration settings.
-        
-        Performs checks to ensure:
-        - API Base URL is not empty
-        - Bearer Token is present
-        - Request timeout is reasonable
-        
-        Raises:
-            ValueError: If any critical configuration is missing or invalid
-        
-        Notes:
-        - Provides an additional layer of configuration validation
-        - Helps catch configuration issues early
         """
-        errors = []
+        validation_errors = []
         
         # Validate API Base URL
-        if not cls.API_BASE_URL or not cls.API_BASE_URL.startswith(('http://', 'https://')):
-            errors.append("Invalid or missing API Base URL")
+        if not cls.API_BASE_URL:
+            validation_errors.append("API Base URL is missing")
+        elif not cls.API_BASE_URL.startswith(('http://', 'https://')):
+            validation_errors.append(f"Invalid API Base URL format: {cls.API_BASE_URL}")
+            logger.warning(
+                "Insecure API URL detected",
+                extra={
+                    'url': cls.API_BASE_URL,
+                    'recommended': 'Use HTTPS in production'
+                }
+            )
         
         # Validate Bearer Token
-        if not cls.BEARER_TOKEN or len(cls.BEARER_TOKEN) < 10:
-            errors.append("Invalid or missing Bearer Token")
+        if not cls.BEARER_TOKEN:
+            validation_errors.append("Bearer Token is missing")
+        elif len(cls.BEARER_TOKEN) < 10:
+            validation_errors.append("Bearer Token length is insufficient")
+            logger.error(
+                "Security configuration error",
+                extra={
+                    'issue': 'Invalid bearer token length',
+                    'required_length': '≥ 10',
+                    'current_length': len(cls.BEARER_TOKEN)
+                }
+            )
         
         # Validate Request Timeout
-        if cls.REQUEST_TIMEOUT <= 0 or cls.REQUEST_TIMEOUT > 60:
-            errors.append("Invalid request timeout (must be between 1-60 seconds)")
+        if cls.REQUEST_TIMEOUT <= 0:
+            validation_errors.append("Request timeout must be positive")
+        elif cls.REQUEST_TIMEOUT > 60:
+            validation_errors.append("Request timeout exceeds maximum (60 seconds)")
+            logger.warning(
+                "Request timeout might be too high",
+                extra={
+                    'current_timeout': cls.REQUEST_TIMEOUT,
+                    'recommended_max': 60
+                }
+            )
         
-        # Raise comprehensive error if any issues found
-        if errors:
-            error_message = "Configuration Validation Failed:\n" + "\n".join(f"- {error}" for error in errors)
-            logging.error(error_message)
+        # Log and raise if any validation errors found
+        if validation_errors:
+            error_message = "Configuration Validation Failed:\n" + "\n".join(f"- {error}" for error in validation_errors)
+            logger.critical(
+                "Invalid configuration detected",
+                extra={
+                    'validation_errors': validation_errors,
+                    'config_summary': cls.get_connection_info()
+                },
+                exc_info=True
+            )
             raise ValueError(error_message)
         
-        logging.info("Configuration validated successfully")
+        logger.info(
+            "Configuration validated successfully",
+            extra={
+                'config': cls.get_connection_info(),
+                'directories': {
+                    'json_dir': cls.JSON_DIR,
+                    'cache_file': cls.CACHE_FILE,
+                    'field_config': cls.FIELD_CONFIG_FILE
+                }
+            }
+        )
 
     @classmethod
     def get_connection_info(cls):
         """
         Retrieve a dictionary of connection-related configuration.
-        
-        Returns:
-            dict: Connection configuration details
-        
-        Useful for:
-        - Logging
-        - Debugging
-        - Passing configuration to other components
         """
-        return {
+        connection_info = {
             'base_url': cls.API_BASE_URL,
             'timeout': cls.REQUEST_TIMEOUT,
-            'token_present': bool(cls.BEARER_TOKEN)
+            'token_present': bool(cls.BEARER_TOKEN),
+            'json_dir_exists': os.path.exists(cls.JSON_DIR),
+            'cache_file_exists': os.path.exists(cls.CACHE_FILE),
+            'field_config_exists': os.path.exists(cls.FIELD_CONFIG_FILE)
         }
+        
+        logger.info(
+            "Retrieved connection information",
+            extra={'connection_info': connection_info}
+        )
+        
+        return connection_info
 
 
-# Validate configuration when module is imported
+# Initialize configuration when module is imported
 try:
     Config.ensure_directories()
     Config.validate_configuration()
 except Exception as e:
-    # Log critical configuration errors
-    logging.critical(f"Configuration Error: {e}")
-    # In a real-world scenario, you might want to handle this more gracefully
+    logger.critical(
+        "Fatal configuration error during initialization",
+        extra={
+            'error_type': type(e).__name__,
+            'error_msg': str(e)
+        },
+        exc_info=True
+    )
     raise

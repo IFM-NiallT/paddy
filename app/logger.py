@@ -32,17 +32,16 @@ class PaddyLogger:
     Advanced logging configuration for the PADDY application.
     
     Provides a sophisticated logging system with:
-    - Multi-target logging (console and file)
+    - Multi-target logging (console and files)
+    - Separate files for general logs and error/critical logs
     - Automatic log file management
     - Flexible configuration options
     - Performance-oriented design
 
     Logging Targets:
     - Console: Real-time log output
-    - File: Persistent log storage with rotation
-    
-    Attributes:
-        Default logging configuration optimized for development and production use
+    - General log file: INFO and WARNING logs
+    - Error log file: ERROR and CRITICAL logs
     """
     
     @staticmethod
@@ -56,12 +55,6 @@ class PaddyLogger:
         """
         Initialize a comprehensive logger with multiple handlers.
         
-        Configures logging with advanced features:
-        - Creates log directory if not exists
-        - Sets up console and file logging
-        - Implements log rotation
-        - Provides consistent log formatting
-        
         Args:
             name (str): Identifier for the logger. Defaults to 'paddy'.
             log_dir (str): Directory for storing log files. Defaults to 'logs'.
@@ -73,15 +66,6 @@ class PaddyLogger:
         
         Returns:
             logging.Logger: Fully configured logger instance
-        
-        Logging Configuration Details:
-        - Log format includes timestamp, logger name, log level, and message
-        - Console handler for immediate visibility
-        - File handler with date-stamped filename
-        - Supports dynamic log level adjustment
-        
-        Example Log Message:
-        '2025-02-11 15:30:45 - paddy - INFO - Application started'
         """
         # Ensure the log directory exists
         os.makedirs(log_dir, exist_ok=True)
@@ -93,31 +77,57 @@ class PaddyLogger:
         # Clear any existing handlers to prevent duplicate logging
         logger.handlers.clear()
         
-        # Define a comprehensive log message formatter
-        formatter = logging.Formatter(
+        # Define log message formatters
+        standard_formatter = logging.Formatter(
             '%(asctime)s - %(name)s - %(levelname)s - %(message)s',
+            datefmt='%Y-%m-%d %H:%M:%S'
+        )
+        
+        detailed_formatter = logging.Formatter(
+            '%(asctime)s - %(name)s - %(levelname)s - %(message)s\n'
+            'File: %(pathname)s\n'
+            'Function: %(funcName)s\n'
+            'Line: %(lineno)d\n'
+            'Process: %(process)d\n'
+            'Thread: %(thread)d\n',
             datefmt='%Y-%m-%d %H:%M:%S'
         )
         
         # Configure console handler for real-time log output
         console_handler = logging.StreamHandler()
         console_handler.setLevel(log_level)
-        console_handler.setFormatter(formatter)
+        console_handler.setFormatter(standard_formatter)
         logger.addHandler(console_handler)
         
-        # Configure file handler with advanced rotation
-        log_filename = os.path.join(
+        # Configure general log file handler (INFO and WARNING)
+        general_log_filename = os.path.join(
             log_dir, 
             f'paddy_{datetime.now().strftime("%Y%m%d")}.log'
         )
-        file_handler = RotatingFileHandler(
-            log_filename, 
+        general_file_handler = RotatingFileHandler(
+            general_log_filename, 
             maxBytes=max_file_size_bytes, 
             backupCount=backup_count
         )
-        file_handler.setLevel(log_level)
-        file_handler.setFormatter(formatter)
-        logger.addHandler(file_handler)
+        general_file_handler.setLevel(log_level)
+        general_file_handler.setFormatter(standard_formatter)
+        # Only handle INFO and WARNING levels
+        general_file_handler.addFilter(lambda record: record.levelno <= logging.WARNING)
+        logger.addHandler(general_file_handler)
+        
+        # Configure error log file handler (ERROR and CRITICAL)
+        error_log_filename = os.path.join(
+            log_dir, 
+            f'paddy_error_{datetime.now().strftime("%Y%m%d")}.log'
+        )
+        error_file_handler = RotatingFileHandler(
+            error_log_filename, 
+            maxBytes=max_file_size_bytes, 
+            backupCount=backup_count
+        )
+        error_file_handler.setLevel(logging.ERROR)
+        error_file_handler.setFormatter(detailed_formatter)
+        logger.addHandler(error_file_handler)
         
         return logger
 
@@ -130,35 +140,33 @@ def set_log_level(level):
     """
     Dynamically adjust the logging level across all handlers.
     
-    Allows runtime modification of logging verbosity:
-    - Useful for debugging
-    - Can increase or decrease log detail
-    - Applies change to all logger handlers
-    
     Args:
         level (int): Logging level constant (e.g., logging.INFO, logging.DEBUG)
-    
-    Example Usage:
-        set_log_level(logging.DEBUG)  # Enable verbose logging
-        set_log_level(logging.ERROR)  # Log only critical errors
     """
     logger.setLevel(level)
     for handler in logger.handlers:
-        handler.setLevel(level)
+        if isinstance(handler, logging.StreamHandler) or \
+           isinstance(handler, RotatingFileHandler):
+            handler.setLevel(level)
 
 
 def get_logger():
     """
     Retrieve the default configured logger instance.
     
-    Provides a consistent way to access the application's logger.
-    
     Returns:
         logging.Logger: The default PADDY application logger
     
-    Recommended Usage:
+    Example Usage:
         from app.logger import get_logger
         log = get_logger()
-        log.info("Starting application")
+        
+        # General logging
+        log.info("Application started")
+        log.warning("Resource usage at 80%")
+        
+        # Error logging (goes to separate file)
+        log.error("Database connection failed", exc_info=True)
+        log.critical("System shutdown required", exc_info=True)
     """
     return logger

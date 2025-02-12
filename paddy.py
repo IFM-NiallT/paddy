@@ -25,9 +25,11 @@ Author: Luke Doyle - 2025 Intern
 
 from flask import Flask, render_template, request, jsonify
 import re
+from datetime import datetime
 from app.config import Config
 from app.api_client import APIClient
 from app.logger import logger
+
 
 class PaddyApp:
     """
@@ -39,6 +41,7 @@ class PaddyApp:
     - Interactions with the API client
     - Routing logic for product management
     """
+    
     def __init__(self, api_base_url, bearer_token):
         """
         Initialize the Flask application with API client and register routes.
@@ -53,11 +56,31 @@ class PaddyApp:
             api_base_url (str): The base URL for the API endpoint.
             bearer_token (str): Authentication token for API access.
         """
-        self.app = Flask(__name__)
-        self.api_client = APIClient(api_base_url, bearer_token)
-        self._register_routes()
-        self._register_error_handlers()
-        logger.info("PaddyApp initialized with API base URL: %s", api_base_url)
+        logger.info(
+            "Initializing PaddyApp",
+            extra={
+                'api_base_url': api_base_url,
+                'config_loaded': bool(Config),
+                'timestamp': datetime.now().isoformat()
+            }
+        )
+        
+        try:
+            self.app = Flask(__name__)
+            self.api_client = APIClient(api_base_url, bearer_token)
+            self._register_routes()
+            self._register_error_handlers()
+            
+        except Exception as e:
+            logger.critical(
+                "Failed to initialize PaddyApp",
+                extra={
+                    'error_type': type(e).__name__,
+                    'error_detail': str(e)
+                },
+                exc_info=True
+            )
+            raise
 
     def _register_routes(self):
         """
@@ -68,11 +91,33 @@ class PaddyApp:
         - Product listing by category
         - Product editing and updating
         """
-        self.app.add_url_rule("/", "index", self._index_route)
-        self.app.add_url_rule("/products/<int:category_id>", "products", self._products_route)
-        self.app.add_url_rule("/product/<int:product_id>/edit", "edit_product", self._edit_product_route, methods=['GET'])
-        self.app.add_url_rule("/product/<int:product_id>/update", "update_product", self._update_product_route, methods=['POST'])
-        logger.info("Routes registered successfully.")
+        try:
+            routes = [
+                ("/", "index", self._index_route),
+                ("/products/<int:category_id>", "products", self._products_route),
+                ("/product/<int:product_id>/edit", "edit_product", self._edit_product_route, ['GET']),
+                ("/product/<int:product_id>/update", "update_product", self._update_product_route, ['POST'])
+            ]
+            
+            for route in routes:
+                if len(route) == 4:
+                    path, name, handler, methods = route
+                    self.app.add_url_rule(path, name, handler, methods=methods)
+                else:
+                    path, name, handler = route
+                    self.app.add_url_rule(path, name, handler)
+            
+            logger.info(
+                "Routes registered successfully",
+                extra={'registered_routes': [r[0] for r in routes]}
+            )
+        except Exception as e:
+            logger.error(
+                "Failed to register routes",
+                extra={'error': str(e)},
+                exc_info=True
+            )
+            raise
 
     def _register_error_handlers(self):
         """
@@ -82,9 +127,26 @@ class PaddyApp:
         - 404 Not Found errors
         - 500 Internal Server errors
         """
-        self.app.register_error_handler(404, self._not_found_error)
-        self.app.register_error_handler(500, self._internal_error)
-        logger.info("Error handlers registered successfully.")
+        error_handlers = {
+            404: self._not_found_error,
+            500: self._internal_error
+        }
+        
+        try:
+            for code, handler in error_handlers.items():
+                self.app.register_error_handler(code, handler)
+            
+            logger.info(
+                "Error handlers registered successfully",
+                extra={'registered_handlers': list(error_handlers.keys())}
+            )
+        except Exception as e:
+            logger.error(
+                "Failed to register error handlers",
+                extra={'error': str(e)},
+                exc_info=True
+            )
+            raise
 
     def _index_route(self):
         """
@@ -96,12 +158,28 @@ class PaddyApp:
             Rendered index template with available categories
         """
         try:
+            logger.info(
+                "Processing index route request",
+                extra={'client_ip': request.remote_addr}
+            )
+            
             categories = self.api_client.get_categories()
-            logger.info("Categories retrieved successfully.")
+            
+            logger.info(
+                "Categories retrieved successfully",
+                extra={'categories_count': len(categories.get('Data', []))}
+            )
             return render_template("index.html.j2", categories=categories)
         except Exception as e:
-            logger.error("Error in index route: %s", str(e))
-            return render_template("error.html.j2", error="Failed to load categories")
+            logger.error(
+                "Error in index route",
+                extra={
+                    'error_type': type(e).__name__,
+                    'error_detail': str(e)
+                },
+                exc_info=True
+            )
+            return render_template("error.html.j2", error="Failed to load categories"), 500
 
     def _products_route(self, category_id):
         """
@@ -121,24 +199,68 @@ class PaddyApp:
         try:
             page = request.args.get('page', 1, type=int)
             sort_param = request.args.get('sort')
-            logger.info("Products route called. Category ID: %s, Page: %s, Sort: %s", category_id, page, sort_param)
+            
+            logger.info(
+                "Processing products route request",
+                extra={
+                    'category_id': category_id,
+                    'page': page,
+                    'sort': sort_param,
+                    'client_ip': request.remote_addr
+                }
+            )
 
             sort_field, sort_direction = self._parse_sort_param(sort_param)
-            products = self.api_client.get_products(category_id, page=page, sort_field=sort_field, sort_direction=sort_direction)
+            products = self.api_client.get_products(
+                category_id, 
+                page=page,
+                sort_field=sort_field,
+                sort_direction=sort_direction
+            )
+            
             categories = self.api_client.get_categories()
             category = next((c for c in categories['Data'] if c['ID'] == category_id), None)
 
             if not category:
-                logger.warning("Category not found: %s", category_id)
+                logger.warning(
+                    "Category not found",
+                    extra={
+                        'category_id': category_id,
+                        'available_categories': [c['ID'] for c in categories['Data']]
+                    }
+                )
                 return render_template("error.html.j2", error="Category not found"), 404
 
             active_fields = self.api_client.field_config.get_category_fields(category_id)
-            logger.info("Products retrieved. Total: %s", products.get('TotalCount', 0),)
+            
+            logger.info(
+                "Products retrieved successfully",
+                extra={
+                    'total_count': products.get('TotalCount', 0),
+                    'category_id': category_id,
+                    'page': page,
+                    'active_fields_count': len(active_fields)
+                }
+            )
 
-            return render_template("products.html.j2", products=products, category=category, active_fields=active_fields, current_sort=sort_param)
+            return render_template(
+                "products.html.j2",
+                products=products,
+                category=category,
+                active_fields=active_fields,
+                current_sort=sort_param
+            )
         except Exception as e:
-            logger.error("Unexpected error in products route: %s", str(e))
-            return render_template("error.html.j2", error="An unexpected error occurred while loading products"), 500
+            logger.error(
+                "Unexpected error in products route",
+                extra={
+                    'category_id': category_id,
+                    'error_type': type(e).__name__,
+                    'error_detail': str(e)
+                },
+                exc_info=True
+            )
+            return render_template("error.html.j2", error="An unexpected error occurred"), 500
 
     def _parse_sort_param(self, sort_param):
         """
@@ -181,19 +303,40 @@ class PaddyApp:
                 
                 # Validate field and direction
                 if field not in allowed_sort_fields:
-                    logger.warning(f"Attempted to sort by unsupported field: {field}")
+                    logger.warning(
+                        "Attempted to sort by unsupported field",
+                        extra={
+                            'field': field,
+                            'allowed_fields': allowed_sort_fields
+                        }
+                    )
                     return None, 'asc'
                 
                 if direction not in ['asc', 'desc']:
-                    logger.warning(f"Invalid sort direction: {direction}. Defaulting to 'asc'")
+                    logger.warning(
+                        "Invalid sort direction provided",
+                        extra={
+                            'direction': direction,
+                            'allowed_directions': ['asc', 'desc']
+                        }
+                    )
                     direction = 'asc'
                 
-                logger.debug(f"Parsed sort - Field: {field}, Direction: {direction}")
                 return field, direction
             
-            logger.warning(f"Invalid sort parameter format: {sort_param}")
+            logger.warning(
+                "Invalid sort parameter format",
+                extra={'sort_param': sort_param}
+            )
         except Exception as e:
-            logger.error(f"Unexpected error parsing sort parameter: {e}")
+            logger.error(
+                "Error parsing sort parameter",
+                extra={
+                    'sort_param': sort_param,
+                    'error': str(e)
+                },
+                exc_info=True
+            )
         
         return None, 'asc'
 
@@ -207,7 +350,16 @@ class PaddyApp:
         Returns:
             Rendered error template with 404 status
         """
-        logger.warning("404 error encountered: %s", error)
+        logger.warning(
+            "404 error encountered",
+            extra={
+                'path': request.path,
+                'method': request.method,
+                'client_ip': request.remote_addr,
+                'referrer': request.referrer,
+                'error': str(error)
+            }
+        )
         return render_template("error.html.j2", error="Page not found"), 404
 
     def _internal_error(self, error):
@@ -220,9 +372,18 @@ class PaddyApp:
         Returns:
             Rendered error template with 500 status
         """
-        logger.error("500 error encountered: %s", error)
+        logger.error(
+            "500 error encountered",
+            extra={
+                'path': request.path,
+                'method': request.method,
+                'client_ip': request.remote_addr,
+                'error': str(error)
+            },
+            exc_info=True
+        )
         return render_template("error.html.j2", error="Internal server error"), 500
-    
+
     def _edit_product_route(self, product_id):
         """
         Handle GET request to edit a specific product.
@@ -237,6 +398,14 @@ class PaddyApp:
             JSON response with product details and editable fields
         """
         try:
+            logger.info(
+                "Processing edit product request",
+                extra={
+                    'product_id': product_id,
+                    'client_ip': request.remote_addr
+                }
+            )
+
             # Fetch the product details from the API
             product = self.api_client._make_request(f"Products/{product_id}")
             
@@ -244,19 +413,26 @@ class PaddyApp:
             current_category = product.get('Category', {})
             category_id = current_category.get('ID')
             
-            # Retrieve the field configuration for the current category.
+            if not category_id:
+                logger.error(
+                    "Invalid product data - missing category ID",
+                    extra={'product_id': product_id}
+                )
+                return jsonify({'error': 'Invalid product data'}), 400
+
+            # Retrieve the field configuration for the current category
             category_fields = self.api_client.field_config.get_category_fields(category_id)
             
             dynamic_fields = []
             if category_fields:
-                # Define the allowed generic fields for editing.
+                # Define the allowed generic fields for editing
                 allowed_fields = [
                     "D_Classification", "D_ThreadGender", "D_SizeA", "D_SizeB",
                     "D_SizeC", "D_SizeD", "D_Orientation", "D_Configuration",
                     "D_Grade", "D_ManufacturerName", "D_Application", "D_WebCategory"
                 ]
                 
-                # Iterate over the list of field configurations.
+                # Iterate over the list of field configurations
                 for field_config in category_fields:
                     generic_field = field_config.get('field')
                     if generic_field not in allowed_fields:
@@ -270,20 +446,32 @@ class PaddyApp:
                         'options': field_config.get('options', [])
                     }
                     dynamic_fields.append(field_info)
-            
-            logger.info(f"Preparing to edit product {product_id}")
-            
-            # Return JSON response containing the product data and the dynamic fields.
+
+            logger.info(
+                "Product edit form prepared",
+                extra={
+                    'product_id': product_id,
+                    'category_id': category_id,
+                    'fields_count': len(dynamic_fields)
+                }
+            )
+
             return jsonify({
                 'product': product,
                 'dynamic_fields': dynamic_fields
             })
-        
+
         except Exception as e:
-            logger.error(f"Error in edit product route for product {product_id}: {str(e)}")
-            return jsonify({
-                'error': str(e)
-            }), 500
+            logger.error(
+                "Error in edit product route",
+                extra={
+                    'product_id': product_id,
+                    'error_type': type(e).__name__,
+                    'error_detail': str(e)
+                },
+                exc_info=True
+            )
+            return jsonify({'error': str(e)}), 500
 
     def _update_product_route(self, product_id):
         """
@@ -301,9 +489,21 @@ class PaddyApp:
         try:
             # Get the updated data from the request
             update_data = request.get_json()
-            logger.info(f"Received update request for product {product_id}")
+            
+            logger.info(
+                "Processing product update request",
+                extra={
+                    'product_id': product_id,
+                    'client_ip': request.remote_addr,
+                    'fields_to_update': list(update_data.keys()) if update_data else []
+                }
+            )
 
             if not update_data:
+                logger.warning(
+                    "Empty update request received",
+                    extra={'product_id': product_id}
+                )
                 return jsonify({'error': 'No update data provided'}), 400
 
             # Explicitly filter for allowed fields
@@ -315,37 +515,81 @@ class PaddyApp:
 
             # Remove empty fields and filter for only allowed fields
             update_payload = {
-                key: value for key, value in update_data.items() 
+                key: value for key, value in update_data.items()
                 if value not in [None, ""] and key in allowed_fields
             }
 
-            logger.debug(f"Filtered update payload: {update_payload}")
+            if not update_payload:
+                logger.warning(
+                    "No valid fields to update",
+                    extra={
+                        'product_id': product_id,
+                        'provided_fields': list(update_data.keys()),
+                        'allowed_fields': allowed_fields
+                    }
+                )
+                return jsonify({'error': 'No valid fields to update'}), 400
+
+            logger.debug(
+                "Filtered update payload",
+                extra={
+                    'product_id': product_id,
+                    'field_count': len(update_payload),
+                    'fields': list(update_payload.keys())
+                }
+            )
 
             # Send the update request to the API
-            response = self.api_client._make_request(f"Products/{product_id}", method='PUT', data=update_payload)
+            response = self.api_client._make_request(
+                f"Products/{product_id}",
+                method='PUT',
+                data=update_payload
+            )
 
             # Handle the response based on its structure
             if isinstance(response, dict) and 'Message' in response:
                 message = response['Message']
                 if message == "Ok":
+                    logger.info(
+                        "Product updated successfully",
+                        extra={
+                            'product_id': product_id,
+                            'updated_fields': list(update_payload.keys())
+                        }
+                    )
                     return jsonify({'message': 'Product updated successfully'}), 200
                 else:
-                    logger.error(f"Error updating product: {message}")
+                    logger.error(
+                        "Product update failed",
+                        extra={
+                            'product_id': product_id,
+                            'api_message': message,
+                            'attempted_fields': list(update_payload.keys())
+                        }
+                    )
                     return jsonify({'error': f"Failed to update product: {message}"}), 500
-            elif hasattr(response, 'status_code'):  # Check for raw response with status code
-                if response.status_code == 200:
-                    return jsonify({'message': 'Product updated successfully'}), 200
-                else:
-                    logger.error(f"Error updating product: {response.text}")
-                    return jsonify({'error': 'Failed to update product'}), response.status_code
             else:
-                logger.error(f"Unexpected response format: {response}")
-                return jsonify({'error': 'Unexpected error with the response'}), 500
+                logger.error(
+                    "Unexpected API response format",
+                    extra={
+                        'product_id': product_id,
+                        'response_type': type(response).__name__,
+                        'has_message': 'Message' in response if isinstance(response, dict) else False
+                    }
+                )
+                return jsonify({'error': 'Unexpected response format from API'}), 500
 
         except Exception as e:
-            error_msg = f"Unexpected error updating product {product_id}: {str(e)}"
-            logger.error(error_msg)
-            return jsonify({'error': error_msg}), 500
+            logger.error(
+                "Error in update product route",
+                extra={
+                    'product_id': product_id,
+                    'error_type': type(e).__name__,
+                    'error_detail': str(e)
+                },
+                exc_info=True
+            )
+            return jsonify({'error': str(e)}), 500
 
 def create_app():
     """
@@ -357,15 +601,76 @@ def create_app():
     Returns:
         Flask application instance
     """
-    Config.ensure_directories()
-    paddy_app = PaddyApp(Config.API_BASE_URL, Config.BEARER_TOKEN)
-    logger.info("Flask application instance created.")
-    return paddy_app.app
+    try:
+        logger.info(
+            "Beginning Flask application creation",
+            extra={
+                'api_url': Config.API_BASE_URL,
+                'json_dir': Config.JSON_DIR,
+                'request_timeout': Config.REQUEST_TIMEOUT
+            }
+        )
+
+        # Ensure all required directories exist
+        Config.ensure_directories()
+        
+        # Create the PADDY application instance
+        paddy_app = PaddyApp(Config.API_BASE_URL, Config.BEARER_TOKEN)
+        
+        logger.info(
+            "Flask application instance created successfully",
+            extra={
+                'debug_mode': paddy_app.app.debug,
+                'static_folder': paddy_app.app.static_folder,
+                'template_folder': paddy_app.app.template_folder
+            }
+        )
+        
+        return paddy_app.app
+        
+    except Exception as e:
+        logger.critical(
+            "Fatal error during application creation",
+            extra={
+                'error_type': type(e).__name__,
+                'error_detail': str(e)
+            },
+            exc_info=True
+        )
+        raise
 
 # Create the Flask application instance
 app = create_app()
 
 # Run the application if this script is the main entry point
 if __name__ == "__main__":
-    logger.info("Starting Flask application on 0.0.0.0:5000")
-    app.run(debug=True, host="0.0.0.0", port=5000)
+    try:
+        import platform
+        import flask
+        
+        logger.info(
+            "Starting Flask application",
+            extra={
+                'host': '0.0.0.0',
+                'port': 5000,
+                'debug': True,
+                'python_version': platform.python_version(),
+                'flask_version': flask.__version__,
+                'platform': platform.platform()
+            }
+        )
+        
+        app.run(debug=True, host="0.0.0.0", port=5000)
+        
+    except Exception as e:
+        logger.critical(
+            "Application startup failed",
+            extra={
+                'error_type': type(e).__name__,
+                'error_detail': str(e),
+                'host': '0.0.0.0',
+                'port': 5000
+            },
+            exc_info=True
+        )
+        raise
