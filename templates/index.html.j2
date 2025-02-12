@@ -20,31 +20,70 @@
         </div>
     </nav>
 
-    <!-- Search Bar -->
-    <div class="container-fluid px-4">
-        <div class="search-container">
-            <input type="text" class="search-input" id="categorySearch" placeholder="Search categories...">
+    <!-- Search Bar Container -->
+    <div class="search-bar-container">
+        <div class="search-controls">
+            <!-- Category Search - Shown in category view -->
+            <div class="search-wrapper" id="categorySearchWrapper">
+                <input type="text" class="search-input" id="categorySearch" placeholder="Search categories...">
+            </div>
+            
+            <!-- Product Search - Shown in product view -->
+            <div class="search-wrapper" id="productSearchWrapper" style="display: none;">
+                <input type="text" class="search-input" id="productSearch" placeholder="Search products by code...">
+            </div>
+            
+            <!-- View Toggle Button -->
+            <button id="searchAllProducts" class="btn-uni view-toggle">
+                Search All Products
+            </button>
         </div>
     </div>
 
     <!-- Main Content -->
-    <main>
-        <div class="container-fluid px-4 mt-5">
-            <div class="row row-cols-1 row-cols-sm-2 row-cols-md-4 row-cols-lg-6 row-cols-xxl-8 g-4" id="category-grid">
-                {% for category in categories.Data %}
-                    <div class="col category-item">
-                        <div class="category-container">
-                            <div class="category-content">
-                                <div class="category-name">{{ category.Description }}</div>
-                                <div class="category-button">
-                                    <button class="btn-uni" onclick="window.location.href='/products/{{ category.ID }}'">
-                                        View Products
-                                    </button>
-                                </div>
+    <main class="container-fluid px-4">
+        <!-- Categories View -->
+        <div id="category-grid" class="row row-cols-1 row-cols-sm-2 row-cols-md-4 row-cols-lg-6 row-cols-xxl-8 g-4">
+            {% for category in categories.Data %}
+                <div class="col category-item">
+                    <div class="category-container">
+                        <div class="category-content">
+                            <div class="category-name">{{ category.Description }}</div>
+                            <div class="category-button">
+                                <button class="btn-uni" onclick="window.location.href='/products/{{ category.ID }}'">
+                                    View Products
+                                </button>
                             </div>
                         </div>
                     </div>
-                {% endfor %}
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Products View -->
+        <div id="productSearchResults" style="display: none;">
+            <div class="view-header">
+                <h2 class="view-title">All Products</h2>
+                <button class="back-button" onclick="toggleSearchMode(false)">
+                    ← Back to Categories
+                </button>
+            </div>
+            
+            <div class="table-container">
+            <div class="table-responsive">
+                <table class="table table-bordered" id="productsTable">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Description</th>
+                            <th>Category</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody id="productResultsBody">
+                        <!-- Results will be populated here -->
+                    </tbody>
+                </table>
             </div>
         </div>
     </main>

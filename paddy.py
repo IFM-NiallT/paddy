@@ -98,7 +98,8 @@ class PaddyApp:
                 ("/products/<int:category_id>", "products", self._products_route),
                 ("/product/<int:product_id>/edit", "edit_product", self._edit_product_route, ['GET']),
                 ("/product/<int:product_id>/update", "update_product", self._update_product_route, ['POST']),
-                ("/api/search", "api_search", self._api_search_route, ['GET'])  # New API search route
+                ("/api/search", "api_search", self._api_search_route, ['GET']),
+                ("/api/search/all", "all_products_search", self._all_products_search_route, ['GET'])  # New route
             ]
             
             for route in routes:
@@ -665,6 +666,40 @@ class PaddyApp:
         except Exception as e:
             logger.error(
                 "Error in API search route",
+                extra={
+                    'error_type': type(e).__name__,
+                    'error_detail': str(e)
+                },
+                exc_info=True
+            )
+            return jsonify({'error': str(e)}), 500
+        
+    def _all_products_search_route(self):
+        """Handle search requests for all products."""
+        try:
+            code_query = request.args.get('code', '')
+            page = request.args.get('page', 1, type=int)
+            
+            logger.info(
+                "Processing all products search request",
+                extra={
+                    'code_query': code_query,
+                    'page': page,
+                    'client_ip': request.remote_addr
+                }
+            )
+            
+            # Use the existing search_products_api method without category filter
+            results = self.api_client.search_products_api(
+                code_query=code_query,
+                page=page
+            )
+            
+            return jsonify(results)
+                
+        except Exception as e:
+            logger.error(
+                "Error in all products search route",
                 extra={
                     'error_type': type(e).__name__,
                     'error_detail': str(e)
