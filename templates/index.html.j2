@@ -13,10 +13,13 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/paddy.css') }}">
 </head>
 <body>
-    <!-- Navbar -->
+    <!-- Navbar HTML -->
     <nav class="navbar navbar-expand-lg">
         <div class="container-fluid px-4">
-            <a class="navbar-brand" href="#">PADDY</a>
+            <div class="nav-brand-container d-flex align-items-center">
+                <img src="/static/img/ifm_logo.png" alt="IFM logo" class="logo me-2" id="ifmLogo">
+                <a class="navbar-brand" href="#" id="paddyText">PADDY</a>
+            </div>
             <div>
                 <button id="searchAllProducts" class="btn-uni">
                     Search All Products

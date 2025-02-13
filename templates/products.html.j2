@@ -17,7 +17,10 @@
     <!-- Navigation Bar -->
     <nav class="navbar navbar-expand-lg">
         <div class="container-fluid px-4">
-            <a class="navbar-brand" href="/">PADDY</a>
+            <div class="nav-brand-container d-flex align-items-center">
+                <img src="/static/img/ifm_logo.png" alt="IFM logo" class="logo me-2" id="ifmLogo">
+                <a class="navbar-brand" href="/">PADDY</a>
+            </div>
             <div>
                 <button class="btn-uni me-2" onclick="exportTableToCSV()">Export to CSV</button>
                 <button class="btn-uni" onclick="window.location.href='/'">Back to Categories</button>

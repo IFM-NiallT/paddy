@@ -61,6 +61,24 @@ main {
         -2px -2px 5px var(--secondary-color);
 }
 
+.nav-brand-container {
+    cursor: pointer;
+}
+
+.logo {
+    height: 64px;
+    width: auto;
+    transition: transform 0.3s ease;
+}
+
+.nav-brand-container:hover .logo {
+    transform: scale(1.1);
+}
+
+.nav-brand-container:hover .navbar-brand {
+    opacity: 0.8;
+}
+
 /* Footer */
 footer {
     background-color: #FE0000;
