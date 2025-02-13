@@ -282,8 +282,8 @@ class APIClient:
         }
 
         valid_sort_fields = [
-            'Code', 'Description', 'UpdatedOn', 'CreatedOn',
-            'D_WebCategory', 'D_Classification', 'D_ThreadGender',
+            'Code', 'Description', 'ImageCount', 'D_WebCategory',  
+            'D_Classification', 'D_ThreadGender',
             'D_SizeA', 'D_SizeB', 'D_SizeC', 'D_SizeD',
             'D_Orientation', 'D_Configuration', 'D_Grade',
             'D_ManufacturerName', 'D_Application'
@@ -291,7 +291,7 @@ class APIClient:
 
         if sort_field:
             sort_direction = sort_direction.lower()
-            if sort_direction not in ['asc', 'desc']:
+            if sort_direction not in ['asc', 'dsc']:
                 logger.warning(
                     "Invalid sort direction provided",
                     extra={

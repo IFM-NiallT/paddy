@@ -203,17 +203,30 @@ class PaddyApp:
             page = request.args.get('page', 1, type=int)
             sort_param = request.args.get('sort')
             
-            logger.info(
-                "Processing products route request",
+            logger.debug(
+                f"Before parse - sort_param: {sort_param}",
                 extra={
                     'category_id': category_id,
                     'page': page,
-                    'sort': sort_param,
-                    'client_ip': request.remote_addr
+                    'sort_param': sort_param,
+                    'all_args': dict(request.args)
                 }
             )
-
+            
+            # Check if this is an AJAX request
+            is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+            
             sort_field, sort_direction = self._parse_sort_param(sort_param)
+            
+            logger.debug(
+                f"After parse - field: {sort_field}, direction: {sort_direction}",
+                extra={
+                    'parsed_field': sort_field,
+                    'parsed_direction': sort_direction,
+                    'original_param': sort_param
+                }
+            )
+            
             products = self.api_client.get_products(
                 category_id, 
                 page=page,
@@ -221,31 +234,29 @@ class PaddyApp:
                 sort_direction=sort_direction
             )
             
+            # If it's an AJAX request, return JSON
+            if is_ajax:
+                return jsonify(products)
+            
+            # Otherwise return the full template
             categories = self.api_client.get_categories()
             category = next((c for c in categories['Data'] if c['ID'] == category_id), None)
-
+            
             if not category:
-                logger.warning(
-                    "Category not found",
-                    extra={
-                        'category_id': category_id,
-                        'available_categories': [c['ID'] for c in categories['Data']]
-                    }
-                )
                 return render_template("error.html.j2", error="Category not found"), 404
-
+                
             active_fields = self.api_client.field_config.get_category_fields(category_id)
             
-            logger.info(
-                "Products retrieved successfully",
+            # Log what we're sending to template
+            logger.debug(
+                f"Sending to template - current_sort: {sort_param}",
                 extra={
-                    'total_count': products.get('TotalCount', 0),
-                    'category_id': category_id,
-                    'page': page,
-                    'active_fields_count': len(active_fields)
+                    'template_sort_param': sort_param,
+                    'has_category': bool(category),
+                    'fields_count': len(active_fields) if active_fields else 0
                 }
             )
-
+            
             return render_template(
                 "products.html.j2",
                 products=products,
@@ -255,14 +266,16 @@ class PaddyApp:
             )
         except Exception as e:
             logger.error(
-                "Unexpected error in products route",
+                "Error in products route",
                 extra={
+                    'error': str(e),
                     'category_id': category_id,
-                    'error_type': type(e).__name__,
-                    'error_detail': str(e)
+                    'sort_param': sort_param if 'sort_param' in locals() else None
                 },
                 exc_info=True
             )
+            if is_ajax:
+                return jsonify({'error': str(e)}), 500
             return render_template("error.html.j2", error="An unexpected error occurred"), 500
 
     def _parse_sort_param(self, sort_param):
@@ -295,14 +308,21 @@ class PaddyApp:
             'D_Application'
         ]
 
+        # Add debug logging for incoming sort parameter
+        logger.debug(f"Raw sort parameter received: {sort_param}")
+
         if not sort_param:
+            logger.debug("No sort parameter provided")
             return None, 'asc'
 
         try:
-            # Regex to match the specific sort parameter format: (Field)[direction]
-            match = re.match(r'\((\w+)\)\[([^]]+)\]', sort_param)
+            # Regex to match the format: Field[direction]
+            match = re.match(r'(\w+)\[(asc|dsc)\]', sort_param)
+            logger.debug(f"Regex match result: {match}")
+            
             if match:
                 field, direction = match.group(1), match.group(2)
+                logger.debug(f"Parsed field: {field}, direction: {direction}")
                 
                 # Validate field and direction
                 if field not in allowed_sort_fields:
@@ -315,16 +335,17 @@ class PaddyApp:
                     )
                     return None, 'asc'
                 
-                if direction not in ['asc', 'desc']:
+                if direction not in ['asc', 'dsc']:
                     logger.warning(
                         "Invalid sort direction provided",
                         extra={
                             'direction': direction,
-                            'allowed_directions': ['asc', 'desc']
+                            'allowed_directions': ['asc', 'dsc']
                         }
                     )
                     direction = 'asc'
                 
+                logger.debug(f"Returning field: {field}, direction: {direction}")
                 return field, direction
             
             logger.warning(
@@ -763,7 +784,6 @@ app = create_app()
 if __name__ == "__main__":
     try:
         import platform
-        import flask
         
         logger.info(
             "Starting Flask application",
@@ -772,7 +792,6 @@ if __name__ == "__main__":
                 'port': 5000,
                 'debug': True,
                 'python_version': platform.python_version(),
-                'flask_version': flask.__version__,
                 'platform': platform.platform()
             }
         )

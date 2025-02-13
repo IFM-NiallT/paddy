@@ -61,101 +61,113 @@
                     <thead>
                         <tr>
                             <!-- Code Column -->
-                            <th class="{{ 'current-sort ' + ('asc' if current_sort == '(Code)[asc]' else 'dsc' if current_sort == '(Code)[dsc]' else '') }}">
-                                <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage, sort='(Code)[' + ('dsc' if current_sort == '(Code)[asc]' else 'asc') + ']') }}">Code</a>
+                            <th class="{{ 'current-sort ' + ('asc' if current_sort == 'Code[asc]' else 'dsc' if current_sort == 'Code[dsc]' else '') }}">
+                                {% set current_direction = 'asc' if current_sort == 'Code[asc]' else 'dsc' if current_sort == 'Code[dsc]' else 'asc' %}
+                                {% set next_direction = 'dsc' if current_direction == 'asc' else 'asc' %}
+                                <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage, sort='Code[' + next_direction + ']') }}">Code</a>
                                 <div class="resizer" data-column="0"></div>
                             </th>
 
                             <!-- Description Column -->
-                            <th class="{{ 'current-sort ' + ('asc' if current_sort == '(Description)[asc]' else 'dsc' if current_sort == '(Description)[dsc]' else '') }}">
-                                <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage, sort='(Description)[' + ('dsc' if current_sort == '(Description)[asc]' else 'asc') + ']') }}">Product Name</a>
+                            <th class="{{ 'current-sort ' + ('asc' if current_sort == 'Description[asc]' else 'dsc' if current_sort == 'Description[dsc]' else '') }}">
+                                {% set current_direction = 'asc' if current_sort == 'Description[asc]' else 'dsc' if current_sort == 'Description[dsc]' else 'asc' %}
+                                {% set next_direction = 'dsc' if current_direction == 'asc' else 'asc' %}
+                                <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage, sort='Description[' + next_direction + ']') }}">Product Name</a>
                                 <div class="resizer" data-column="1"></div>
                             </th>
 
                             <!-- Dynamic Fields Columns -->
                             {% for field in active_fields %}
-                                <th class="{{ 'current-sort ' + ('asc' if current_sort == '(' + field.field + ')[asc]' else 'dsc' if current_sort == '(' + field.field + ')[dsc]' else '') }}">
-                                    <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage, sort='(' + field.field + ')[' + ('dsc' if current_sort == '(' + field.field + ')[asc]' else 'asc') + ']') }}">{{ field.display }}</a>
+                                <th class="{{ 'current-sort ' + ('asc' if current_sort == field.field + '[asc]' else 'dsc' if current_sort == field.field + '[dsc]' else '') }}">
+                                    {% set current_direction = 'asc' if current_sort == field.field + '[asc]' else 'dsc' if current_sort == field.field + '[dsc]' else 'asc' %}
+                                    {% set next_direction = 'dsc' if current_direction == 'asc' else 'asc' %}
+                                    <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage, sort=field.field + '[' + next_direction + ']') }}">{{ field.display }}</a>
                                     <div class="resizer" data-column="{{ loop.index + 2 }}"></div>
                                 </th>
                             {% endfor %}
 
                             <!-- Web Category Column -->
-                            <th class="{{ 'current-sort ' + ('asc' if current_sort == '(D_WebCategory)[asc]' else 'dsc' if current_sort == '(D_WebCategory)[dsc]' else '') }}">
-                                <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage, sort='(D_WebCategory)[' + ('dsc' if current_sort == '(D_WebCategory)[asc]' else 'asc') + ']') }}">Web Category</a>
+                            <th class="{{ 'current-sort ' + ('asc' if current_sort == 'D_WebCategory[asc]' else 'dsc' if current_sort == 'D_WebCategory[dsc]' else '') }}">
+                                {% set current_direction = 'asc' if current_sort == 'D_WebCategory[asc]' else 'dsc' if current_sort == 'D_WebCategory[dsc]' else 'asc' %}
+                                {% set next_direction = 'dsc' if current_direction == 'asc' else 'asc' %}
+                                <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage, sort='D_WebCategory[' + next_direction + ']') }}">Web Category</a>
                                 <div class="resizer" data-column="{{ active_fields|length + 3 }}"></div>
                             </th>
 
                             <!-- Image Count Column -->
-                            <th class="{{ 'current-sort ' + ('asc' if current_sort == '(ImageCount)[asc]' else 'dsc' if current_sort == '(ImageCount)[dsc]' else '') }}">
-                                <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage, sort='(ImageCount)[' + ('dsc' if current_sort == '(ImageCount)[asc]' else 'asc') + ']') }}">Image Count</a>
-                                <div class="resizer" data-column="{{ active_fields|length + 3 }}"></div>
+                            <th class="{{ 'current-sort ' + ('asc' if current_sort == 'ImageCount[asc]' else 'dsc' if current_sort == 'ImageCount[dsc]' else '') }}">
+                                {% set current_direction = 'asc' if current_sort == 'ImageCount[asc]' else 'dsc' if current_sort == 'ImageCount[dsc]' else 'asc' %}
+                                {% set next_direction = 'dsc' if current_direction == 'asc' else 'asc' %}
+                                <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage, sort='ImageCount[' + next_direction + ']') }}">Image Count</a>
+                                <div class="resizer" data-column="{{ active_fields|length + 4 }}"></div>
                             </th>
-                            <!-- Edit Column -->
-                            <th>Actions</th>
+
+                            <!-- Actions Column -->
+                            <th>Actions
+                                <div class="resizer" data-column="{{ active_fields|length + 5 }}"></div>
+                            </th>
                         </tr>
                     </thead>
 
-                        <tbody>
-                            {% for product in products.Data %}
-                                <tr class="product-row" data-product-id="{{ product.ID }}">
-                                    <td>{{ product.Code }}</td>
-                                    <td data-full-text="{{ product.Description }}">{{ product.Description }}</td>
-                                    {% for field in active_fields %}
-                                        <td data-full-text="{{ product[field.field] if product[field.field] else 'N/A' }}">
-                                            {% if field.field in ['D_SizeA', 'D_SizeB', 'D_SizeC', 'D_SizeD'] %}
-                                                {{ product[field.field]if product[field.field] else 'N/A' }}
-                                            {% else %}
-                                                {{ product[field.field] if product[field.field] else 'N/A' }}
-                                            {% endif %}
-                                        </td>
-                                    {% endfor %}
-                                    <td data-full-text="{{ product.D_WebCategory if product.D_WebCategory else 'N/A' }}">
-                                        {{ product.D_WebCategory if product.D_WebCategory else 'N/A' }}
+                    <tbody>
+                        {% for product in products.Data %}
+                            <tr class="product-row" data-product-id="{{ product.ID }}">
+                                <td>{{ product.Code }}</td>
+                                <td data-full-text="{{ product.Description }}">{{ product.Description }}</td>
+                                {% for field in active_fields %}
+                                    <td data-full-text="{{ product[field.field] if product[field.field] else 'N/A' }}">
+                                        {% if field.field in ['D_SizeA', 'D_SizeB', 'D_SizeC', 'D_SizeD'] %}
+                                            {{ product[field.field] if product[field.field] else 'N/A' }}
+                                        {% else %}
+                                            {{ product[field.field] if product[field.field] else 'N/A' }}
+                                        {% endif %}
                                     </td>
-                                    <td data-full-text="{{ product.ImageCount if product.ImageCount else 'N/A' }}">
-                                        {{ product.ImageCount|round|int if product.ImageCount is number else 'N/A' }}
-                                    </td>
-                                    <td>
-                                        <button class="btn-uni edit-product-btn" data-product-id="{{ product.ID }}" aria-label="Edit {{ product.ID }}"> Edit </button>
-                                    </td>
-                                </tr>
-                            {% endfor %}
-                        </tbody>
+                                {% endfor %}
+                                <td data-full-text="{{ product.D_WebCategory if product.D_WebCategory else 'N/A' }}">
+                                    {{ product.D_WebCategory if product.D_WebCategory else 'N/A' }}
+                                </td>
+                                <td data-full-text="{{ product.ImageCount if product.ImageCount else 'N/A' }}">
+                                    {{ product.ImageCount|round|int if product.ImageCount is number else 'N/A' }}
+                                </td>
+                                <td>
+                                    <button class="btn-uni edit-product-btn" data-product-id="{{ product.ID }}" aria-label="Edit {{ product.ID }}"> Edit </button>
+                                </td>
+                            </tr>
+                        {% endfor %}
                     </tbody>
                 </table>
             </div>
         </div>
 
         <!-- Edit Product Popup Form -->
-<div class="form-popup-overlay" id="editFormOverlay"></div>
-<div class="form-popup" id="editProductForm" role="dialog" aria-labelledby="editFormTitle" aria-modal="true">
-    <form class="form-container">
-        <!-- Form Header -->
-        <div class="form-header">
-            <h2 id="editFormTitle">Edit Product: <span id="popupProductCode"></span></h2>
-            <button type="button" class="close-button" onclick="closeEditForm()" aria-label="Close">×</button>
+        <div class="form-popup-overlay" id="editFormOverlay"></div>
+        <div class="form-popup" id="editProductForm" role="dialog" aria-labelledby="editFormTitle" aria-modal="true">
+            <form class="form-container">
+                <!-- Form Header -->
+                <div class="form-header">
+                    <h2 id="editFormTitle">Edit Product: <span id="popupProductCode"></span></h2>
+                    <button type="button" class="close-button" onclick="closeEditForm()" aria-label="Close">×</button>
+                </div>
+                
+                <div class="form-grid">
+                    <div class="form-column" id="popupFirstColumn">
+                        <!-- First column of dynamic fields will be populated here -->
+                        <!-- This will replace the current "Current Product Details" column -->
+                    </div>
+                    <div class="form-column" id="popupSecondColumn">
+                        <!-- Second column of dynamic fields will be populated here -->
+                    </div>
+                </div>
+                
+                <!-- Hidden input for product ID -->
+                <input type="hidden" id="popupProductId" name="product_id">
+                
+                <div class="form-actions">
+                    <button type="button" class="btn cancel" onclick="closeEditForm()" aria-label="Cancel editing">Cancel</button>
+                    <button type="submit" class="btn" aria-label="Save product changes">Save Changes</button>
+                </div>
+            </form>
         </div>
-        
-        <div class="form-grid">
-            <div class="form-column" id="popupFirstColumn">
-                <!-- First column of dynamic fields will be populated here -->
-                <!-- This will replace the current "Current Product Details" column -->
-            </div>
-            <div class="form-column" id="popupSecondColumn">
-                <!-- Second column of dynamic fields will be populated here -->
-            </div>
-        </div>
-        
-        <!-- Hidden input for product ID -->
-        <input type="hidden" id="popupProductId" name="product_id">
-        
-        <div class="form-actions">
-            <button type="button" class="btn cancel" onclick="closeEditForm()" aria-label="Cancel editing">Cancel</button>
-            <button type="submit" class="btn" aria-label="Save product changes">Save Changes</button>
-        </div>
-    </form>
-</div>
     </main>
 
     <!-- Footer -->
