@@ -521,14 +521,34 @@ function updatePaginationInfo(data) {
                 const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
                 
                 try {
-                    const response = await fetch(newUrl);
-                    if (!response.ok) throw new Error('Failed to fetch data');
+                    const response = await fetch(newUrl, {
+                        headers: {
+                            'Accept': 'application/json',
+                            'X-Requested-With': 'XMLHttpRequest'
+                        }
+                    });
+                    
+                    // Log the full response for debugging
+                    console.log('Full Response:', response);
+                    console.log('Response Status:', response.status);
+                    console.log('Response Headers:', Object.fromEntries(response.headers.entries()));
+                    
+                    // Check content type before parsing
+                    const contentType = response.headers.get('content-type');
+                    if (!contentType || !contentType.includes('application/json')) {
+                        const text = await response.text();
+                        console.error('Non-JSON response:', text);
+                        throw new Error('Received non-JSON response');
+                    }
+                    
                     const data = await response.json();
                     
                     window.history.pushState({}, '', newUrl);
                     updateTableWithResults(data);
+                    
                 } catch (error) {
                     console.error('Error changing page:', error);
+                    alert(`Failed to change page: ${error.message}`);
                 }
             });
         });
