@@ -3,33 +3,30 @@
  * A comprehensive stylesheet for the PADDY application
  *******************************/
 
-/* Responsive Base Variables */
-:root {
+ :root {
     --primary-color: #B20000;
     --secondary-color: #FF4040;
     --background-color: #FEE9E9;
+    --text-color: #000;
+    --white-color: #FFFFFF;
     
-    /* Responsive Font Sizing */
     font-size: 16px;
 }
 
+/* Responsive Font Sizing */
 @media (max-width: 768px) {
-    :root {
-        font-size: 14px; /* Smaller base font size on mobile */
-    }
+    :root { font-size: 14px; }
 }
 
 @media (min-width: 769px) and (max-width: 1200px) {
-    :root {
-        font-size: 15px; /* Medium font size on tablets */
-    }
+    :root { font-size: 15px; }
 }
 
-/* Base Layout Styles */
+/* Base Styles */
 body {
     background-color: var(--background-color);
     font-family: 'Liter', sans-serif;
-    color: #000;
+    color: var(--text-color);
     display: flex;
     flex-direction: column;
     min-height: 100vh;
@@ -49,7 +46,7 @@ main {
     margin: 0 auto;
 }
 
-/* Navigation Components */
+/* Navigation */
 .navbar {
     background-color: var(--background-color);
     border-bottom: 3px solid var(--primary-color);
@@ -59,24 +56,27 @@ main {
     font-size: clamp(1.5rem, 4vw, 2rem);
     font-weight: bold;
     color: var(--primary-color);
-    text-shadow: 2px 2px 5px var(--primary-color), -2px -2px 5px var(--secondary-color);
+    text-shadow: 
+        2px 2px 5px var(--primary-color), 
+        -2px -2px 5px var(--secondary-color);
 }
 
-/* Footer Styles */
+/* Footer */
 footer {
     background-color: #FE0000;
-    color: #FFFFFF;
+    color: var(--white-color);
     padding: 10px;
     text-align: center;
     width: 100%;
     margin-top: auto;
+    position: relative;
 }
 
 footer::before {
     content: "";
     display: block;
     height: 3px;
-    background-color: #B20000;
+    background-color: var(--primary-color);
     margin-bottom: 10px;
 }
 
@@ -85,7 +85,7 @@ footer::before {
     font-style: italic;
 }
 
-/* Responsive Search Components */
+/* Search Components */
 .search-container {
     display: flex;
     flex-direction: column;
@@ -100,19 +100,22 @@ footer::before {
     }
 }
 
+.search-input,
+.search-button {
+    border-radius: 5px;
+    font-size: clamp(0.9rem, 3vw, 1.1rem);
+    transition: all 0.3s ease;
+}
+
 .search-input {
     flex: 1;
     padding: 12px 20px;
     border: 2px solid var(--primary-color);
-    border-radius: 5px;
-    font-size: clamp(0.9rem, 3vw, 1.1rem);
-    background-color: white;
-    transition: all 0.3s ease;
+    background-color: var(--white-color);
     width: 100%;
-    padding-right: 40px; /* Space for loading indicator */
+    padding-right: 40px;
 }
 
-/* Add loading state styles */
 .search-input.loading {
     background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%23B20000' d='M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z' opacity='.3'/%3E%3Cpath fill='%23B20000' d='M20 12h2A10 10 0 0 0 12 2v2a8 8 0 0 1 8 8z'%3E%3CanimateTransform attributeName='transform' attributeType='XML' type='rotate' from='0 12 12' to='360 12 12' dur='1s' repeatCount='indefinite'/%3E%3C/path%3E%3C/svg%3E");
     background-repeat: no-repeat;
@@ -127,13 +130,10 @@ footer::before {
 
 .search-button {
     background-color: var(--primary-color);
-    color: #FFFFFF;
+    color: var(--white-color);
     border: none;
     padding: 12px 25px;
-    border-radius: 5px;
-    font-size: clamp(0.9rem, 3vw, 1.1rem);
     cursor: pointer;
-    transition: all 0.3s ease;
     white-space: nowrap;
     width: 100%;
 }
@@ -154,9 +154,9 @@ footer::before {
     background-color: var(--secondary-color);
 }
 
-/* Table Container Styles */
+/* Table Styles */
 .table-container {
-    background: #FFFFFF;
+    background: var(--white-color);
     border: 1px solid var(--primary-color);
     padding: 20px;
     border-radius: 10px;
@@ -167,7 +167,6 @@ footer::before {
     max-width: 95%;
 }
 
-/* Responsive Table Wrapper */
 .table-responsive {
     width: 100%;
     overflow-x: auto;
@@ -176,18 +175,17 @@ footer::before {
 
 .table {
     width: 100%;
-    min-width: 800px; /* Ensure readability on smaller screens */
+    min-width: 800px;
     margin-bottom: 0;
     font-size: 0.85rem;
     table-layout: auto;
     border-collapse: collapse;
 }
 
-/* Table Header Styles */
 .table th {
     position: relative;
     background-color: var(--primary-color);
-    color: #FFFFFF;
+    color: var(--white-color);
     cursor: pointer;
     padding: 8px 25px 8px 8px !important;
     font-size: 0.85rem;
@@ -202,7 +200,7 @@ footer::before {
     display: block;
 }
 
-/* Column Resizer Styles */
+/* Column Resizer */
 .table th .resizer {
     position: absolute;
     right: 0;
@@ -219,19 +217,13 @@ footer::before {
     background-color: var(--secondary-color);
 }
 
-/* Column Width Specifications */
-.table th:nth-child(1),
-.table td:nth-child(1) { min-width: 60px; }
-.table th:nth-child(2),
-.table td:nth-child(2) { min-width: 180px; }
-.table th:nth-child(3),
-.table td:nth-child(3) { min-width: 80px; }
-.table th:nth-child(4),
-.table td:nth-child(4) { min-width: 90px; }
-.table th:nth-child(5),
-.table td:nth-child(5) { min-width: 70px; }
+/* Column Width Specifics */
+.table th:nth-child(1), .table td:nth-child(1) { min-width: 60px; }
+.table th:nth-child(2), .table td:nth-child(2) { min-width: 180px; }
+.table th:nth-child(3), .table td:nth-child(3) { min-width: 80px; }
+.table th:nth-child(4), .table td:nth-child(4) { min-width: 90px; }
+.table th:nth-child(5), .table td:nth-child(5) { min-width: 70px; }
 
-/* Table Cell Styles */
 .table td {
     padding: 8px !important;
     white-space: normal;
@@ -239,10 +231,10 @@ footer::before {
     overflow: hidden;
     vertical-align: middle;
     border: 1px solid #dee2e6;
-    background-color: #fff;
+    background-color: var(--white-color);
 }
 
-/* Sort Indicator Styles */
+/* Sort Indicators */
 .table th::after {
     content: '';
     position: absolute;
@@ -254,24 +246,26 @@ footer::before {
 .table th:not(.current-sort)::after {
     content: '⇅';
     font-size: 14px;
-    color: #FFFFFF;
+    color: var(--white-color);
 }
 
-.table th.current-sort.asc::after {
-    content: '↑';
-    font-size: 16px;
-    color: #FFFFFF;
-}
-
+.table th.current-sort.asc::after,
 .table th.current-sort.dsc::after {
-    content: '↓';
     font-size: 16px;
-    color: #FFFFFF;
+    color: var(--white-color);
 }
 
-/* Row Hover Effects */
-.table tbody tr:hover { background-color: var(--background-color); }
-.table tbody tr:hover td { background-color: var(--background-color); }
+.table th.current-sort.asc::after { content: '↑'; }
+.table th.current-sort.dsc::after { content: '↓'; }
+
+.table tbody tr:hover,
+.table tbody tr:hover td {
+    background-color: var(--background-color);
+}
+
+.table th:hover {
+    background-color: var(--secondary-color);
+}
 
 /* Truncated Cell Styles */
 .table td.truncate {
@@ -286,7 +280,7 @@ footer::before {
     position: absolute;
     left: 0;
     top: 100%;
-    background: #FFF;
+    background: var(--white-color);
     border: 1px solid var(--primary-color);
     padding: 5px;
     z-index: 1000;
@@ -297,44 +291,353 @@ footer::before {
 }
 
 /* Button Styles */
-.btn-uni {
-    background-color: #B20000;
-    color: #FFFFFF;
-    border: none;
-    padding: 10px 20px;
-    border-radius: 5px;
-    transition: all 0.3s ease;
-    cursor: pointer;
-}
-
-.btn-uni:hover { 
-    background-color: #FF4040; 
-}
-
-/* Specific styles for edit buttons */
+.btn-uni,
 .edit-product-btn {
-    background-color: #B20000;
-    color: #FFFFFF;
+    background-color: var(--primary-color);
+    color: var(--white-color);
     border: none;
-    padding: 5px 10px; /* Reduced padding */
     border-radius: 5px;
     transition: all 0.3s ease;
     cursor: pointer;
-    min-height: 22px; /* Smaller height */
-    min-width: 44px; /* Maintained width */
-    touch-action: manipulation;
-    font-size: 0.8rem; /* Smaller font size */
-    line-height: 1; /* Tighter line height */
 }
 
+.btn-uni {
+    padding: 10px 20px;
+}
+
+.edit-product-btn {
+    padding: 5px 10px;
+    min-height: 22px;
+    min-width: 44px;
+    touch-action: manipulation;
+    font-size: 0.8rem;
+    line-height: 1;
+}
+
+.btn-uni:hover,
 .edit-product-btn:hover {
-    background-color: #FF4040;
+    background-color: var(--secondary-color);
     transform: translateY(-1px);
     box-shadow: 0 2px 3px rgba(0,0,0,0.1);
 }
 
-/* Table Header Hover States */
-.table th:hover { background-color: var(--secondary-color); }
+:root {
+    --primary-color: #B20000;
+    --secondary-color: #FF4040;
+    --background-color: #FEE9E9;
+    --text-color: #000;
+    --white-color: #FFFFFF;
+    
+    font-size: 16px;
+}
+
+/* Responsive Font Sizing */
+@media (max-width: 768px) {
+    :root { font-size: 14px; }
+}
+
+@media (min-width: 769px) and (max-width: 1200px) {
+    :root { font-size: 15px; }
+}
+
+/* Base Styles */
+body {
+    background-color: var(--background-color);
+    font-family: 'Liter', sans-serif;
+    color: var(--text-color);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    line-height: 1.6;
+}
+
+main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+.container {
+    width: 100%;
+    max-width: 1200px;
+    padding: 0 15px;
+    margin: 0 auto;
+}
+
+/* Navigation */
+.navbar {
+    background-color: var(--background-color);
+    border-bottom: 3px solid var(--primary-color);
+}
+
+.navbar-brand {
+    font-size: clamp(1.5rem, 4vw, 2rem);
+    font-weight: bold;
+    color: var(--primary-color);
+    text-shadow: 
+        2px 2px 5px var(--primary-color), 
+        -2px -2px 5px var(--secondary-color);
+}
+
+/* Footer */
+footer {
+    background-color: #FE0000;
+    color: var(--white-color);
+    padding: 10px;
+    text-align: center;
+    width: 100%;
+    margin-top: auto;
+    position: relative;
+}
+
+footer::before {
+    content: "";
+    display: block;
+    height: 3px;
+    background-color: var(--primary-color);
+    margin-bottom: 10px;
+}
+
+.quote {
+    font-size: clamp(1rem, 3vw, 1.2rem);
+    font-style: italic;
+}
+
+/* Search Components */
+.search-container {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin: 20px auto;
+    max-width: 600px;
+}
+
+@media (min-width: 768px) {
+    .search-container {
+        flex-direction: row;
+    }
+}
+
+.search-input,
+.search-button {
+    border-radius: 5px;
+    font-size: clamp(0.9rem, 3vw, 1.1rem);
+    transition: all 0.3s ease;
+}
+
+.search-input {
+    flex: 1;
+    padding: 12px 20px;
+    border: 2px solid var(--primary-color);
+    background-color: var(--white-color);
+    width: 100%;
+    padding-right: 40px;
+}
+
+.search-input.loading {
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='24' height='24' viewBox='0 0 24 24'%3E%3Cpath fill='%23B20000' d='M12 2a10 10 0 1 0 10 10A10 10 0 0 0 12 2zm0 18a8 8 0 1 1 8-8 8 8 0 0 1-8 8z' opacity='.3'/%3E%3Cpath fill='%23B20000' d='M20 12h2A10 10 0 0 0 12 2v2a8 8 0 0 1 8 8z'%3E%3CanimateTransform attributeName='transform' attributeType='XML' type='rotate' from='0 12 12' to='360 12 12' dur='1s' repeatCount='indefinite'/%3E%3C/path%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    background-size: 20px 20px;
+}
+
+.search-input:focus {
+    outline: none;
+    box-shadow: 0 0 5px var(--primary-color);
+}
+
+.search-button {
+    background-color: var(--primary-color);
+    color: var(--white-color);
+    border: none;
+    padding: 12px 25px;
+    cursor: pointer;
+    white-space: nowrap;
+    width: 100%;
+}
+
+@media (min-width: 768px) {
+    .search-button {
+        width: auto;
+        margin-left: 10px;
+    }
+}
+
+.search-button:disabled {
+    background-color: #d46666;
+    cursor: not-allowed;
+}
+
+.search-button:hover {
+    background-color: var(--secondary-color);
+}
+
+/* Table Styles */
+.table-container {
+    background: var(--white-color);
+    border: 1px solid var(--primary-color);
+    padding: 20px;
+    border-radius: 10px;
+    margin: 10px auto;
+    width: 100%;
+    box-sizing: border-box;
+    overflow: auto;
+    max-width: 95%;
+}
+
+.table-responsive {
+    width: 100%;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+}
+
+.table {
+    width: 100%;
+    min-width: 800px;
+    margin-bottom: 0;
+    font-size: 0.85rem;
+    table-layout: auto;
+    border-collapse: collapse;
+}
+
+.table th {
+    position: relative;
+    background-color: var(--primary-color);
+    color: var(--white-color);
+    cursor: pointer;
+    padding: 8px 25px 8px 8px !important;
+    font-size: 0.85rem;
+    vertical-align: middle;
+    min-width: 100px;
+    user-select: none;
+}
+
+.table th a {
+    color: inherit;
+    text-decoration: none;
+    display: block;
+}
+
+/* Column Resizer */
+.table th .resizer {
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: 8px;
+    background-color: transparent;
+    cursor: col-resize;
+    z-index: 1;
+}
+
+.table th .resizer:hover,
+.table th .resizing {
+    background-color: var(--secondary-color);
+}
+
+/* Column Width Specifics */
+.table th:nth-child(1), .table td:nth-child(1) { min-width: 60px; }
+.table th:nth-child(2), .table td:nth-child(2) { min-width: 180px; }
+.table th:nth-child(3), .table td:nth-child(3) { min-width: 80px; }
+.table th:nth-child(4), .table td:nth-child(4) { min-width: 90px; }
+.table th:nth-child(5), .table td:nth-child(5) { min-width: 70px; }
+
+.table td {
+    padding: 8px !important;
+    white-space: normal;
+    word-wrap: break-word;
+    overflow: hidden;
+    vertical-align: middle;
+    border: 1px solid #dee2e6;
+    background-color: var(--white-color);
+}
+
+/* Sort Indicators */
+.table th::after {
+    content: '';
+    position: absolute;
+    right: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+}
+
+.table th:not(.current-sort)::after {
+    content: '⇅';
+    font-size: 14px;
+    color: var(--white-color);
+}
+
+.table th.current-sort.asc::after,
+.table th.current-sort.dsc::after {
+    font-size: 16px;
+    color: var(--white-color);
+}
+
+.table th.current-sort.asc::after { content: '↑'; }
+.table th.current-sort.dsc::after { content: '↓'; }
+
+.table tbody tr:hover,
+.table tbody tr:hover td {
+    background-color: var(--background-color);
+}
+
+.table th:hover {
+    background-color: var(--secondary-color);
+}
+
+/* Truncated Cell Styles */
+.table td.truncate {
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    position: relative;
+}
+
+.table td.truncate:hover::after {
+    content: attr(data-full-text);
+    position: absolute;
+    left: 0;
+    top: 100%;
+    background: var(--white-color);
+    border: 1px solid var(--primary-color);
+    padding: 5px;
+    z-index: 1000;
+    white-space: normal;
+    max-width: 300px;
+    border-radius: 4px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+}
+
+/* Button Styles */
+.btn-uni,
+.edit-product-btn {
+    background-color: var(--primary-color);
+    color: var(--white-color);
+    border: none;
+    border-radius: 5px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.btn-uni {
+    padding: 10px 20px;
+}
+
+.edit-product-btn {
+    padding: 5px 10px;
+    min-height: 22px;
+    min-width: 44px;
+    touch-action: manipulation;
+    font-size: 0.8rem;
+    line-height: 1;
+}
+
+.btn-uni:hover,
+.edit-product-btn:hover {
+    background-color: var(--secondary-color);
+    transform: translateY(-1px);
+    box-shadow: 0 2px 3px rgba(0,0,0,0.1);
+}
 
 /* Utility Classes */
 .me-2 { margin-right: 10px; }
@@ -356,6 +659,7 @@ footer::before {
     display: inline-flex;
     align-items: center;
     justify-content: center;
+    transition: color 0.3s ease;
 }
 
 .pagination-arrow:hover {
@@ -368,8 +672,15 @@ footer::before {
 }
 
 /* Category Grid Styles */
+.category-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1rem;
+    padding: 20px 0;
+}
+
 .category-container {
-    background: #FFFFFF;
+    background: var(--white-color);
     border: 1px solid var(--primary-color);
     padding: 15px;
     border-radius: 10px;
@@ -377,8 +688,8 @@ footer::before {
     transition: transform 0.3s ease;
     margin-bottom: 20px;
     height: 100%;
-    display: flex; /* Added */
-    flex-direction: column; /* Added */
+    display: flex;
+    flex-direction: column;
 }
 
 .category-container:hover {
@@ -389,7 +700,7 @@ footer::before {
     display: flex;
     flex-direction: column;
     height: 100%;
-    min-height: 150px; /* Set a minimum height */
+    min-height: 150px;
 }
 
 .category-name {
@@ -397,32 +708,19 @@ footer::before {
     font-weight: bold;
     color: var(--primary-color);
     margin-bottom: 15px;
-    flex-grow: 1; /* Added to allow name to take available space */
-    word-wrap: break-word; /* Ensure long names wrap properly */
+    flex-grow: 1;
+    word-wrap: break-word;
 }
 
 .category-button {
-    margin-top: auto; /* Push button to bottom */
+    margin-top: auto;
     text-align: center;
 }
 
-/* Existing responsive styles remain the same */
 @media (max-width: 768px) {
-    main .category-grid {
+    .category-grid {
         grid-template-columns: 1fr;
     }
-}
-
-main .category-grid {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
-    gap: 1rem;
-    padding: 20px 0;
-}
-
-.category-item {
-    display: flex;
-    flex-direction: column;
 }
 
 /* Error Page Styles */
@@ -430,9 +728,6 @@ main .category-grid {
     font-size: clamp(1.2rem, 4vw, 1.5rem);
     font-weight: bold;
     color: var(--primary-color);
-}
-
-main .error-message {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -449,8 +744,8 @@ main .error-message {
     height: 100%;
     background-color: rgba(0, 0, 0, 0.5);
     z-index: 1000;
-    transition: opacity 0.3s ease;
     opacity: 0;
+    transition: opacity 0.3s ease;
 }
 
 .form-popup-overlay.active {
@@ -465,12 +760,12 @@ main .error-message {
     transform: translate(-50%, -55%);
     border: 3px solid var(--primary-color);
     z-index: 1001;
-    background-color: white;
+    background-color: var(--white-color);
     box-shadow: 0 4px 6px rgba(0,0,0,0.1);
     width: 95%;
-    max-width: 1200px; /* Increased to accommodate two columns */
-    transition: transform 0.3s ease, opacity 0.3s ease;
+    max-width: 1200px;
     opacity: 0;
+    transition: transform 0.3s ease, opacity 0.3s ease;
 }
 
 .form-popup.active {
@@ -520,7 +815,6 @@ main .error-message {
     padding-right: 25px;
 }
 
-/* Responsive adjustments */
 @media (max-width: 768px) {
     .form-popup {
         width: 95%;
@@ -594,7 +888,7 @@ main .error-message {
 
 .form-actions .btn:not(.cancel) {
     background-color: var(--primary-color);
-    color: white;
+    color: var(--white-color);
 }
 
 .form-actions .btn:hover {
@@ -602,35 +896,6 @@ main .error-message {
 }
 
 /* Success Popup Styles */
-.success-popup {
-    display: none;
-    position: fixed;
-    top: 20px;
-    right: 20px;
-    background-color: #FEE9E9;
-    border: 2px solid #B20000;
-    border-radius: 5px;
-    padding: 15px 20px;
-    z-index: 9999;
-    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-    display: flex;
-    align-items: center;
-    gap: 10px;
-    animation: slideInAndFade 0.3s ease-out forwards;
-    max-width: 300px;
-}
-
-.success-popup .success-icon {
-    color: #B20000;
-    font-size: 20px;
-    font-weight: bold;
-}
-
-.success-popup .success-content {
-    color: #B20000;
-    font-weight: 500;
-}
-
 @keyframes slideInAndFade {
     0% {
         transform: translateY(-100%);
@@ -642,10 +907,6 @@ main .error-message {
     }
 }
 
-.success-popup.fade-out {
-    animation: fadeOut 0.3s ease-out forwards;
-}
-
 @keyframes fadeOut {
     0% {
         transform: translateY(0);
@@ -655,6 +916,38 @@ main .error-message {
         transform: translateY(-10px);
         opacity: 0;
     }
+}
+
+.success-popup {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: var(--background-color);
+    border: 2px solid var(--primary-color);
+    border-radius: 5px;
+    padding: 15px 20px;
+    z-index: 9999;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: none;
+    align-items: center;
+    gap: 10px;
+    animation: slideInAndFade 0.3s ease-out forwards;
+    max-width: 300px;
+}
+
+.success-popup .success-icon {
+    color: var(--primary-color);
+    font-size: 20px;
+    font-weight: bold;
+}
+
+.success-popup .success-content {
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+.success-popup.fade-out {
+    animation: fadeOut 0.3s ease-out forwards;
 }
 
 /* Search Bar Container Styles */
@@ -686,7 +979,7 @@ main .error-message {
 
 /* Products Table Styles */
 .products-table {
-    background: white;
+    background: var(--white-color);
     border-radius: 0.5rem;
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
     margin-top: 2rem;
@@ -697,7 +990,7 @@ main .error-message {
     font-weight: 600;
     padding: 1rem;
     border-bottom: 2px solid var(--primary-color);
-    color: white;
+    color: var(--white-color);
 }
 
 .products-table tbody td {
@@ -727,7 +1020,7 @@ main .error-message {
     font-weight: 500;
     border-radius: 0.5rem;
     border: 1px solid var(--primary-color);
-    background: white;
+    background: var(--white-color);
     cursor: pointer;
     transition: all 0.2s;
     color: var(--primary-color);
@@ -749,6 +1042,10 @@ main .error-message {
 }
 
 /* Loading State */
+@keyframes spin {
+    to { transform: translateY(-50%) rotate(360deg); }
+}
+
 .search-wrapper.loading::after {
     content: '';
     position: absolute;
@@ -763,17 +1060,12 @@ main .error-message {
     animation: spin 0.8s linear infinite;
 }
 
-@keyframes spin {
-    to { transform: translateY(-50%) rotate(360deg); }
-}
-
 .view-title {
     color: var(--primary-color);
     font-weight: bold;
     margin: 0;
 }
 
-/* Add this to your existing CSS */
 .button-container {
     display: flex;
     gap: 0.5rem;
@@ -782,10 +1074,24 @@ main .error-message {
 
 .button-container .btn-uni {
     flex: 1;
-    min-width: 60px; /* Set a minimum width for the buttons */
-    max-width: 80px; /* Set a maximum width for the buttons */
+    min-width: 60px;
+    max-width: 80px;
     text-align: center;
     padding: 0.25rem 0.5rem;
     font-size: 0.875rem;
     white-space: nowrap;
+}
+
+/* Responsive Typography Scaling */
+@media (max-width: 768px) {
+    body {
+        font-size: 14px;
+    }
+
+    h1 { font-size: 1.8rem; }
+    h2 { font-size: 1.6rem; }
+    h3 { font-size: 1.4rem; }
+    h4 { font-size: 1.2rem; }
+    h5 { font-size: 1rem; }
+    h6 { font-size: 0.9rem; }
 }
