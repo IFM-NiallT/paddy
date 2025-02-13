@@ -95,10 +95,8 @@
                             </th>
 
                             <!-- Image Count Column -->
-                            <th class="{{ 'current-sort ' + ('asc' if current_sort == 'ImageCount[asc]' else 'dsc' if current_sort == 'ImageCount[dsc]' else '') }}">
-                                {% set current_direction = 'asc' if current_sort == 'ImageCount[asc]' else 'dsc' if current_sort == 'ImageCount[dsc]' else 'asc' %}
-                                {% set next_direction = 'dsc' if current_direction == 'asc' else 'asc' %}
-                                <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage, sort='ImageCount[' + next_direction + ']') }}">Image Count</a>
+                            <th>
+                                Image Count
                                 <div class="resizer" data-column="{{ active_fields|length + 4 }}"></div>
                             </th>
 
@@ -146,13 +144,12 @@
                 <!-- Form Header -->
                 <div class="form-header">
                     <h2 id="editFormTitle">Edit Product: <span id="popupProductCode"></span></h2>
-                    <button type="button" class="close-button" onclick="closeEditForm()" aria-label="Close">×</button>
+                    <button type="button" class="close-button" onclick="closeEditForm()" aria-label="Close">X</button>
                 </div>
                 
                 <div class="form-grid">
                     <div class="form-column" id="popupFirstColumn">
                         <!-- First column of dynamic fields will be populated here -->
-                        <!-- This will replace the current "Current Product Details" column -->
                     </div>
                     <div class="form-column" id="popupSecondColumn">
                         <!-- Second column of dynamic fields will be populated here -->
