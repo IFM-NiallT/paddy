@@ -23,9 +23,11 @@ providing a clean, user-friendly interface for product management.
 Author: Luke Doyle - 2025 Intern
 """
 
+import platform
 from flask import Flask, render_template, request, jsonify
 import re
 from datetime import datetime
+from typing import Dict, List, Tuple, Union, Any, Optional
 from app.config import Config
 from app.api_client import APIClient
 from app.logger import logger
@@ -42,7 +44,7 @@ class PaddyApp:
     - Routing logic for product management
     """
     
-    def __init__(self, api_base_url, bearer_token):
+    def __init__(self, api_base_url: str, bearer_token: str):
         """
         Initialize the Flask application with API client and register routes.
         
@@ -66,8 +68,8 @@ class PaddyApp:
         )
         
         try:
-            self.app = Flask(__name__)
-            self.api_client = APIClient(api_base_url, bearer_token)
+            self.app: Flask = Flask(__name__)
+            self.api_client: APIClient = APIClient(api_base_url, bearer_token)
             self._register_routes()
             self._register_error_handlers()
             
@@ -82,7 +84,7 @@ class PaddyApp:
             )
             raise
 
-    def _register_routes(self):
+    def _register_routes(self) -> None:
         """
         Register application routes.
         
@@ -93,7 +95,7 @@ class PaddyApp:
         - API search functionality
         """
         try:
-            routes = [
+            routes: List[Union[Tuple[str, str, Any], Tuple[str, str, Any, List[str]]]] = [
                 ("/", "index", self._index_route),
                 ("/products/<int:category_id>", "products", self._products_route),
                 ("/product/<int:product_id>/edit", "edit_product", self._edit_product_route, ['GET']),
@@ -122,7 +124,7 @@ class PaddyApp:
             )
             raise
 
-    def _register_error_handlers(self):
+    def _register_error_handlers(self) -> None:
         """
         Register error handlers for standard HTTP error codes.
         
@@ -130,7 +132,7 @@ class PaddyApp:
         - 404 Not Found errors
         - 500 Internal Server errors
         """
-        error_handlers = {
+        error_handlers: Dict[int, Any] = {
             404: self._not_found_error,
             500: self._internal_error
         }
@@ -151,7 +153,7 @@ class PaddyApp:
             )
             raise
 
-    def _index_route(self):
+    def _index_route(self) -> Union[str, Tuple[str, int]]:
         """
         Handle requests to the home page.
         
@@ -166,7 +168,7 @@ class PaddyApp:
                 extra={'client_ip': request.remote_addr}
             )
             
-            categories = self.api_client.get_categories()
+            categories: Dict[str, Any] = self.api_client.get_categories()
             
             logger.info(
                 "Categories retrieved successfully",
@@ -184,7 +186,7 @@ class PaddyApp:
             )
             return render_template("error.html.j2", error="Failed to load categories"), 500
 
-    def _products_route(self, category_id):
+    def _products_route(self, category_id: int) -> Union[str, Any]:
         """
         Handle requests to the products page for a specific category.
         
@@ -200,8 +202,8 @@ class PaddyApp:
             Rendered products template with filtered and sorted products
         """
         try:
-            page = request.args.get('page', 1, type=int)
-            sort_param = request.args.get('sort')
+            page: int = request.args.get('page', 1, type=int)
+            sort_param: Optional[str] = request.args.get('sort')
             
             logger.debug(
                 f"Before parse - sort_param: {sort_param}",
@@ -214,8 +216,10 @@ class PaddyApp:
             )
             
             # Check if this is an AJAX request
-            is_ajax = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
+            is_ajax: bool = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
             
+            sort_field: Optional[str] = None
+            sort_direction: str = 'asc'
             sort_field, sort_direction = self._parse_sort_param(sort_param)
             
             logger.debug(
@@ -227,7 +231,7 @@ class PaddyApp:
                 }
             )
             
-            products = self.api_client.get_products(
+            products: Dict[str, Any] = self.api_client.get_products(
                 category_id, 
                 page=page,
                 sort_field=sort_field,
@@ -239,13 +243,13 @@ class PaddyApp:
                 return jsonify(products)
             
             # Otherwise return the full template
-            categories = self.api_client.get_categories()
-            category = next((c for c in categories['Data'] if c['ID'] == category_id), None)
+            categories: Dict[str, Any] = self.api_client.get_categories()
+            category: Optional[Dict[str, Any]] = next((c for c in categories['Data'] if c['ID'] == category_id), None)
             
             if not category:
                 return render_template("error.html.j2", error="Category not found"), 404
                 
-            active_fields = self.api_client.field_config.get_category_fields(category_id)
+            active_fields: List[Dict[str, Any]] = self.api_client.field_config.get_category_fields(category_id)
             
             # Log what we're sending to template
             logger.debug(
@@ -278,7 +282,7 @@ class PaddyApp:
                 return jsonify({'error': str(e)}), 500
             return render_template("error.html.j2", error="An unexpected error occurred"), 500
 
-    def _parse_sort_param(self, sort_param):
+    def _parse_sort_param(self, sort_param: Optional[str]) -> Tuple[Optional[str], str]:
         """
         Parse the sorting parameter to extract field and direction.
         
@@ -300,7 +304,7 @@ class PaddyApp:
             - Uses regex to parse the complex sort parameter format
         """
         # Define explicitly allowed sort fields
-        allowed_sort_fields = [
+        allowed_sort_fields: List[str] = [
             'Code', 'Description', 'ImageCount', 'D_WebCategory', 
             'D_Classification', 'D_ThreadGender', 'D_SizeA', 
             'D_SizeB', 'D_SizeC', 'D_SizeD', 'D_Orientation', 
@@ -321,7 +325,8 @@ class PaddyApp:
             logger.debug(f"Regex match result: {match}")
             
             if match:
-                field, direction = match.group(1), match.group(2)
+                field: str = match.group(1)
+                direction: str = match.group(2)
                 logger.debug(f"Parsed field: {field}, direction: {direction}")
                 
                 # Validate field and direction
@@ -364,7 +369,7 @@ class PaddyApp:
         
         return None, 'asc'
 
-    def _not_found_error(self, error):
+    def _not_found_error(self, error: Any) -> Tuple[str, int]:
         """
         Handle 404 Not Found errors.
         
@@ -386,7 +391,7 @@ class PaddyApp:
         )
         return render_template("error.html.j2", error="Page not found"), 404
 
-    def _internal_error(self, error):
+    def _internal_error(self, error: Any) -> Tuple[str, int]:
         """
         Handle 500 Internal Server errors.
         
@@ -408,7 +413,7 @@ class PaddyApp:
         )
         return render_template("error.html.j2", error="Internal server error"), 500
 
-    def _edit_product_route(self, product_id):
+    def _edit_product_route(self, product_id: int) -> Union[Any, Tuple[Any, int]]:
         """
         Handle GET request to edit a specific product.
         
@@ -431,11 +436,11 @@ class PaddyApp:
             )
 
             # Fetch the product details from the API
-            product = self.api_client._make_request(f"Products/{product_id}")
+            product: Dict[str, Any] = self.api_client._make_request(f"Products/{product_id}")
             
             # Identify the current category from the product details
-            current_category = product.get('Category', {})
-            category_id = current_category.get('ID')
+            current_category: Dict[str, Any] = product.get('Category', {})
+            category_id: Optional[int] = current_category.get('ID')
             
             if not category_id:
                 logger.error(
@@ -445,12 +450,12 @@ class PaddyApp:
                 return jsonify({'error': 'Invalid product data'}), 400
 
             # Retrieve the field configuration for the current category
-            category_fields = self.api_client.field_config.get_category_fields(category_id)
+            category_fields: List[Dict[str, Any]] = self.api_client.field_config.get_category_fields(category_id)
             
-            dynamic_fields = []
+            dynamic_fields: List[Dict[str, Any]] = []
             if category_fields:
                 # Define the allowed generic fields for editing
-                allowed_fields = [
+                allowed_fields: List[str] = [
                     "D_Classification", "D_ThreadGender", "D_SizeA", "D_SizeB",
                     "D_SizeC", "D_SizeD", "D_Orientation", "D_Configuration",
                     "D_Grade", "D_ManufacturerName", "D_Application", "D_WebCategory"
@@ -458,11 +463,11 @@ class PaddyApp:
                 
                 # Iterate over the list of field configurations
                 for field_config in category_fields:
-                    generic_field = field_config.get('field')
-                    if generic_field not in allowed_fields:
+                    generic_field: Optional[str] = field_config.get('field')
+                    if not generic_field or generic_field not in allowed_fields:
                         continue
                     
-                    field_info = {
+                    field_info: Dict[str, Any] = {
                         'name': generic_field,
                         'label': field_config.get('display', generic_field),
                         'type': field_config.get('type', 'text').lower(),
@@ -497,7 +502,7 @@ class PaddyApp:
             )
             return jsonify({'error': str(e)}), 500
 
-    def _update_product_route(self, product_id):
+    def _update_product_route(self, product_id: int) -> Union[Any, Tuple[Any, int]]:
         """
         Handle POST request to update a specific product.
         
@@ -512,7 +517,7 @@ class PaddyApp:
         """
         try:
             # Get the updated data from the request
-            update_data = request.get_json()
+            update_data: Dict[str, Any] = request.get_json() or {}
             
             logger.info(
                 "Processing product update request",
@@ -531,23 +536,23 @@ class PaddyApp:
                 return jsonify({'error': 'No update data provided'}), 400
 
             # Explicitly filter for allowed fields
-            allowed_fields = [
+            allowed_fields: List[str] = [
                 "D_Classification", "D_ThreadGender", "D_SizeA", "D_SizeB",
                 "D_SizeC", "D_SizeD", "D_Orientation", "D_Configuration",
                 "D_Grade", "D_ManufacturerName", "D_Application", "D_WebCategory"
             ]
 
             # Numeric fields to round
-            numeric_fields = ["D_SizeA", "D_SizeB", "D_SizeC", "D_SizeD", "ImageCount"]
+            numeric_fields: List[str] = ["D_SizeA", "D_SizeB", "D_SizeC", "D_SizeD", "ImageCount"]
 
             # Custom rounding function
-            def round_numeric_field(value):
+            def round_numeric_field(value: Union[int, float, str]) -> Union[int, float, str]:
                 if isinstance(value, (int, float)):
                     return round(value)
                 return value
 
             # Remove empty fields, filter for only allowed fields, and round numeric fields
-            update_payload = {
+            update_payload: Dict[str, Any] = {
                 key: round_numeric_field(value) if key in numeric_fields else value 
                 for key, value in update_data.items()
                 if value not in [None, ""] and key in allowed_fields
@@ -574,7 +579,7 @@ class PaddyApp:
             )
 
             # Send the update request to the API
-            response = self.api_client._make_request(
+            response: Dict[str, Any] = self.api_client._make_request(
                 f"Products/{product_id}",
                 method='PUT',
                 data=update_payload
@@ -582,7 +587,7 @@ class PaddyApp:
 
             # Handle the response based on its structure
             if isinstance(response, dict) and 'Message' in response:
-                message = response['Message']
+                message: str = response['Message']
                 if message == "Ok":
                     logger.info(
                         "Product updated successfully",
@@ -624,8 +629,8 @@ class PaddyApp:
                 exc_info=True
             )
             return jsonify({'error': str(e)}), 500
-        
-    def _api_search_route(self):
+
+    def _api_search_route(self) -> Union[Any, Tuple[Any, int]]:
         """
         Handle API search requests.
         
@@ -638,10 +643,10 @@ class PaddyApp:
             JSON response with search results
         """
         try:
-            category = request.args.get('category')
-            code_query = request.args.get('code')
-            page = request.args.get('page', 1, type=int)
-            items_per_page = min(
+            category: Optional[str] = request.args.get('category')
+            code_query: Optional[str] = request.args.get('code')
+            page: int = request.args.get('page', 1, type=int)
+            items_per_page: int = min(
                 request.args.get('per_page', 30, type=int),
                 self.api_client.MAX_ITEMS_PER_PAGE
             )
@@ -667,7 +672,7 @@ class PaddyApp:
                     'error': 'At least one search parameter (category or code) is required'
                 }), 400
             
-            results = self.api_client.search_products_api(
+            results: Dict[str, Any] = self.api_client.search_products_api(
                 category=category,
                 code_query=code_query,
                 page=page,
@@ -695,11 +700,11 @@ class PaddyApp:
             )
             return jsonify({'error': str(e)}), 500
         
-    def _all_products_search_route(self):
+    def _all_products_search_route(self) -> Union[Any, Tuple[Any, int]]:
         """Handle search requests for all products."""
         try:
-            code_query = request.args.get('code', '')
-            page = request.args.get('page', 1, type=int)
+            code_query: str = request.args.get('code', '')
+            page: int = request.args.get('page', 1, type=int)
             
             logger.info(
                 "Processing all products search request",
@@ -711,7 +716,7 @@ class PaddyApp:
             )
             
             # Use the existing search_products_api method without category filter
-            results = self.api_client.search_products_api(
+            results: Dict[str, Any] = self.api_client.search_products_api(
                 code_query=code_query,
                 page=page
             )
@@ -729,7 +734,8 @@ class PaddyApp:
             )
             return jsonify({'error': str(e)}), 500
 
-def create_app():
+
+def create_app() -> Flask:
     """
     Create and configure the Flask application instance.
     
@@ -753,7 +759,7 @@ def create_app():
         Config.ensure_directories()
         
         # Create the PADDY application instance
-        paddy_app = PaddyApp(Config.API_BASE_URL, Config.BEARER_TOKEN)
+        paddy_app: PaddyApp = PaddyApp(Config.API_BASE_URL, Config.BEARER_TOKEN)
         
         logger.info(
             "Flask application instance created successfully",
@@ -777,14 +783,13 @@ def create_app():
         )
         raise
 
+
 # Create the Flask application instance
-app = create_app()
+app: Flask = create_app()
 
 # Run the application if this script is the main entry point
 if __name__ == "__main__":
     try:
-        import platform
-        
         logger.info(
             "Starting Flask application",
             extra={
