@@ -115,7 +115,7 @@ function updateProductResults(data) {
             <td>
                 <div class="button-container">
                     <button class="btn-uni btn-sm" onclick="window.location.href='/products/${product.Category?.ID}'">
-                        View
+                        View Category
                     </button>
                     <button class="btn-uni btn-sm edit-product-btn" onclick="fetchProductDetails(${product.ID})">
                         Edit
