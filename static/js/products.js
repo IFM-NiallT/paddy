@@ -718,7 +718,7 @@ function createFieldGroup(field) {
     group.className = 'form-group';
     
     const label = document.createElement('label');
-    label.innerHTML = `<b>Update ${field.label || field.name}</b>`;
+    label.innerHTML = `<b> ${field.label || field.name}</b>`;
     
     const input = createFieldInput(field);
     
