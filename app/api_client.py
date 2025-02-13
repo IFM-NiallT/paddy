@@ -25,6 +25,8 @@ import time
 import requests
 import json
 import os
+from typing import Dict, Optional, Any, Union, List
+
 from .logger import logger
 from .config import Config
 from .exceptions import APIError
@@ -35,10 +37,17 @@ class APIClient:
     """Client for handling API interactions with advanced features."""
     
     # Class Variables
-    MAX_ITEMS_PER_PAGE = 30
+    MAX_ITEMS_PER_PAGE: int = 30
     
-    def __init__(self, base_url, token, timeout=20):
-        """Initialize APIClient with configuration and authentication."""
+    def __init__(self, base_url: str, token: str, timeout: int = 20):
+        """
+        Initialize APIClient with configuration and authentication.
+        
+        Args:
+            base_url (str): Base URL for the API
+            token (str): Authentication bearer token
+            timeout (int, optional): Request timeout in seconds. Defaults to 20.
+        """
         logger.info(
             "Initializing API Client",
             extra={
@@ -47,16 +56,36 @@ class APIClient:
                 'token_length': len(token) if token else 0
             }
         )
-        self.base_url = base_url
-        self.headers = {
+        self.base_url: str = base_url
+        self.headers: Dict[str, str] = {
             "Authorization": f"Bearer {token}",
             "Accept": "application/json"
         }
-        self.timeout = timeout
-        self.field_config = FieldConfig()
+        self.timeout: int = timeout
+        self.field_config: FieldConfig = FieldConfig()
 
-    def _make_request(self, endpoint, method='GET', params=None, data=None):
-        """Execute an API request with comprehensive error handling and logging."""
+    def _make_request(
+        self, 
+        endpoint: str, 
+        method: str = 'GET', 
+        params: Optional[Dict[str, Any]] = None, 
+        data: Optional[Dict[str, Any]] = None
+    ) -> Dict[str, Any]:
+        """
+        Execute an API request with comprehensive error handling and logging.
+        
+        Args:
+            endpoint (str): API endpoint to request
+            method (str, optional): HTTP method. Defaults to 'GET'.
+            params (dict, optional): Query parameters. Defaults to None.
+            data (dict, optional): Request payload. Defaults to None.
+        
+        Returns:
+            Dict containing API response data
+        
+        Raises:
+            APIError: For various API request failures
+        """
         if not endpoint:
             logger.error(
                 "Empty endpoint provided",
@@ -65,7 +94,7 @@ class APIClient:
             )
             raise ValueError("Endpoint must be provided")
 
-        full_url = f"{self.base_url}/{endpoint}"
+        full_url: str = f"{self.base_url}/{endpoint}"
         
         try:
             logger.info(
@@ -78,8 +107,8 @@ class APIClient:
                 }
             )
 
-            start_time = time.time()
-            response = requests.request(
+            start_time: float = time.time()
+            response: requests.Response = requests.request(
                 method=method,
                 url=full_url,
                 headers=self.headers,
@@ -87,7 +116,7 @@ class APIClient:
                 json=data,
                 timeout=self.timeout
             )
-            response_time = time.time() - start_time
+            response_time: float = time.time() - start_time
 
             # Log response timing
             if response_time > 5:  # Warning threshold
@@ -126,7 +155,7 @@ class APIClient:
                 raise APIError(f"HTTP Error: {http_err}")
             
             try:
-                data = response.json()
+                data: Dict[str, Any] = response.json()
                 return data
             except json.JSONDecodeError as json_err:
                 logger.error(
@@ -175,12 +204,20 @@ class APIClient:
             )
             raise APIError(f"Request failed: {req_err}")
 
-    def _validate_category_exists(self, category_id):
-        """Validate if a specific category exists in the loaded categories."""
+    def _validate_category_exists(self, category_id: int) -> bool:
+        """
+        Validate if a specific category exists in the loaded categories.
+        
+        Args:
+            category_id (int): Category ID to validate
+        
+        Returns:
+            bool: True if category exists, False otherwise
+        """
         try:
-            categories = self.get_categories()
-            existing_categories = [c['ID'] for c in categories.get('Data', [])]
-            exists = category_id in existing_categories
+            categories: Dict[str, Any] = self.get_categories()
+            existing_categories: List[int] = [c['ID'] for c in categories.get('Data', [])]
+            exists: bool = category_id in existing_categories
             
             if not exists:
                 logger.warning(
@@ -204,12 +241,17 @@ class APIClient:
             )
             return False
 
-    def get_categories(self):
-        """Fetch and cache product categories with enhanced logging."""
+    def get_categories(self) -> Dict[str, Any]:
+        """
+        Fetch and cache product categories with enhanced logging.
+        
+        Returns:
+            Dict containing product categories
+        """
         if os.path.exists(Config.CACHE_FILE):
             try:
                 with open(Config.CACHE_FILE, 'r') as f:
-                    cached_data = json.load(f)
+                    cached_data: Dict[str, Any] = json.load(f)
                 logger.info(
                     "Categories loaded from cache",
                     extra={
@@ -232,7 +274,7 @@ class APIClient:
 
         try:
             logger.info("Fetching categories from API")
-            data = self._make_request("ProductCategories")
+            data: Dict[str, Any] = self._make_request("ProductCategories")
             
             try:
                 with open(Config.CACHE_FILE, 'w') as f:
@@ -262,8 +304,27 @@ class APIClient:
             )
             return {"TotalCount": 0, "Data": []}
 
-    def get_products(self, category_id, page=1, items_per_page=30, sort_field=None, sort_direction='asc'):
-        """Fetch products for a specific category with advanced filtering and sorting."""
+    def get_products(
+        self, 
+        category_id: int, 
+        page: int = 1, 
+        items_per_page: int = 30, 
+        sort_field: Optional[str] = None, 
+        sort_direction: str = 'asc'
+    ) -> Dict[str, Any]:
+        """
+        Fetch products for a specific category with advanced filtering and sorting.
+        
+        Args:
+            category_id (int): Category ID to fetch products for
+            page (int, optional): Page number for pagination. Defaults to 1.
+            items_per_page (int, optional): Number of items per page. Defaults to 30.
+            sort_field (str, optional): Field to sort by. Defaults to None.
+            sort_direction (str, optional): Sort direction. Defaults to 'asc'.
+        
+        Returns:
+            Dict containing paginated and filtered products
+        """
         if not category_id:
             logger.error(
                 "Missing category ID",
@@ -273,15 +334,15 @@ class APIClient:
             raise ValueError("Category ID must be provided")
 
         # Calculate pagination offset
-        offset = (page - 1) * items_per_page
+        offset: int = (page - 1) * items_per_page
         
-        params = {
+        params: Dict[str, Any] = {
             "Category[eq]": category_id,
             "offset": offset,
             "fetch": items_per_page
         }
 
-        valid_sort_fields = [
+        valid_sort_fields: List[str] = [
             'Code', 'Description', 'ImageCount', 'D_WebCategory',  
             'D_Classification', 'D_ThreadGender',
             'D_SizeA', 'D_SizeB', 'D_SizeC', 'D_SizeD',
@@ -327,12 +388,12 @@ class APIClient:
         )
 
         try:
-            all_products = self._make_request("Products", params=params)
+            all_products: Dict[str, Any] = self._make_request("Products", params=params)
             
-            total_count = all_products.get('TotalCount', 0)
-            total_pages = (total_count + items_per_page - 1) // items_per_page
+            total_count: int = all_products.get('TotalCount', 0)
+            total_pages: int = (total_count + items_per_page - 1) // items_per_page
 
-            filtered_products = {
+            filtered_products: Dict[str, Any] = {
                 "TotalCount": total_count,
                 "CurrentPage": page,
                 "ItemsPerPage": items_per_page,
@@ -372,10 +433,23 @@ class APIClient:
                 "Data": []
             }
 
-    def update_product(self, product_id, update_payload):
-        """Update a product with the given ID and payload."""
+    def update_product(
+        self, 
+        product_id: int, 
+        update_payload: Dict[str, Any]
+    ) -> str:
+        """
+        Update a product with the given ID and payload.
+        
+        Args:
+            product_id (int): ID of the product to update
+            update_payload (Dict[str, Any]): Payload containing update details
+        
+        Returns:
+            str: Status message of the update operation
+        """
         try:
-            endpoint = f"Products/{product_id}"
+            endpoint: str = f"Products/{product_id}"
 
             logger.info(
                 "Updating product",
@@ -386,10 +460,10 @@ class APIClient:
                 }
             )
 
-            response = self._make_request(endpoint, method='PUT', data=update_payload)
+            response: Dict[str, Any] = self._make_request(endpoint, method='PUT', data=update_payload)
 
             if 'Message' in response:
-                message = response['Message']
+                message: str = response['Message']
                 if message == "Ok":
                     logger.info(
                         "Product updated successfully",
@@ -424,7 +498,13 @@ class APIClient:
             )
             return f"Error updating product: {str(e)}"
         
-    def search_products_api(self, category=None, code_query=None, page=1, items_per_page=30):
+    def search_products_api(
+        self, 
+        category: Optional[str] = None, 
+        code_query: Optional[str] = None, 
+        page: int = 1, 
+        items_per_page: int = 30
+    ) -> Dict[str, Any]:
         """
         Search products directly via the API with filtering capabilities.
         
@@ -439,7 +519,7 @@ class APIClient:
         """
         try:
             items_per_page = min(items_per_page, self.MAX_ITEMS_PER_PAGE)
-            params = {}
+            params: Dict[str, Any] = {}
             
             # Add category filter if provided
             if category:
@@ -467,16 +547,16 @@ class APIClient:
                 }
             )
             
-            response = self._make_request(
+            response: Dict[str, Any] = self._make_request(
                 "Products",
                 params=params
             )
             
             # Process and format the response
-            total_count = response.get('TotalCount', 0)
-            total_pages = (total_count + items_per_page - 1) // items_per_page
+            total_count: int = response.get('TotalCount', 0)
+            total_pages: int = (total_count + items_per_page - 1) // items_per_page
             
-            formatted_response = {
+            formatted_response: Dict[str, Any] = {
                 "TotalCount": total_count,
                 "CurrentPage": page,
                 "ItemsPerPage": items_per_page,
