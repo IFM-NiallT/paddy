@@ -44,15 +44,16 @@
         </div>
     </div>
 
-    <!-- Rest of the code remains the same as in the original file -->
     <main class="container-fluid px-4">
         <!-- Categories View -->
-        <div id="category-grid" class="row row-cols-1 row-cols-sm-2 row-cols-md-4 row-cols-lg-6 row-cols-xxl-8 g-4">
+        <div id="category-grid">
             {% for category in categories.Data %}
-                <div class="col category-item">
+                <div class="category-item">
                     <div class="category-container">
                         <div class="category-content">
-                            <div class="category-name">{{ category.Description }}</div>
+                            <div class="category-name" title="{{ category.Description }}">
+                                {{ category.Description }}
+                            </div>
                             <div class="category-button">
                                 <button class="btn-uni" onclick="window.location.href='/products/{{ category.ID }}'">
                                     View Products
@@ -63,7 +64,6 @@
                 </div>
             {% endfor %}
         </div>
-
         <!-- Products View -->
         <div id="productSearchResults" style="display: none;">
             <div class="view-header">

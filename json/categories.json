@@ -360,6 +360,90 @@
                 "Code": "D",
                 "Description": "Default"
             }
+        },
+        {
+            "ID": 21487721526901,
+            "UpdatedOn": "2023-07-05T08:32:59.163Z",
+            "CreatedOn": "0001-01-01T00:00:00Z",
+            "Code": "4C",
+            "Description": "LIFTING",
+            "Group": {
+                "ID": 21492016465908,
+                "Code": "D",
+                "Description": "Default"
+            }
+        },
+        {
+            "ID": 21487722303858,
+            "UpdatedOn": "2023-07-05T08:01:34.407Z",
+            "CreatedOn": "0001-01-01T00:00:00Z",
+            "Code": "3O",
+            "Description": "ESCO WEARPARTS",
+            "Group": {
+                "ID": 21492016465908,
+                "Code": "D",
+                "Description": "Default"
+            }
+        },
+        {
+            "ID": 21487724375674,
+            "UpdatedOn": "2023-07-05T08:04:09.58Z",
+            "CreatedOn": "0001-01-01T00:00:00Z",
+            "Code": "4Y",
+            "Description": "MARKETING MATERIAL",
+            "Group": {
+                "ID": 21492016465908,
+                "Code": "D",
+                "Description": "Default"
+            }
+        },
+        {
+            "ID": 21487724893865,
+            "UpdatedOn": "2023-07-05T08:04:04.353Z",
+            "CreatedOn": "2020-01-07T08:35:41.107Z",
+            "Code": "4X",
+            "Description": "TEMP",
+            "Group": {
+                "ID": 21492016465908,
+                "Code": "D",
+                "Description": "Default"
+            }
+        },
+        {
+            "ID": 21487729612688,
+            "UpdatedOn": "2023-07-05T08:03:40.813Z",
+            "CreatedOn": "2020-11-11T09:38:21.847Z",
+            "Code": "4D",
+            "Description": "ADAPTOR KITS (OEM)",
+            "Group": {
+                "ID": 21492016465908,
+                "Code": "D",
+                "Description": "Default"
+            }
+        },
+        {
+            "ID": 21487729612689,
+            "UpdatedOn": "2023-07-05T08:37:21.033Z",
+            "CreatedOn": "2021-01-20T10:30:38.12Z",
+            "Code": "4E",
+            "Description": "POWER TOOLS",
+            "Group": {
+                "ID": 21492016465908,
+                "Code": "D",
+                "Description": "Default"
+            }
+        },
+        {
+            "ID": 21487729612690,
+            "UpdatedOn": "2023-07-05T08:03:58.91Z",
+            "CreatedOn": "2021-01-20T10:31:04.98Z",
+            "Code": "4F",
+            "Description": "HARDWARE",
+            "Group": {
+                "ID": 21492016465908,
+                "Code": "D",
+                "Description": "Default"
+            }
         }
     ]
 }

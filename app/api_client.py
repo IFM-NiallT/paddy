@@ -25,7 +25,7 @@ import time
 import requests
 import json
 import os
-from typing import Dict, Optional, Any, Union, List
+from typing import Dict, Optional, Any, List
 
 from .logger import logger
 from .config import Config
@@ -241,9 +241,12 @@ class APIClient:
             )
             return False
 
-    def get_categories(self) -> Dict[str, Any]:
+    def get_categories(self, fetch: int = 37) -> Dict[str, Any]:
         """
         Fetch and cache product categories with enhanced logging.
+        
+        Args:
+            fetch (int, optional): Number of categories to fetch. Defaults to 37.
         
         Returns:
             Dict containing product categories
@@ -274,7 +277,10 @@ class APIClient:
 
         try:
             logger.info("Fetching categories from API")
-            data: Dict[str, Any] = self._make_request("ProductCategories")
+            data: Dict[str, Any] = self._make_request(
+                "ProductCategories",
+                params={"fetch": fetch}
+            )
             
             try:
                 with open(Config.CACHE_FILE, 'w') as f:
