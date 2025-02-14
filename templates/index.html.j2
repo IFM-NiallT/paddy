@@ -21,7 +21,10 @@
                 <a class="navbar-brand" href="#" id="paddyText">PADDY</a>
                 <h3> v0.3</h3>
             </div>
-            <div>
+            <div class="d-flex gap-2">
+                <button id="toggleCategoryDetails" class="btn-uni">
+                    Toggle Category Details
+                </button>
                 <button id="searchAllProducts" class="btn-uni">
                     Search All Products
                 </button>
@@ -29,17 +32,97 @@
         </div>
     </nav>
 
+    <!-- Search Modal -->
+    <div class="modal fade" id="searchProductsModal" tabindex="-1" aria-labelledby="searchProductsModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="searchProductsModalLabel">Search Products</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <!-- Search Form -->
+                    <div class="search-wrapper mb-4">
+                        <input type="text" class="search-input" id="modalProductSearch" placeholder="Search products by code or description...">
+                    </div>
+
+                    <!-- View Toggle -->
+                    <ul class="nav nav-tabs" id="viewTabs" role="tablist">
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link active" id="card-tab" data-bs-toggle="tab" data-bs-target="#card-view" type="button" role="tab">
+                                Card View
+                            </button>
+                        </li>
+                        <li class="nav-item" role="presentation">
+                            <button class="nav-link" id="table-tab" data-bs-toggle="tab" data-bs-target="#table-view" type="button" role="tab">
+                                Table View
+                            </button>
+                        </li>
+                    </ul>
+
+                    <div class="tab-content mt-3" id="viewTabsContent">
+                        <!-- Card View -->
+                        <div class="tab-pane fade show active" id="card-view" role="tabpanel">
+                            <div class="product-card-grid" id="productCardGrid">
+                                <!-- Cards will be populated here -->
+                            </div>
+                        </div>
+
+                        <!-- Table View -->
+                        <div class="tab-pane fade" id="table-view" role="tabpanel">
+                            <div class="table-responsive">
+                                <table class="table" id="modalProductsTable">
+                                    <thead>
+                                        <tr>
+                                            <th>Code</th>
+                                            <th>Description</th>
+                                            <th>Category</th>
+                                            <th>Actions</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="modalProductResultsBody">
+                                        <!-- Results will be populated here -->
+                                    </tbody>
+                                </table>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Search Bar Container -->
     <div class="search-bar-container">
         <div class="search-controls">
-            <!-- Category Search - Shown in category view -->
-            <div class="search-wrapper" id="categorySearchWrapper">
+            <!-- Search input -->
+            <div class="search-wrapper flex-grow-1" id="categorySearchWrapper">
                 <input type="text" class="search-input" id="categorySearch" placeholder="Search categories...">
             </div>
             
-            <!-- Product Search - Shown in product view -->
-            <div class="search-wrapper" id="productSearchWrapper" style="display: none;">
-                <input type="text" class="search-input" id="productSearch" placeholder="Search products by code or description...">
+            <!-- Dropdowns side by side -->
+            <div class="dropdown-container">
+                <select class="form-select btn-uni" id="sortSelect">
+                    <option value="" disabled selected>Sort By</option>
+                    <option value="alpha-asc">A - Z</option>
+                    <option value="alpha-desc">Z - A</option>
+                    <option value="code-asc">Code Ascending</option>
+                    <option value="code-desc">Code Descending</option>
+                </select>
+
+                <select class="form-select btn-uni ms-2" id="columnSelect">
+                    <option value="auto" selected>Auto Columns</option>
+                    <option value="1">1 Column</option>
+                    <option value="2">2 Columns</option>
+                    <option value="3">3 Columns</option>
+                    <option value="4">4 Columns</option>
+                    <option value="5">5 Columns</option>
+                    <option value="6">6 Columns</option>
+                    <option value="7">7 Columns</option>
+                    <option value="8">8 Columns</option>
+                    <option value="9">9 Columns</option>
+                    <option value="10">10 Columns</option>
+                </select>
             </div>
         </div>
     </div>
@@ -57,8 +140,13 @@
                                      onerror="this.src='{{ url_for('static', filename='img/categories/404_default.jpg') }}'"
                                      class="category-img">
                             </div>
-                            <div class="category-name" title="{{ category.Description }}">
-                                {{ category.Description }}
+                            <div class="category-text">
+                                <div class="category-name" title="{{ category.Description }}" data-code="{{ category.Code }}">
+                                    {{ category.Description }}
+                                </div>
+                                <div class="category-details" style="display: none;">
+                                    <div class="category-code">Code: {{ category.Code }}</div>
+                                </div>
                             </div>
                             <div class="category-button">
                                 <button class="btn-uni" onclick="window.location.href='/products/{{ category.ID }}'">
@@ -81,20 +169,21 @@
             </div>
             
             <div class="table-container">
-            <div class="table-responsive">
-                <table class="table table-bordered" id="productsTable">
-                    <thead>
-                        <tr>
-                            <th>Code</th>
-                            <th>Description</th>
-                            <th>Category</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody id="productResultsBody">
-                        <!-- Results will be populated here -->
-                    </tbody>
-                </table>
+                <div class="table-responsive">
+                    <table class="table table-bordered" id="productsTable">
+                        <thead>
+                            <tr>
+                                <th>Code</th>
+                                <th>Description</th>
+                                <th>Category</th>
+                                <th>Actions</th>
+                            </tr>
+                        </thead>
+                        <tbody id="productResultsBody">
+                            <!-- Results will be populated here -->
+                        </tbody>
+                    </table>
+                </div>
             </div>
         </div>
     </main>

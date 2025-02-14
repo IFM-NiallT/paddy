@@ -85,7 +85,7 @@ print(f"This will rename all .jpg files in {directory_path} using data from {jso
 print("Files will be renamed to 'ID_category_description.jpg' format")
 confirmation = input("Do you want to continue? (yes/no): ")
 
-if confirmation.lower() == 'yes':
+if confirmation.lower() == 'yes' or confirmation.lower() == 'y':
     rename_category_images(directory_path, json_file_path)
     print("Renaming complete!")
 else:

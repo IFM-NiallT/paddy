@@ -8,6 +8,7 @@
     --secondary-color: #FF4040;
     --background-color: #FEE9E9;
     --text-color: #000;
+    --subtext-color: #4a2a2a,
     --white-color: #FFFFFF;
     
     font-size: 16px;
@@ -777,18 +778,49 @@ footer::before {
     gap: 1rem;
 }
 
+/* Category Text Container */
+.category-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.25rem;
+    text-align: center;
+}
+
 .category-name {
     font-size: 1.1rem;
     font-weight: 600;
     color: var(--primary-color);
     margin: 0;
-    flex: 1;
     display: -webkit-box;
     -webkit-line-clamp: 3;
     line-clamp: 3;
     -webkit-box-orient: vertical;
     overflow: hidden;
     text-overflow: ellipsis;
+}
+
+/* Category Details Styles */
+.category-details {
+    display: none;
+    flex-direction: column;
+    gap: 0.25rem;
+    margin-top: 0.5rem;
+    padding-top: 0.5rem;
+    border-top: 1px solid rgba(178, 0, 0, 0.1);
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+}
+
+.category-details.show {
+    display: flex;
+    opacity: 1;
+}
+
+.category-code, .category-count {
+    font-size: 0.9rem;
+    color: #4a2a2a;
+    font-weight: 500;
+    margin: 0;
 }
 
 .category-button {
@@ -800,6 +832,12 @@ footer::before {
     padding: 0.75rem 1rem;
     font-size: 0.9rem;
     white-space: nowrap;
+}
+
+/* Toggle Button Active State */
+.btn-uni.active {
+    background-color: var(--secondary-color);
+    box-shadow: inset 0 2px 4px rgba(0, 0, 0, 0.1);
 }
 
 /* Error Page Styles */
@@ -1183,4 +1221,256 @@ footer::before {
     h4 { font-size: 1.2rem; }
     h5 { font-size: 1rem; }
     h6 { font-size: 0.9rem; }
+}
+
+/* Modal Styles */
+.modal-xl {
+    max-width: 95%;
+    margin: 1.75rem auto;
+}
+
+.modal-content {
+    background-color: var(--background-color);
+    border: 2px solid var(--primary-color);
+    border-radius: 10px;
+}
+
+.modal-header {
+    background-color: var(--white-color);
+    border-bottom: 2px solid var(--primary-color);
+    padding: 1rem 1.5rem;
+}
+
+.modal-title {
+    color: var(--primary-color);
+    font-weight: bold;
+    font-size: 1.25rem;
+    margin: 0;
+}
+
+.modal-body {
+    padding: 1.5rem;
+    background-color: var(--white-color);
+}
+
+/* Product Card Grid in Modal */
+.product-card-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+    gap: 1rem;
+    padding: 1rem;
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.product-card {
+    background: var(--white-color);
+    border: 1px solid var(--primary-color);
+    border-radius: 8px;
+    padding: 1rem;
+    transition: transform 0.2s ease, box-shadow 0.2s ease;
+}
+
+.product-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 6px rgba(178, 0, 0, 0.1);
+}
+
+.product-card-content {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.product-code {
+    color: var(--primary-color);
+    font-size: 1.1rem;
+    font-weight: bold;
+    margin: 0;
+}
+
+.product-description {
+    font-size: 0.9rem;
+    margin: 0;
+    flex: 1;
+}
+
+.product-category {
+    font-size: 0.8rem;
+    color: #666;
+    margin: 0;
+}
+
+/* Modal Nav Tabs Styling */
+.nav-tabs {
+    border-bottom: 1px solid var(--primary-color);
+    margin-bottom: 1rem;
+}
+
+.nav-tabs .nav-link {
+    color: var(--primary-color);
+    border: 1px solid transparent;
+    margin-bottom: -1px;
+    padding: 0.75rem 1.5rem;
+    font-weight: 500;
+    transition: all 0.2s ease;
+}
+
+.nav-tabs .nav-link.active {
+    color: var(--white-color);
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    border-bottom-color: transparent;
+}
+
+.nav-tabs .nav-link:hover:not(.active) {
+    border-color: var(--primary-color);
+    background-color: var(--background-color);
+    color: var(--secondary-color);
+}
+
+/* Modal Loading and Messages */
+.loading-message {
+    text-align: center;
+    padding: 2rem;
+    color: var(--primary-color);
+    font-weight: 500;
+}
+
+/* Modal Table Adjustments */
+.modal .table-responsive {
+    max-height: 60vh;
+    overflow-y: auto;
+}
+
+.modal .table {
+    margin-bottom: 0;
+}
+
+/* Close Button */
+.btn-close {
+    opacity: 1;
+    transition: opacity 0.2s ease;
+}
+
+.btn-close:hover {
+    opacity: 0.75;
+}
+
+/* Responsive Modal Adjustments */
+@media (max-width: 768px) {
+    .modal-xl {
+        margin: 1rem;
+    }
+    
+    .product-card-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .modal .table-responsive {
+        max-height: 50vh;
+    }
+}
+
+/* Modal Tab Content */
+.tab-content {
+    background: var(--white-color);
+    border-radius: 0 0 8px 8px;
+    padding: 1rem;
+}
+
+.tab-pane {
+    display: none;
+}
+
+.tab-pane.active {
+    display: block;
+}
+
+/* Modal Backdrop */
+.modal-backdrop {
+    background-color: rgba(0, 0, 0, 0.5);
+}
+
+.modal-backdrop.show {
+    opacity: 1;
+}
+
+/* Dropdown Container Styles */
+.dropdown-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto; /* Pushes dropdowns to the right of search */
+}
+
+/* Individual Dropdown Styles */
+.dropdown-container select {
+    width: 140px;
+    padding: 8px 12px;
+    border: 2px solid var(--primary-color);
+    border-radius: 5px;
+    background-color: var(--white-color);
+    color: var(--primary-color);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    /* Custom dropdown arrow */
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M1 4l5 5 5-5z' fill='%23B20000'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px; /* Space for the arrow */
+}
+
+/* Hover and Focus states */
+.dropdown-container select:hover {
+    background-color: var(--background-color);
+    border-color: var(--secondary-color);
+}
+
+.dropdown-container select:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+/* Disabled option styling */
+.dropdown-container select option[disabled] {
+    color: #999;
+}
+
+/* Selected option styling */
+.dropdown-container select option:checked {
+    background-color: var(--primary-color);
+    color: var(--white-color);
+}
+
+/* Search Controls Container */
+.search-controls {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+    padding: 0.5rem 0;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .search-controls {
+        flex-direction: column;
+        width: 100%;
+    }
+    
+    .dropdown-container {
+        width: 100%;
+        margin-left: 0;
+        margin-top: 0.5rem;
+    }
+    
+    .dropdown-container select {
+        flex: 1;
+        width: auto;
+    }
 }
