@@ -1,31 +1,75 @@
 /**
  * PADDY Categories Page JavaScript
- * Handles category search functionality and modal integration
+ * Handles category search functionality, modal integration, and view toggling
  */
 
 // Initialize modal variable
 let searchModal = null;
+
+// Initialize view toggle for categories
+function initializeViewToggle() {
+    const cardViewBtn = document.getElementById('cardViewBtn');
+    const tableViewBtn = document.getElementById('tableViewBtn');
+    const categoryGrid = document.getElementById('category-grid');
+    const categoryTable = document.getElementById('category-table');
+    const columnSelect = document.getElementById('columnSelect');
+
+    function setViewMode(mode) {
+        if (mode === 'card') {
+            categoryGrid.style.display = 'grid';
+            categoryTable.style.display = 'none';
+            cardViewBtn.classList.add('active');
+            tableViewBtn.classList.remove('active');
+            columnSelect.disabled = false; // Enable column select
+            columnSelect.style.opacity = '1';
+        } else {
+            categoryGrid.style.display = 'none';
+            categoryTable.style.display = 'block';
+            cardViewBtn.classList.remove('active');
+            tableViewBtn.classList.add('active');
+            columnSelect.disabled = true; // Disable column select
+            columnSelect.style.opacity = '0.5';
+        }
+        localStorage.setItem('categoryViewMode', mode);
+    }
+
+    // Set default view to card
+    const savedView = localStorage.getItem('categoryViewMode') || 'card';
+    setViewMode(savedView);
+
+    // Add click handlers
+    cardViewBtn.addEventListener('click', () => setViewMode('card'));
+    tableViewBtn.addEventListener('click', () => setViewMode('table'));
+}
 
 // Search functionality for categories
 function searchCategories() {
     const searchInput = document.getElementById('categorySearch');
     const filter = searchInput.value.toLowerCase();
     const categoryItems = document.getElementsByClassName('category-item');
+    const tableRows = document.querySelectorAll('#category-table tbody tr');
     let hasResults = false;
 
-    for (let i = 0; i < categoryItems.length; i++) {
-        const categoryName = categoryItems[i].getElementsByClassName('category-name')[0];
+    // Search in grid view
+    Array.from(categoryItems).forEach(item => {
+        const categoryName = item.querySelector('.category-name');
         const textValue = categoryName.textContent || categoryName.innerText;
-        
-        if (textValue.toLowerCase().indexOf(filter) > -1) {
-            categoryItems[i].style.display = "";
-            hasResults = true;
-        } else {
-            categoryItems[i].style.display = "none";
-        }
-    }
+        const isVisible = textValue.toLowerCase().includes(filter);
+        item.style.display = isVisible ? "" : "none";
+        if (isVisible) hasResults = true;
+    });
 
-    // Show no results message if needed
+    // Search in table view
+    Array.from(tableRows).forEach(row => {
+        const categoryText = row.cells[0].textContent;
+        const codeText = row.cells[1].textContent;
+        const isVisible = categoryText.toLowerCase().includes(filter) || 
+                         codeText.toLowerCase().includes(filter);
+        row.style.display = isVisible ? "" : "none";
+        if (isVisible) hasResults = true;
+    });
+
+    // Handle no results message
     const existingMessage = document.getElementById('noCategoriesMessage');
     if (!hasResults && filter && !existingMessage) {
         const message = document.createElement('div');
@@ -229,6 +273,9 @@ document.addEventListener('DOMContentLoaded', function() {
     if (shouldShowDetails && toggleButton) {
         toggleCategoryDetails(toggleButton);
     }
+
+    // Initialize view toggle
+    initializeViewToggle();
 });
 
 // HTML escape utility
@@ -237,4 +284,15 @@ function escapeHtml(str) {
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
+}
+
+// Placeholder functions for referenced methods not shown in original code
+function updateModalResults(data) {
+    // This is a placeholder. You'll need to implement this based on your specific requirements
+    console.log('Update modal results with:', data);
+}
+
+function showErrorState() {
+    // This is a placeholder. Implement error handling for search
+    console.error('Search encountered an error');
 }
