@@ -704,20 +704,23 @@ class PaddyApp:
         """Handle search requests for all products."""
         try:
             code_query: str = request.args.get('code', '')
+            description_query: str = request.args.get('description', '')
             page: int = request.args.get('page', 1, type=int)
             
             logger.info(
                 "Processing all products search request",
                 extra={
                     'code_query': code_query,
+                    'description_query': description_query,
                     'page': page,
                     'client_ip': request.remote_addr
                 }
             )
             
-            # Use the existing search_products_api method without category filter
+            # Use the search_products_api method with both code and description
             results: Dict[str, Any] = self.api_client.search_products_api(
                 code_query=code_query,
+                description_query=description_query,
                 page=page
             )
             

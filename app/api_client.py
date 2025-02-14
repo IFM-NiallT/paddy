@@ -507,7 +507,8 @@ class APIClient:
     def search_products_api(
         self, 
         category: Optional[str] = None, 
-        code_query: Optional[str] = None, 
+        code_query: Optional[str] = None,
+        description_query: Optional[str] = None, 
         page: int = 1, 
         items_per_page: int = 30
     ) -> Dict[str, Any]:
@@ -517,11 +518,9 @@ class APIClient:
         Args:
             category (str, optional): Product category to filter by
             code_query (str, optional): Code search query
+            description_query (str, optional): Description search query
             page (int): Page number for pagination
             items_per_page (int): Number of items per page
-            
-        Returns:
-            dict: API response containing search results
         """
         try:
             items_per_page = min(items_per_page, self.MAX_ITEMS_PER_PAGE)
@@ -535,6 +534,10 @@ class APIClient:
             if code_query:
                 params['Code[cnt]'] = code_query
                 
+            # Add description search if provided
+            if description_query:
+                params['Description[cnt]'] = description_query
+                
             # Add pagination parameters
             params['offset'] = (page - 1) * items_per_page
             params['fetch'] = items_per_page
@@ -547,6 +550,7 @@ class APIClient:
                 extra={
                     'category': category,
                     'code_query': code_query,
+                    'description_query': description_query,
                     'page': page,
                     'items_per_page': items_per_page,
                     'params': params
@@ -570,16 +574,6 @@ class APIClient:
                 "Data": response.get('Data', [])
             }
             
-            logger.info(
-                "API search completed successfully",
-                extra={
-                    'total_results': total_count,
-                    'returned_results': len(formatted_response["Data"]),
-                    'page': page,
-                    'total_pages': total_pages
-                }
-            )
-            
             return formatted_response
             
         except Exception as e:
@@ -589,7 +583,8 @@ class APIClient:
                     'error_type': type(e).__name__,
                     'error_detail': str(e),
                     'category': category,
-                    'code_query': code_query
+                    'code_query': code_query,
+                    'description_query': description_query
                 },
                 exc_info=True
             )

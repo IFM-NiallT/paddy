@@ -68,7 +68,8 @@ async function searchAllProducts() {
     `;
 
     try {
-        const response = await fetch(`/api/search/all?code=${encodeURIComponent(query)}`);
+        // Search in both code and description
+        const response = await fetch(`/api/search/all?code=${encodeURIComponent(query)}&description=${encodeURIComponent(query)}`);
         if (!response.ok) {
             throw new Error(`Search failed: ${response.status}`);
         }
@@ -137,14 +138,14 @@ function escapeHtml(str) {
 
 // Toggle search mode
 function toggleSearchMode(show) {
-    const categoryGrid = document.getElementById('category-grid');
-    const searchResults = document.getElementById('productSearchResults');
-    const categorySearchWrapper = document.getElementById('categorySearchWrapper');
-    const productSearchWrapper = document.getElementById('productSearchWrapper');
-    const searchAllButton = document.getElementById('searchAllProducts');
-    
     if (show) {
         // Switch to product search view
+        const categoryGrid = document.getElementById('category-grid');
+        const searchResults = document.getElementById('productSearchResults');
+        const categorySearchWrapper = document.getElementById('categorySearchWrapper');
+        const productSearchWrapper = document.getElementById('productSearchWrapper');
+        const searchAllButton = document.getElementById('searchAllProducts');
+        
         categoryGrid.style.display = 'none';
         searchResults.style.display = 'block';
         categorySearchWrapper.style.display = 'none';
@@ -152,13 +153,8 @@ function toggleSearchMode(show) {
         searchAllButton.style.display = 'none';
         document.getElementById('productSearch').focus();
     } else {
-        // Switch to category view
-        categoryGrid.style.display = 'flex';
-        searchResults.style.display = 'none';
-        categorySearchWrapper.style.display = 'block';
-        productSearchWrapper.style.display = 'none';
-        searchAllButton.style.display = 'block';
-        document.getElementById('categorySearch').focus();
+        // Refresh the page when going back to categories
+        window.location.reload();
     }
 }
 
