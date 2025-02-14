@@ -46,25 +46,31 @@
 
     <main class="container-fluid px-4">
         <!-- Categories View -->
-        <div id="category-grid">
-            {% for category in categories.Data %}
-                <div class="category-item">
-                    <div class="category-container">
-                        <div class="category-content">
-                            <div class="category-name" title="{{ category.Description }}">
-                                {{ category.Description }}
-                            </div>
-                            <div class="category-button">
-                                <button class="btn-uni" onclick="window.location.href='/products/{{ category.ID }}'">
-                                    View Products
-                                </button>
-                            </div>
-                        </div>
+<div id="category-grid">
+    {% for category in categories.Data %}
+        <div class="category-item">
+            <div class="category-container">
+                <div class="category-content">
+                    <div class="category-image">
+                        <img src="{{ url_for('static', filename='img/categories/' ~ category.ID ~ '_' ~ category.Description.lower().replace(' ', '_') ~ '.jpg') }}" 
+                             alt="{{ category.Description }}"
+                             onerror="this.src='{{ url_for('static', filename='img/categories/404_default.jpg') }}'"
+                             class="category-img">
+                    </div>
+                    <div class="category-name" title="{{ category.Description }}">
+                        {{ category.Description }}
+                    </div>
+                    <div class="category-button">
+                        <button class="btn-uni" onclick="window.location.href='/products/{{ category.ID }}'">
+                            View Products
+                        </button>
                     </div>
                 </div>
-            {% endfor %}
+            </div>
         </div>
-        <!-- Products View -->
+    {% endfor %}
+</div>
+<-- Products View -->
         <div id="productSearchResults" style="display: none;">
             <div class="view-header">
                 <h2 class="view-title">All Products</h2>

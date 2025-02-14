@@ -690,7 +690,6 @@ footer::before {
 }
 
 /* Category Grid Styles */
-/* Category Grid Container */
 #category-grid {
     display: grid;
     gap: 1.5rem;
@@ -742,11 +741,33 @@ footer::before {
     height: 100%;
     padding: 1.25rem;
     transition: transform 0.3s ease, box-shadow 0.3s ease;
+    max-width: 300px;
+    margin: 0 auto;
 }
 
 .category-container:hover {
     transform: translateY(-5px);
     box-shadow: 0 5px 15px rgba(178, 0, 0, 0.1);
+}
+
+/* Image Container and Styling */
+.category-image {
+    width: 100%;
+    height: 140px;
+    overflow: hidden;
+    border-radius: 8px;
+    margin-bottom: 0.75rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #f8f8f8;
+}
+
+.category-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 0.5rem;
 }
 
 .category-content {
@@ -780,6 +801,7 @@ footer::before {
     font-size: 0.9rem;
     white-space: nowrap;
 }
+
 /* Error Page Styles */
 .error-message {
     font-size: clamp(1.2rem, 4vw, 1.5rem);
