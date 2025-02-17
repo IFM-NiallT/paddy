@@ -6,6 +6,10 @@
 // Initialize modal variable
 let searchModal = null;
 
+// ------------------------
+// Category Search Functions
+// ------------------------
+
 // Search functionality for categories
 function searchCategories() {
     const searchInput = document.getElementById('categorySearch');
@@ -114,39 +118,24 @@ function toggleCategoryDetails(button) {
     localStorage.setItem('categoryDetailsVisible', !isShowing);
 }
 
-// Debounce function for search
-function debounce(func, wait) {
-    let timeout;
-    return function executedFunction(...args) {
-        const later = () => {
-            clearTimeout(timeout);
-            func(...args);
-        };
-        clearTimeout(timeout);
-        timeout = setTimeout(later, wait);
-    };
-}
+// ------------------------
+// Modal Search Functions
+// ------------------------
 
 // Search products across all categories (Modal version)
 async function searchProductsModal() {
     const searchInput = document.getElementById('modalProductSearch');
     const query = searchInput.value.trim();
-    const cardGrid = document.getElementById('productCardGrid');
-    const tableBody = document.getElementById('modalProductResultsBody');
+    
+    if (query.length === 0) {
+        updateModalResults({ Data: [] }); // Clear results if search is empty
+        return;
+    }
     
     // Add loading state
     searchInput.classList.add('loading');
+    showLoadingState();
     
-    // Show loading state in both views
-    cardGrid.innerHTML = `<div class="loading-message">Searching products...</div>`;
-    tableBody.innerHTML = `
-        <tr>
-            <td colspan="4" class="text-center">
-                <div class="py-4">Searching products...</div>
-            </td>
-        </tr>
-    `;
-
     try {
         const response = await fetch(`/api/search/all?code=${encodeURIComponent(query)}&description=${encodeURIComponent(query)}`);
         if (!response.ok) {
@@ -163,13 +152,23 @@ async function searchProductsModal() {
     }
 }
 
-// Update product results function
-function updateProductResults(data) {
-    const tbody = document.getElementById('productResultsBody');
-    tbody.innerHTML = '';
+// Update modal results for both card and table views
+function updateModalResults(data) {
+    const cardGrid = document.getElementById('productCardGrid');
+    const tableBody = document.getElementById('modalProductResultsBody');
+    
+    // Clear loading states
+    cardGrid.innerHTML = '';
+    tableBody.innerHTML = '';
 
     if (!data.Data || data.Data.length === 0) {
-        tbody.innerHTML = `
+        const noResultsMessage = `
+            <div class="no-results-message">
+                <p>No products found</p>
+            </div>
+        `;
+        cardGrid.innerHTML = noResultsMessage;
+        tableBody.innerHTML = `
             <tr>
                 <td colspan="4" class="text-center">
                     <div class="py-4">No products found</div>
@@ -179,6 +178,13 @@ function updateProductResults(data) {
         return;
     }
 
+    // Update card view
+    data.Data.forEach(product => {
+        const card = createProductCard(product);
+        cardGrid.appendChild(card);
+    });
+
+    // Update table view
     data.Data.forEach(product => {
         const row = document.createElement('tr');
         row.innerHTML = `
@@ -196,8 +202,97 @@ function updateProductResults(data) {
                 </div>
             </td>
         `;
-        tbody.appendChild(row);
+        tableBody.appendChild(row);
     });
+}
+
+// Create product card element
+function createProductCard(product) {
+    const card = document.createElement('div');
+    card.className = 'product-card';
+    card.innerHTML = `
+        <div class="product-card-content">
+            <h3 class="product-code">${escapeHtml(product.Code)}</h3>
+            <p class="product-description">${escapeHtml(product.Description)}</p>
+            <p class="product-category">Category: ${escapeHtml(product.Category?.Description || 'N/A')}</p>
+            <div class="product-actions">
+                <button class="btn-uni btn-sm" onclick="window.location.href='/products/${product.Category?.ID}'">
+                    View Category
+                </button>
+                <button class="btn-uni btn-sm edit-product-btn" onclick="fetchProductDetails(${product.ID})">
+                    Edit
+                </button>
+            </div>
+        </div>
+    `;
+    return card;
+}
+
+// Show loading state in both views
+function showLoadingState() {
+    const cardGrid = document.getElementById('productCardGrid');
+    const tableBody = document.getElementById('modalProductResultsBody');
+    
+    cardGrid.innerHTML = `
+        <div class="loading-message">
+            <div class="spinner-border text-primary" role="status">
+                <span class="visually-hidden">Loading...</span>
+            </div>
+            <p>Searching products...</p>
+        </div>
+    `;
+    
+    tableBody.innerHTML = `
+        <tr>
+            <td colspan="4" class="text-center">
+                <div class="py-4">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                    <p class="mt-2">Searching products...</p>
+                </div>
+            </td>
+        </tr>
+    `;
+}
+
+// Show error state in both views
+function showErrorState() {
+    const cardGrid = document.getElementById('productCardGrid');
+    const tableBody = document.getElementById('modalProductResultsBody');
+    const errorMessage = `
+        <div class="error-message">
+            <p>An error occurred while searching products. Please try again.</p>
+        </div>
+    `;
+    
+    cardGrid.innerHTML = errorMessage;
+    tableBody.innerHTML = `
+        <tr>
+            <td colspan="4" class="text-center">
+                <div class="py-4 text-danger">
+                    An error occurred while searching products. Please try again.
+                </div>
+            </td>
+        </tr>
+    `;
+}
+
+// ------------------------
+// Utility Functions
+// ------------------------
+
+// Debounce function for search
+function debounce(func, wait) {
+    let timeout;
+    return function executedFunction(...args) {
+        const later = () => {
+            clearTimeout(timeout);
+            func(...args);
+        };
+        clearTimeout(timeout);
+        timeout = setTimeout(later, wait);
+    };
 }
 
 // HTML escape utility
@@ -208,7 +303,10 @@ function escapeHtml(str) {
     return div.innerHTML;
 }
 
-// Event listeners
+// ------------------------
+// Event Listeners
+// ------------------------
+
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize Bootstrap modal
     searchModal = new bootstrap.Modal(document.getElementById('searchProductsModal'));
