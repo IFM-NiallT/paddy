@@ -786,9 +786,6 @@ function populateEditForm(product, productId, dynamicFields) {
     const firstColumn = document.getElementById('popupFirstColumn');
     const secondColumn = document.getElementById('popupSecondColumn');
 
-    firstColumn.innerHTML = 'Empty';
-    secondColumn.innerHTML = 'Empty';
-
     if (Array.isArray(dynamicFields)) {
         const midpoint = Math.ceil(dynamicFields.length / 2);
         const firstColumnFields = dynamicFields.slice(0, midpoint);

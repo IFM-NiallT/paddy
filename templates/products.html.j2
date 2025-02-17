@@ -1,190 +1,199 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PADDY - Products</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PADDY - Products</title>
 
-    <!-- External Libraries -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link href="https://fonts.googleapis.com/css2?family=Liter:wght@400;700&display=swap" rel="stylesheet">
-    
-    <!-- Our Custom Stylesheet -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/paddy.css') }}">
+  <!-- External Libraries -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Liter:wght@400;700&display=swap" rel="stylesheet">
+  
+  <!-- Our Custom Stylesheet -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/paddy.css') }}">
 </head>
 
 <body>
-    <!-- Navigation Bar -->
-    <nav class="navbar navbar-expand-lg">
-        <div class="container-fluid px-4">
-            <div class="nav-brand-container d-flex align-items-center">
-                <img src="/static/img/ifm_logo.png" alt="IFM logo" class="logo me-2" id="ifmLogo">
-                <a class="navbar-brand" href="/">PADDY</a>
-            </div>
-            <div>
-                <button class="btn-uni me-2" onclick="exportTableToCSV()">Export to CSV</button>
-                <button class="btn-uni" onclick="window.location.href='/'">Back to Categories</button>
-            </div>
-        </div>
-    </nav>
-
-    <!-- Main Content -->
-    <main>
-        <!-- Search Container -->
-        <div class="container-fluid px-4">
-            <div class="search-container">
-                <input type="text" class="search-input" id="productSearch" placeholder="Search products...">
-            </div>
-        </div>
-
-        <!-- Table Container -->
-        <div class="table-container">
-            <!-- Header with Category Info and Pagination -->
-            <h4 class="text-center">
-                {{ category.Description }} ({{ category.Code }})
-                <div class="pagination-container">
-                    {% if products.CurrentPage > 1 %}
-                        <a href="{{ url_for('products', category_id=category.ID, page=1, sort=current_sort) }}" class="pagination-arrow" aria-label="Skip to first page">⏮️</a>
-                        <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage-1, sort=current_sort) }}" class="pagination-arrow" aria-label="Previous page">⬅️</a>
-                    {% endif %}
-                    {% set start_item = (products.CurrentPage - 1) * products.ItemsPerPage + 1 %}
-                    {% set end_item = [products.CurrentPage * products.ItemsPerPage, products.TotalCount] | min %}
-                    <span class="pagination-count">{{ start_item }}-{{ end_item }}/{{ products.TotalCount }}</span>
-                    {% if products.CurrentPage < products.TotalPages %}
-                        <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage+1, sort=current_sort) }}" class="pagination-arrow" aria-label="Next page">➡️</a>
-                        <a href="{{ url_for('products', category_id=category.ID, page=products.TotalPages, sort=current_sort) }}" class="pagination-arrow" aria-label="Skip to last page">⏭️</a>
-                    {% endif %}
-                </div>
-            </h4>
-
-            <!-- Table Content -->
-            <div class="table-responsive">
-                <table class="table table-bordered" id="productsTable">
-                    <!-- Table Headers -->
-                    <thead>
-                        <tr>
-                            <!-- Code Column -->
-                            <th class="{{ 'current-sort ' + ('asc' if current_sort == 'Code[asc]' else 'dsc' if current_sort == 'Code[dsc]' else 'Empty') }}">
-                                {% set current_direction = 'asc' if current_sort == 'Code[asc]' else 'dsc' if current_sort == 'Code[dsc]' else 'asc' %}
-                                {% set next_direction = 'dsc' if current_direction == 'asc' else 'asc' %}
-                                <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage, sort='Code[' + next_direction + ']') }}">Code</a>
-                                <div class="resizer" data-column="0"></div>
-                            </th>
-
-                            <!-- Description Column -->
-                            <th class="{{ 'current-sort ' + ('asc' if current_sort == 'Description[asc]' else 'dsc' if current_sort == 'Description[dsc]' else 'Empty') }}">
-                                {% set current_direction = 'asc' if current_sort == 'Description[asc]' else 'dsc' if current_sort == 'Description[dsc]' else 'asc' %}
-                                {% set next_direction = 'dsc' if current_direction == 'asc' else 'asc' %}
-                                <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage, sort='Description[' + next_direction + ']') }}">Product Name</a>
-                                <div class="resizer" data-column="1"></div>
-                            </th>
-
-                            <!-- Dynamic Fields Columns -->
-                            {% for field in active_fields %}
-                                <th class="{{ 'current-sort ' + ('asc' if current_sort == field.field + '[asc]' else 'dsc' if current_sort == field.field + '[dsc]' else 'Empty') }}">
-                                    {% set current_direction = 'asc' if current_sort == field.field + '[asc]' else 'dsc' if current_sort == field.field + '[dsc]' else 'asc' %}
-                                    {% set next_direction = 'dsc' if current_direction == 'asc' else 'asc' %}
-                                    <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage, sort=field.field + '[' + next_direction + ']') }}">{{ field.display }}</a>
-                                    <div class="resizer" data-column="{{ loop.index + 2 }}"></div>
-                                </th>
-                            {% endfor %}
-
-                            <!-- Web Category Column -->
-                            <th class="{{ 'current-sort ' + ('asc' if current_sort == 'D_WebCategory[asc]' else 'dsc' if current_sort == 'D_WebCategory[dsc]' else 'Empty') }}">
-                                {% set current_direction = 'asc' if current_sort == 'D_WebCategory[asc]' else 'dsc' if current_sort == 'D_WebCategory[dsc]' else 'asc' %}
-                                {% set next_direction = 'dsc' if current_direction == 'asc' else 'asc' %}
-                                <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage, sort='D_WebCategory[' + next_direction + ']') }}">Web Category</a>
-                                <div class="resizer" data-column="{{ active_fields|length + 3 }}"></div>
-                            </th>
-
-                            <!-- Image Count Column -->
-                            <th>
-                                Image Count
-                                <div class="resizer" data-column="{{ active_fields|length + 4 }}"></div>
-                            </th>
-
-                            <!-- Actions Column -->
-                            <th>Actions
-                                <div class="resizer" data-column="{{ active_fields|length + 5 }}"></div>
-                            </th>
-                        </tr>
-                    </thead>
-
-                    <tbody>
-                        {% for product in products.Data %}
-                            <tr class="product-row" data-product-id="{{ product.ID }}">
-                                <td>{{ product.Code }}</td>
-                                <td data-full-text="{{ product.Description }}">{{ product.Description }}</td>
-                                {% for field in active_fields %}
-                                    <td data-full-text="{{ product[field.field] if product[field.field] else 'Empty' }}">
-                                        {% if field.field in ['D_SizeA', 'D_SizeB', 'D_SizeC', 'D_SizeD'] %}
-                                            {{ product[field.field] if product[field.field] else 'Empty' }}
-                                        {% else %}
-                                            {{ product[field.field] if product[field.field] else 'Empty' }}
-                                        {% endif %}
-                                    </td>
-                                {% endfor %}
-                                <td data-full-text="{{ product.D_WebCategory if product.D_WebCategory else 'Empty' }}">
-                                    {{ product.D_WebCategory if product.D_WebCategory else 'Empty' }}
-                                </td>
-                                <td data-full-text="{{ product.ImageCount if product.ImageCount else 'Empty' }}">
-                                    {{ product.ImageCount|round|int if product.ImageCount is number else 'Empty' }}
-                                </td>
-                                <td>
-                                    <button class="btn-uni edit-product-btn" data-product-id="{{ product.ID }}" aria-label="Edit {{ product.ID }}"> Edit </button>
-                                </td>
-                            </tr>
-                        {% endfor %}
-                    </tbody>
-                </table>
-            </div>
-        </div>
-
-        <!-- Edit Product Popup Form -->
-        <div class="form-popup-overlay" id="editFormOverlay"></div>
-        <div class="form-popup" id="editProductForm" role="dialog" aria-labelledby="editFormTitle" aria-modal="true">
-            <form class="form-container">
-                <!-- Form Header -->
-                <div class="form-header">
-                    <h2 id="editFormTitle">Edit Product: <span id="popupProductCode"></span></h2>
-                    <button type="button" class="close-button" onclick="closeEditForm()" aria-label="Close">X</button>
-                </div>
-                
-                <div class="form-grid">
-                    <div class="form-column" id="popupFirstColumn">
-                        <!-- First column of dynamic fields will be populated here -->
-                    </div>
-                    <div class="form-column" id="popupSecondColumn">
-                        <!-- Second column of dynamic fields will be populated here -->
-                    </div>
-                </div>
-                
-                <!-- Hidden input for product ID -->
-                <input type="hidden" id="popupProductId" name="product_id">
-                
-                <div class="form-actions">
-                    <button type="button" class="btn cancel" onclick="closeEditForm()" aria-label="Cancel editing">Cancel</button>
-                    <button type="submit" class="btn" aria-label="Save product changes">Save Changes</button>
-                </div>
-            </form>
-        </div>
-    </main>
-
-    <!-- Footer -->
-    <footer>
-        <p>PADDY &copy; 2025 - IFM</p>
-        <p class="quote">"Product Attribute Designer Deployment (for) You"</p>
-        <p class="version-quote">"v0.4"</p>
-    </footer>
-
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ url_for('static', filename='js/products.js') }}"></script>
-
-    <!-- Success Popup -->
-    <div id="successPopup" class="success-popup" style="display: none;">
-        <div class="success-icon">✓</div>
-        <div class="success-content">Success!</div>
+  <!-- Navigation Bar -->
+  <nav class="navbar navbar-expand-lg">
+    <div class="container-fluid px-4">
+      <div class="nav-brand-container d-flex align-items-center">
+        <img src="/static/img/ifm_logo.png" alt="IFM logo" class="logo me-2" id="ifmLogo">
+        <a class="navbar-brand" href="/">PADDY</a>
+      </div>
+      <div>
+        <button class="btn-uni me-2" onclick="exportTableToCSV()">Export to CSV</button>
+        <button class="btn-uni" onclick="window.location.href='/'">Back to Categories</button>
+      </div>
     </div>
+  </nav>
+
+  <!-- Main Content -->
+  <main>
+    <!-- Search Container -->
+    <div class="container-fluid px-4">
+      <div class="search-container">
+        <input type="text" class="search-input" id="productSearch" placeholder="Search products...">
+      </div>
+    </div>
+
+    <!-- Table Container -->
+    <div class="table-container">
+      <!-- Header with Category Info and Pagination -->
+      <h4 class="text-center">
+        {{ category.Description }} ({{ category.Code }})
+        <div class="pagination-container">
+          {% if products.CurrentPage > 1 %}
+            <a href="{{ url_for('products', category_id=category.ID, page=1, sort=current_sort) }}" class="pagination-arrow" aria-label="Skip to first page">⏮️</a>
+            <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage-1, sort=current_sort) }}" class="pagination-arrow" aria-label="Previous page">⬅️</a>
+          {% endif %}
+          {% set start_item = (products.CurrentPage - 1) * products.ItemsPerPage + 1 %}
+          {% set end_item = [products.CurrentPage * products.ItemsPerPage, products.TotalCount] | min %}
+          <span class="pagination-count">{{ start_item }}-{{ end_item }}/{{ products.TotalCount }}</span>
+          {% if products.CurrentPage < products.TotalPages %}
+            <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage+1, sort=current_sort) }}" class="pagination-arrow" aria-label="Next page">➡️</a>
+            <a href="{{ url_for('products', category_id=category.ID, page=products.TotalPages, sort=current_sort) }}" class="pagination-arrow" aria-label="Skip to last page">⏭️</a>
+          {% endif %}
+        </div>
+      </h4>
+
+      <!-- Table Content -->
+      <div class="table-responsive">
+        <table class="table table-bordered" id="productsTable">
+          <!-- Table Headers -->
+          <thead>
+            <tr>
+              <!-- Code Column -->
+              <th class="{{ 'current-sort ' + ('asc' if current_sort == 'Code[asc]' else 'dsc' if current_sort == 'Code[dsc]' else 'Empty') }}">
+                {% set current_direction = 'asc' if current_sort == 'Code[asc]' else 'dsc' if current_sort == 'Code[dsc]' else 'asc' %}
+                {% set next_direction = 'dsc' if current_direction == 'asc' else 'asc' %}
+                <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage, sort='Code[' + next_direction + ']') }}">Code</a>
+                <div class="resizer" data-column="0"></div>
+              </th>
+
+              <!-- Description Column -->
+              <th class="{{ 'current-sort ' + ('asc' if current_sort == 'Description[asc]' else 'dsc' if current_sort == 'Description[dsc]' else 'Empty') }}">
+                {% set current_direction = 'asc' if current_sort == 'Description[asc]' else 'dsc' if current_sort == 'Description[dsc]' else 'asc' %}
+                {% set next_direction = 'dsc' if current_direction == 'asc' else 'asc' %}
+                <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage, sort='Description[' + next_direction + ']') }}">Product Name</a>
+                <div class="resizer" data-column="1"></div>
+              </th>
+
+              <!-- Dynamic Fields Columns -->
+              {% for field in active_fields %}
+                <th class="{{ 'current-sort ' + ('asc' if current_sort == field.field + '[asc]' else 'dsc' if current_sort == field.field + '[dsc]' else 'Empty') }}">
+                  {% set current_direction = 'asc' if current_sort == field.field + '[asc]' else 'dsc' if current_sort == field.field + '[dsc]' else 'asc' %}
+                  {% set next_direction = 'dsc' if current_direction == 'asc' else 'asc' %}
+                  <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage, sort=field.field + '[' + next_direction + ']') }}">{{ field.display }}</a>
+                  <div class="resizer" data-column="{{ loop.index + 2 }}"></div>
+                </th>
+              {% endfor %}
+
+              <!-- Web Category Column (Static Header) -->
+              <th class="{{ 'current-sort ' + ('asc' if current_sort == 'D_WebCategory[asc]' else 'dsc' if current_sort == 'D_WebCategory[dsc]' else 'Empty') }}">
+                {% set current_direction = 'asc' if current_sort == 'D_WebCategory[asc]' else 'dsc' if current_sort == 'D_WebCategory[dsc]' else 'asc' %}
+                {% set next_direction = 'dsc' if current_direction == 'asc' else 'asc' %}
+                <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage, sort='D_WebCategory[' + next_direction + ']') }}">Web Category</a>
+                <div class="resizer" data-column="{{ active_fields|length + 3 }}"></div>
+              </th>
+
+              <!-- Image Count Column -->
+              <th>
+                Image Count
+                <div class="resizer" data-column="{{ active_fields|length + 4 }}"></div>
+              </th>
+
+              <!-- Actions Column -->
+              <th>Actions
+                <div class="resizer" data-column="{{ active_fields|length + 5 }}"></div>
+              </th>
+            </tr>
+          </thead>
+
+          <tbody>
+            {% for product in products.Data %}
+              <tr class="product-row" data-product-id="{{ product.ID }}">
+                <td>{{ product.Code }}</td>
+                <td data-full-text="{{ product.Description }}">{{ product.Description }}</td>
+                {% for field in active_fields %}
+                  <td data-full-text="{{ product[field.field] if product[field.field] else 'Empty' }}">
+                    {{ product[field.field] if product[field.field] else 'Empty' }}
+                  </td>
+                {% endfor %}
+                <td data-full-text="{{ product.D_WebCategory if product.D_WebCategory else 'Empty' }}">
+                  {{ product.D_WebCategory if product.D_WebCategory else 'Empty' }}
+                </td>
+                <td data-full-text="{{ product.ImageCount if product.ImageCount else 'Empty' }}">
+                  {{ product.ImageCount|round|int if product.ImageCount is number else 'Empty' }}
+                </td>
+                <td>
+                  <button class="btn-uni edit-product-btn" data-product-id="{{ product.ID }}" aria-label="Edit {{ product.ID }}"> Edit </button>
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- Edit Product Popup Form -->
+<div class="form-popup-overlay" id="editFormOverlay"></div>
+<div class="form-popup" id="editProductForm" role="dialog" aria-labelledby="editFormTitle" aria-modal="true">
+  <form class="form-container">
+    <!-- Form Header with Product Code (as before) -->
+    <div class="form-header">
+      <h2 id="editFormTitle">Edit Product: <span id="popupProductCode"></span></h2>
+      <button type="button" class="close-button" onclick="closeEditForm()" aria-label="Close">X</button>
+    </div>
+    
+    <!-- Hidden input for product ID -->
+    <input type="hidden" id="popupProductId" name="product_id">
+    
+    <!-- Two-column layout -->
+    <div class="form-grid" style="display: flex; gap: 20px;">
+      <!-- Left Column: Dynamic Fields -->
+      <div class="form-column" style="flex: 1;">
+        <!-- These will be populated by populateEditForm -->
+        <div id="popupFirstColumn"></div>
+        <div id="popupSecondColumn"></div>
+      </div>
+      
+      <!-- Right Column: Static Fields (Image Count and Web Category) -->
+      <div class="form-column" style="flex: 1;">
+        <div class="form-group">
+          <label for="popupImageCount">Image Count</label>
+          <input type="text" id="popupImageCount" name="ImageCount" readonly style="width: 100%; max-width: 200px;">
+        </div>
+        <div class="form-group">
+          <label for="popupWebCategory">Web Category</label>
+          <input type="text" id="popupWebCategory" name="D_WebCategory" style="width: 100%; max-width: 300px;">
+        </div>
+      </div>
+    </div>
+    
+    <div class="form-actions">
+      <button type="button" class="btn cancel" onclick="closeEditForm()" aria-label="Cancel editing">Cancel</button>
+      <button type="submit" class="btn" aria-label="Save product changes">Save Changes</button>
+    </div>
+  </form>
+</div>
+  </main>
+
+  <!-- Footer -->
+  <footer>
+    <p>PADDY &copy; 2025 - IFM</p>
+    <p class="quote">"Product Attribute Designer Deployment (for) You"</p>
+    <p class="version-quote">"v0.4"</p>
+  </footer>
+
+  <!-- Scripts -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="{{ url_for('static', filename='js/products.js') }}"></script>
+
+  <!-- Success Popup -->
+  <div id="successPopup" class="success-popup" style="display: none;">
+    <div class="success-icon">✓</div>
+    <div class="success-content">Success!</div>
+  </div>
 </body>
 </html>
