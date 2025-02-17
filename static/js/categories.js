@@ -1,75 +1,31 @@
 /**
  * PADDY Categories Page JavaScript
- * Handles category search functionality, modal integration, and view toggling
+ * Handles category search functionality and modal integration
  */
 
 // Initialize modal variable
 let searchModal = null;
-
-// Initialize view toggle for categories
-function initializeViewToggle() {
-    const cardViewBtn = document.getElementById('cardViewBtn');
-    const tableViewBtn = document.getElementById('tableViewBtn');
-    const categoryGrid = document.getElementById('category-grid');
-    const categoryTable = document.getElementById('category-table');
-    const columnSelect = document.getElementById('columnSelect');
-
-    function setViewMode(mode) {
-        if (mode === 'card') {
-            categoryGrid.style.display = 'grid';
-            categoryTable.style.display = 'none';
-            cardViewBtn.classList.add('active');
-            tableViewBtn.classList.remove('active');
-            columnSelect.disabled = false; // Enable column select
-            columnSelect.style.opacity = '1';
-        } else {
-            categoryGrid.style.display = 'none';
-            categoryTable.style.display = 'block';
-            cardViewBtn.classList.remove('active');
-            tableViewBtn.classList.add('active');
-            columnSelect.disabled = true; // Disable column select
-            columnSelect.style.opacity = '0.5';
-        }
-        localStorage.setItem('categoryViewMode', mode);
-    }
-
-    // Set default view to card
-    const savedView = localStorage.getItem('categoryViewMode') || 'card';
-    setViewMode(savedView);
-
-    // Add click handlers
-    cardViewBtn.addEventListener('click', () => setViewMode('card'));
-    tableViewBtn.addEventListener('click', () => setViewMode('table'));
-}
 
 // Search functionality for categories
 function searchCategories() {
     const searchInput = document.getElementById('categorySearch');
     const filter = searchInput.value.toLowerCase();
     const categoryItems = document.getElementsByClassName('category-item');
-    const tableRows = document.querySelectorAll('#category-table tbody tr');
     let hasResults = false;
 
-    // Search in grid view
-    Array.from(categoryItems).forEach(item => {
-        const categoryName = item.querySelector('.category-name');
+    for (let i = 0; i < categoryItems.length; i++) {
+        const categoryName = categoryItems[i].getElementsByClassName('category-name')[0];
         const textValue = categoryName.textContent || categoryName.innerText;
-        const isVisible = textValue.toLowerCase().includes(filter);
-        item.style.display = isVisible ? "" : "none";
-        if (isVisible) hasResults = true;
-    });
+        
+        if (textValue.toLowerCase().indexOf(filter) > -1) {
+            categoryItems[i].style.display = "";
+            hasResults = true;
+        } else {
+            categoryItems[i].style.display = "none";
+        }
+    }
 
-    // Search in table view
-    Array.from(tableRows).forEach(row => {
-        const categoryText = row.cells[0].textContent;
-        const codeText = row.cells[1].textContent;
-        const isVisible = categoryText.toLowerCase().includes(filter) || 
-                         codeText.toLowerCase().includes(filter);
-        row.style.display = isVisible ? "" : "none";
-        if (isVisible) hasResults = true;
-    });
-
-    // Handle no results message
+    // Show no results message if needed
     const existingMessage = document.getElementById('noCategoriesMessage');
     if (!hasResults && filter && !existingMessage) {
         const message = document.createElement('div');
@@ -207,6 +163,51 @@ async function searchProductsModal() {
     }
 }
 
+// Update product results function
+function updateProductResults(data) {
+    const tbody = document.getElementById('productResultsBody');
+    tbody.innerHTML = '';
+
+    if (!data.Data || data.Data.length === 0) {
+        tbody.innerHTML = `
+            <tr>
+                <td colspan="4" class="text-center">
+                    <div class="py-4">No products found</div>
+                </td>
+            </tr>
+        `;
+        return;
+    }
+
+    data.Data.forEach(product => {
+        const row = document.createElement('tr');
+        row.innerHTML = `
+            <td>${escapeHtml(product.Code)}</td>
+            <td>${escapeHtml(product.Description)}</td>
+            <td>${escapeHtml(product.Category?.Description || 'N/A')}</td>
+            <td>
+                <div class="button-container">
+                    <button class="btn-uni btn-sm" onclick="window.location.href='/products/${product.Category?.ID}'">
+                        View Category
+                    </button>
+                    <button class="btn-uni btn-sm edit-product-btn" onclick="fetchProductDetails(${product.ID})">
+                        Edit
+                    </button>
+                </div>
+            </td>
+        `;
+        tbody.appendChild(row);
+    });
+}
+
+// HTML escape utility
+function escapeHtml(str) {
+    if (!str) return '';
+    const div = document.createElement('div');
+    div.textContent = str;
+    return div.innerHTML;
+}
+
 // Event listeners
 document.addEventListener('DOMContentLoaded', function() {
     // Initialize Bootstrap modal
@@ -246,13 +247,6 @@ document.addEventListener('DOMContentLoaded', function() {
         });
     }
 
-    // Column layout dropdown
-    if (columnSelect) {
-        columnSelect.addEventListener('change', function() {
-            setColumnLayout(this.value);
-        });
-    }
-
     // Search all products button
     if (searchAllButton) {
         searchAllButton.addEventListener('click', function() {
@@ -273,26 +267,4 @@ document.addEventListener('DOMContentLoaded', function() {
     if (shouldShowDetails && toggleButton) {
         toggleCategoryDetails(toggleButton);
     }
-
-    // Initialize view toggle
-    initializeViewToggle();
 });
-
-// HTML escape utility
-function escapeHtml(str) {
-    if (!str) return '';
-    const div = document.createElement('div');
-    div.textContent = str;
-    return div.innerHTML;
-}
-
-// Placeholder functions for referenced methods not shown in original code
-function updateModalResults(data) {
-    // This is a placeholder. You'll need to implement this based on your specific requirements
-    console.log('Update modal results with:', data);
-}
-
-function showErrorState() {
-    // This is a placeholder. Implement error handling for search
-    console.error('Search encountered an error');
-}
