@@ -20,7 +20,6 @@
             <div class="nav-brand-container d-flex align-items-center">
                 <img src="/static/img/ifm_logo.png" alt="IFM logo" class="logo me-2" id="ifmLogo">
                 <a class="navbar-brand" href="/">PADDY</a>
-                <h3> v0.3</h3>
             </div>
             <div>
                 <button class="btn-uni me-2" onclick="exportTableToCSV()">Export to CSV</button>
@@ -117,19 +116,19 @@
                                 <td>{{ product.Code }}</td>
                                 <td data-full-text="{{ product.Description }}">{{ product.Description }}</td>
                                 {% for field in active_fields %}
-                                    <td data-full-text="{{ product[field.field] if product[field.field] else 'N/A' }}">
+                                    <td data-full-text="{{ product[field.field] if product[field.field] else '' }}">
                                         {% if field.field in ['D_SizeA', 'D_SizeB', 'D_SizeC', 'D_SizeD'] %}
-                                            {{ product[field.field] if product[field.field] else 'N/A' }}
+                                            {{ product[field.field] if product[field.field] else '' }}
                                         {% else %}
-                                            {{ product[field.field] if product[field.field] else 'N/A' }}
+                                            {{ product[field.field] if product[field.field] else '' }}
                                         {% endif %}
                                     </td>
                                 {% endfor %}
-                                <td data-full-text="{{ product.D_WebCategory if product.D_WebCategory else 'N/A' }}">
-                                    {{ product.D_WebCategory if product.D_WebCategory else 'N/A' }}
+                                <td data-full-text="{{ product.D_WebCategory if product.D_WebCategory else '' }}">
+                                    {{ product.D_WebCategory if product.D_WebCategory else '' }}
                                 </td>
-                                <td data-full-text="{{ product.ImageCount if product.ImageCount else 'N/A' }}">
-                                    {{ product.ImageCount|round|int if product.ImageCount is number else 'N/A' }}
+                                <td data-full-text="{{ product.ImageCount if product.ImageCount else '' }}">
+                                    {{ product.ImageCount|round|int if product.ImageCount is number else '' }}
                                 </td>
                                 <td>
                                     <button class="btn-uni edit-product-btn" data-product-id="{{ product.ID }}" aria-label="Edit {{ product.ID }}"> Edit </button>
@@ -175,6 +174,7 @@
     <footer>
         <p>PADDY &copy; 2025 - IFM</p>
         <p class="quote">"Product Attribute Designer Deployment (for) You"</p>
+        <p class="version-quote">"v0.3"</p>
     </footer>
 
     <!-- Scripts -->

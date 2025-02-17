@@ -1478,3 +1478,12 @@ footer::before {
         width: auto;
     }
 }
+
+.version-quote {
+    text-align: center;
+    font-style: italic;
+    color: var(--white-color);
+    margin-top: auto;
+    background-color: #FE0000;
+    padding-bottom: auto;
+}
