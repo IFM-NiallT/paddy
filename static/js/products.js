@@ -451,37 +451,43 @@ function createProductRow(product) {
     `;
    
     // Process dynamic fields (skip Code, Description, and last two columns)
-    headers.slice(2, -2).forEach((header, index) => {
-        const headerText = header.textContent.trim().replace(/[↕↑↓]/g, '').trim();
-        let value = '';
+    // Filter out "Web Category" because it is handled as a static column.
+    headers.slice(2, -2)
+      .filter(header => {
+          const headerText = header.textContent.trim().replace(/[↕↑↓]/g, '').trim();
+          return headerText !== 'Web Category';
+      })
+      .forEach((header, index) => {
+          const headerText = header.textContent.trim().replace(/[↕↑↓]/g, '').trim();
+          let value = '';
 
-        // Use the fetched field configuration to map headers
-        if (window.categoryFieldConfig) {
-            const fieldEntry = Object.entries(window.categoryFieldConfig).find(([key, field]) => 
-                field.display === headerText && field.used
-            );
-           
-            if (fieldEntry) {
-                const [fieldKey, fieldConfig] = fieldEntry;
-                value = product[fieldKey] ?? '';
-                console.log(`Matched field configuration for "${headerText}":`, { 
-                    fieldKey, 
-                    fieldConfig, 
-                    value 
-                });
-            } else {
-                console.warn(`No matching field found for header: "${headerText}"`);
-            }
-        }
-       
-        rowHTML += `
-            <td data-full-text="${escapeHtml(String(value))}">
-                ${escapeHtml(String(value))}
-            </td>
-        `;
-    });
+          // Use the fetched field configuration to map headers
+          if (window.categoryFieldConfig) {
+              const fieldEntry = Object.entries(window.categoryFieldConfig).find(([key, field]) => 
+                  field.display === headerText && field.used
+              );
+             
+              if (fieldEntry) {
+                  const [fieldKey, fieldConfig] = fieldEntry;
+                  value = product[fieldKey] ?? '';
+                  console.log(`Matched field configuration for "${headerText}":`, { 
+                      fieldKey, 
+                      fieldConfig, 
+                      value 
+                  });
+              } else {
+                  console.warn(`No matching field found for header: "${headerText}"`);
+              }
+          }
+         
+          rowHTML += `
+              <td data-full-text="${escapeHtml(String(value))}">
+                  ${escapeHtml(String(value))}
+              </td>
+          `;
+      });
    
-    // Web Category column
+    // Web Category column (static)
     const webCategoryEntry = Object.entries(window.categoryFieldConfig).find(
         ([key, field]) => field.display === 'Web Category'
     );
