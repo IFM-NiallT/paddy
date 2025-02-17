@@ -394,48 +394,121 @@ function getColumnCount() {
     return headers.length;
 }
 
+async function fetchFieldConfig(categoryId) {
+    try {
+        // Try multiple potential paths
+        const paths = [
+            '/static/json/product_attributes.json',
+            '/json/product_attributes.json'
+        ];
+        let productAttributes = null;
+        for (const path of paths) {
+            try {
+                const response = await fetch(path);
+                if (response.ok) {
+                    productAttributes = await response.json();
+                    break;
+                }
+            } catch (pathError) {
+                console.warn(`Failed to fetch from ${path}:`, pathError);
+            }
+        }
+        if (!productAttributes) {
+            throw new Error('Could not fetch product attributes from any path');
+        }
+        if (productAttributes[categoryId]) {
+            categoryFieldConfig = productAttributes[categoryId].fields;
+            console.log('Fetched field config:', categoryFieldConfig);
+            return categoryFieldConfig;
+        } else {
+            console.error('No field configuration found for category:', categoryId);
+            return null;
+        }
+    } catch (error) {
+        console.error('Error fetching field config:', error);
+        return null;
+    }
+}
+
 function createProductRow(product) {
+    // Log field configuration details
+    console.log('Full Field Configuration:', Object.entries(window.categoryFieldConfig).map(([key, field]) => ({
+        key,
+        display: field.display,
+        used: field.used
+    })));
+
     const row = document.createElement('tr');
     row.className = 'product-row';
     row.setAttribute('data-product-id', product.ID);
-    
+   
     const headers = Array.from(document.querySelectorAll('#productsTable thead th'));
-    
+   
+    // Static fields
     let rowHTML = `
         <td>${escapeHtml(product.Code || '')}</td>
         <td data-full-text="${escapeHtml(product.Description || '')}">${escapeHtml(product.Description || '')}</td>
     `;
-    
-    headers.slice(2, -1).forEach(header => {
-        const fieldName = header.textContent.trim().replace(/[↕↑↓]/g, '').trim();
-        let value = 'N/A';
-        
-        if (fieldName === 'Web Category') {
-            value = product.D_WebCategory || 'N/A';
-        } else if (fieldName === 'Image Count') {
-            value = product.ImageCount || 'N/A';
-        } else {
-            const fieldKey = Object.keys(product).find(key => {
-                if (key.startsWith('D_')) {
-                    const cleanKey = key.replace('D_', '').toLowerCase();
-                    const cleanHeader = fieldName.replace(/\s+/g, '').toLowerCase();
-                    return cleanKey === cleanHeader;
-                }
-                return false;
-            });
-            
-            if (fieldKey) {
-                value = product[fieldKey] || 'N/A';
+   
+    // Process dynamic fields (skip Code, Description, and last two columns)
+    headers.slice(2, -2).forEach((header, index) => {
+        const headerText = header.textContent.trim().replace(/[↕↑↓]/g, '').trim();
+        let value = '';
+
+        // Use the fetched field configuration to map headers
+        if (window.categoryFieldConfig) {
+            const fieldEntry = Object.entries(window.categoryFieldConfig).find(([key, field]) => 
+                field.display === headerText && field.used
+            );
+           
+            if (fieldEntry) {
+                const [fieldKey, fieldConfig] = fieldEntry;
+                value = product[fieldKey] ?? '';
+                console.log(`Matched field configuration for "${headerText}":`, { 
+                    fieldKey, 
+                    fieldConfig, 
+                    value 
+                });
+            } else {
+                console.warn(`No matching field found for header: "${headerText}"`);
             }
         }
-        
+       
         rowHTML += `
-            <td data-full-text="${escapeHtml(value)}">
-                ${escapeHtml(value)}
+            <td data-full-text="${escapeHtml(String(value))}">
+                ${escapeHtml(String(value))}
             </td>
         `;
     });
-    
+   
+    // Web Category column
+    const webCategoryEntry = Object.entries(window.categoryFieldConfig).find(
+        ([key, field]) => field.display === 'Web Category'
+    );
+
+    let webCategory = 'N/A';
+    if (webCategoryEntry) {
+        const [fieldKey] = webCategoryEntry;
+        webCategory = product[fieldKey] || 'N/A';
+    }
+
+    rowHTML += `
+        <td data-full-text="${escapeHtml(webCategory)}">
+            ${escapeHtml(webCategory)}
+        </td>
+    `;
+
+    // Image Count column
+    const imageCount = product.ImageCount !== undefined && product.ImageCount !== null 
+        ? Math.round(product.ImageCount) 
+        : 'N/A';
+    rowHTML += `
+        <td data-full-text="${imageCount}">
+            ${imageCount}
+        </td>
+    `;
+   
+    // Actions column
     rowHTML += `
         <td>
             <button class="btn-uni edit-product-btn" data-product-id="${product.ID}">
@@ -443,9 +516,10 @@ function createProductRow(product) {
             </button>
         </td>
     `;
-    
+   
     row.innerHTML = rowHTML;
-    
+   
+    // Add event listener directly here to ensure it's always attached
     const editBtn = row.querySelector('.edit-product-btn');
     if (editBtn) {
         editBtn.addEventListener('click', (event) => {
@@ -453,21 +527,36 @@ function createProductRow(product) {
             fetchProductDetails(product.ID);
         });
     }
-    
+   
     return row;
 }
 
-function updateTableWithResults(data) {
+async function updateTableWithResults(data) {
     console.log('Updating table with data:', data);
-    
+   
     const tbody = document.querySelector('#productsTable tbody');
     if (!tbody) {
         console.error('Table body not found');
         return;
     }
-    
+    // Get category ID and fetch field config if needed
+    if (data.Data && data.Data.length > 0 && data.Data[0].Category) {
+        const categoryId = data.Data[0].Category.ID;
+        console.log('Category ID:', categoryId);
+       
+        // Await the field config fetch if not already loaded
+        if (!window.categoryFieldConfig) {
+            try {
+                await fetchFieldConfig(categoryId);
+                window.categoryFieldConfig = categoryFieldConfig;
+            } catch (error) {
+                console.error('Failed to fetch field config:', error);
+            }
+        }
+    }
+   
     tbody.innerHTML = '';
-    
+   
     if (!data.Data || data.Data.length === 0) {
         console.warn('No results found');
         const noResultsRow = document.createElement('tr');
@@ -479,12 +568,12 @@ function updateTableWithResults(data) {
         tbody.appendChild(noResultsRow);
         return;
     }
-    
+   
     data.Data.forEach(product => {
         const row = createProductRow(product);
         tbody.appendChild(row);
     });
-    
+   
     updatePaginationInfo(data);
     initEditButtons();
 }

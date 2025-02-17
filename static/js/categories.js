@@ -12,15 +12,15 @@ let searchModal = null;
 
 // Search functionality for categories
 function searchCategories() {
-    const searchInput = document.getElementById('categorySearch');
+    const searchInput = document.getElementById("categorySearch");
     const filter = searchInput.value.toLowerCase();
-    const categoryItems = document.getElementsByClassName('category-item');
+    const categoryItems = document.getElementsByClassName("category-item");
     let hasResults = false;
 
     for (let i = 0; i < categoryItems.length; i++) {
-        const categoryName = categoryItems[i].getElementsByClassName('category-name')[0];
+        const categoryName = categoryItems[i].getElementsByClassName("category-name")[0];
         const textValue = categoryName.textContent || categoryName.innerText;
-        
+
         if (textValue.toLowerCase().indexOf(filter) > -1) {
             categoryItems[i].style.display = "";
             hasResults = true;
@@ -30,13 +30,13 @@ function searchCategories() {
     }
 
     // Show no results message if needed
-    const existingMessage = document.getElementById('noCategoriesMessage');
+    const existingMessage = document.getElementById("noCategoriesMessage");
     if (!hasResults && filter && !existingMessage) {
-        const message = document.createElement('div');
-        message.id = 'noCategoriesMessage';
-        message.className = 'no-results';
-        message.textContent = 'No matching categories found';
-        document.getElementById('category-grid').appendChild(message);
+        const message = document.createElement("div");
+        message.id = "noCategoriesMessage";
+        message.className = "no-results";
+        message.textContent = "No matching categories found";
+        document.getElementById("category-grid").appendChild(message);
     } else if ((hasResults || !filter) && existingMessage) {
         existingMessage.remove();
     }
@@ -44,23 +44,23 @@ function searchCategories() {
 
 // Sort categories function
 function sortCategories(sortType) {
-    const categoryGrid = document.getElementById('category-grid');
-    const categories = Array.from(categoryGrid.getElementsByClassName('category-item'));
+    const categoryGrid = document.getElementById("category-grid");
+    const categories = Array.from(categoryGrid.getElementsByClassName("category-item"));
 
     categories.sort((a, b) => {
-        const aName = a.querySelector('.category-name').textContent.trim();
-        const bName = b.querySelector('.category-name').textContent.trim();
-        const aCode = a.querySelector('.category-name').getAttribute('data-code') || '';
-        const bCode = b.querySelector('.category-name').getAttribute('data-code') || '';
+        const aName = a.querySelector(".category-name").textContent.trim();
+        const bName = b.querySelector(".category-name").textContent.trim();
+        const aCode = a.querySelector(".category-name").getAttribute("data-code") || "";
+        const bCode = b.querySelector(".category-name").getAttribute("data-code") || "";
 
-        switch(sortType) {
-            case 'alpha-asc':
+        switch (sortType) {
+            case "alpha-asc":
                 return aName.localeCompare(bName);
-            case 'alpha-desc':
+            case "alpha-desc":
                 return bName.localeCompare(aName);
-            case 'code-asc':
+            case "code-asc":
                 return aCode.localeCompare(bCode);
-            case 'code-desc':
+            case "code-desc":
                 return bCode.localeCompare(aCode);
             default:
                 return 0;
@@ -68,76 +68,31 @@ function sortCategories(sortType) {
     });
 
     // Clear and re-append sorted items
-    categories.forEach(category => categoryGrid.appendChild(category));
-}
-
-// Set column layout function
-function setColumnLayout(columns) {
-    const categoryGrid = document.getElementById('category-grid');
-    
-    if (columns === 'auto') {
-        // Remove any explicit column setting and let the responsive CSS handle it
-        categoryGrid.style.gridTemplateColumns = '';
-        // Make sure the default responsive classes are applied
-        categoryGrid.className = 'category-grid';
-    } else {
-        // Set explicit number of columns
-        categoryGrid.style.gridTemplateColumns = `repeat(${columns}, 1fr)`;
-    }
-}
-
-// Toggle category details function
-function toggleCategoryDetails(button) {
-    const detailsElements = document.querySelectorAll('.category-details');
-    const isShowing = button.classList.contains('active');
-    
-    // Toggle button state
-    button.classList.toggle('active');
-    
-    // Toggle details visibility with animation
-    detailsElements.forEach(element => {
-        if (isShowing) {
-            // Hide details
-            element.style.opacity = '0';
-            setTimeout(() => {
-                element.style.display = 'none';
-                element.classList.remove('show');
-            }, 200);
-        } else {
-            // Show details
-            element.style.display = 'flex';
-            element.classList.add('show');
-            // Small delay to ensure display: flex is applied before transition
-            setTimeout(() => {
-                element.style.opacity = '1';
-            }, 10);
-        }
-    });
-
-    // Update local storage preference
-    localStorage.setItem('categoryDetailsVisible', !isShowing);
+    categories.forEach((category) => categoryGrid.appendChild(category));
 }
 
 // ------------------------
 // Modal Search Functions
 // ------------------------
 
-// Search products across all categories (Modal version)
+// Search products
 async function searchProductsModal() {
-    const searchInput = document.getElementById('modalProductSearch');
+    const searchInput = document.getElementById("modalProductSearch");
     const query = searchInput.value.trim();
-    
+
     if (query.length === 0) {
         updateModalResults({ Data: [] }); // Clear results if search is empty
         return;
     }
-    
+
     // Add loading state
-    searchInput.classList.add('loading');
+    searchInput.classList.add("loading");
     showLoadingState();
-    
+
     try {
-        const response = await fetch(`/api/search/all?code=${encodeURIComponent(query)}&description=${encodeURIComponent(query)}`);
+        const response = await fetch(
+            `/api/search/all?code=${encodeURIComponent(query)}&description=${encodeURIComponent(query)}`
+        );
         if (!response.ok) {
             throw new Error(`Search failed: ${response.status}`);
         }
@@ -145,29 +100,19 @@ async function searchProductsModal() {
         const data = await response.json();
         updateModalResults(data);
     } catch (error) {
-        console.error('Search error:', error);
+        console.error("Search error:", error);
         showErrorState();
     } finally {
-        searchInput.classList.remove('loading');
+        searchInput.classList.remove("loading");
     }
 }
 
-// Update modal results for both card and table views
+// Update modal results
 function updateModalResults(data) {
-    const cardGrid = document.getElementById('productCardGrid');
-    const tableBody = document.getElementById('modalProductResultsBody');
-    
-    // Clear loading states
-    cardGrid.innerHTML = '';
-    tableBody.innerHTML = '';
+    const tableBody = document.getElementById("modalProductResultsBody");
+    tableBody.innerHTML = "";
 
     if (!data.Data || data.Data.length === 0) {
-        const noResultsMessage = `
-            <div class="no-results-message">
-                <p>No products found</p>
-            </div>
-        `;
-        cardGrid.innerHTML = noResultsMessage;
         tableBody.innerHTML = `
             <tr>
                 <td colspan="4" class="text-center">
@@ -178,25 +123,21 @@ function updateModalResults(data) {
         return;
     }
 
-    // Update card view
-    data.Data.forEach(product => {
-        const card = createProductCard(product);
-        cardGrid.appendChild(card);
-    });
-
-    // Update table view
-    data.Data.forEach(product => {
-        const row = document.createElement('tr');
+    data.Data.forEach((product) => {
+        const row = document.createElement("tr");
+        row.classList.add('product-row');
+        row.setAttribute('data-product-id', product.ID);
+        
         row.innerHTML = `
             <td>${escapeHtml(product.Code)}</td>
             <td>${escapeHtml(product.Description)}</td>
-            <td>${escapeHtml(product.Category?.Description || 'N/A')}</td>
+            <td>${escapeHtml(product.Category?.Description || "N/A")}</td>
             <td>
                 <div class="button-container">
                     <button class="btn-uni btn-sm" onclick="window.location.href='/products/${product.Category?.ID}'">
                         View Category
                     </button>
-                    <button class="btn-uni btn-sm edit-product-btn" onclick="fetchProductDetails(${product.ID})">
+                    <button class="btn-uni btn-sm edit-product-btn" data-product-id="${product.ID}">
                         Edit
                     </button>
                 </div>
@@ -204,44 +145,26 @@ function updateModalResults(data) {
         `;
         tableBody.appendChild(row);
     });
+
+    // Add click handlers for edit buttons
+    document.querySelectorAll('.edit-product-btn').forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            const productId = this.getAttribute('data-product-id');
+            if (searchModal) {
+                searchModal.hide();
+                setTimeout(() => {
+                    fetchProductDetails(productId);
+                }, 150);
+            }
+        });
+    });
 }
 
-// Create product card element
-function createProductCard(product) {
-    const card = document.createElement('div');
-    card.className = 'product-card';
-    card.innerHTML = `
-        <div class="product-card-content">
-            <h3 class="product-code">${escapeHtml(product.Code)}</h3>
-            <p class="product-description">${escapeHtml(product.Description)}</p>
-            <p class="product-category">Category: ${escapeHtml(product.Category?.Description || 'N/A')}</p>
-            <div class="product-actions">
-                <button class="btn-uni btn-sm" onclick="window.location.href='/products/${product.Category?.ID}'">
-                    View Category
-                </button>
-                <button class="btn-uni btn-sm edit-product-btn" onclick="fetchProductDetails(${product.ID})">
-                    Edit
-                </button>
-            </div>
-        </div>
-    `;
-    return card;
-}
-
-// Show loading state in both views
+// Show loading state
 function showLoadingState() {
-    const cardGrid = document.getElementById('productCardGrid');
-    const tableBody = document.getElementById('modalProductResultsBody');
-    
-    cardGrid.innerHTML = `
-        <div class="loading-message">
-            <div class="spinner-border text-primary" role="status">
-                <span class="visually-hidden">Loading...</span>
-            </div>
-            <p>Searching products...</p>
-        </div>
-    `;
-    
+    const tableBody = document.getElementById("modalProductResultsBody");
+
     tableBody.innerHTML = `
         <tr>
             <td colspan="4" class="text-center">
@@ -256,17 +179,10 @@ function showLoadingState() {
     `;
 }
 
-// Show error state in both views
+// Show error state
 function showErrorState() {
-    const cardGrid = document.getElementById('productCardGrid');
-    const tableBody = document.getElementById('modalProductResultsBody');
-    const errorMessage = `
-        <div class="error-message">
-            <p>An error occurred while searching products. Please try again.</p>
-        </div>
-    `;
-    
-    cardGrid.innerHTML = errorMessage;
+    const tableBody = document.getElementById("modalProductResultsBody");
+
     tableBody.innerHTML = `
         <tr>
             <td colspan="4" class="text-center">
@@ -295,10 +211,10 @@ function debounce(func, wait) {
     };
 }
 
-// HTML escape utility
+// HTML escape utility (as backup if products.js is not loaded)
 function escapeHtml(str) {
-    if (!str) return '';
-    const div = document.createElement('div');
+    if (!str) return "";
+    const div = document.createElement("div");
     div.textContent = str;
     return div.innerHTML;
 }
@@ -307,22 +223,25 @@ function escapeHtml(str) {
 // Event Listeners
 // ------------------------
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener("DOMContentLoaded", function () {
     // Initialize Bootstrap modal
-    searchModal = new bootstrap.Modal(document.getElementById('searchProductsModal'));
-    
-    const categorySearchInput = document.getElementById('categorySearch');
-    const modalSearchInput = document.getElementById('modalProductSearch');
-    const searchAllButton = document.getElementById('searchAllProducts');
-    const sortSelect = document.getElementById('sortSelect');
-    const columnSelect = document.getElementById('columnSelect');
-    const toggleButton = document.getElementById('toggleCategoryDetails');
-    
+    searchModal = new bootstrap.Modal(document.getElementById("searchProductsModal"));
+
+    // Initialize edit form handlers if products.js functions are available
+    if (typeof initEditFormHandlers === 'function') {
+        initEditFormHandlers();
+    }
+
+    const categorySearchInput = document.getElementById("categorySearch");
+    const modalSearchInput = document.getElementById("modalProductSearch");
+    const searchAllButton = document.getElementById("searchAllProducts");
+    const sortSelect = document.getElementById("sortSelect");
+
     // Category search
     if (categorySearchInput) {
-        categorySearchInput.addEventListener('input', debounce(searchCategories, 300));
-        categorySearchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
+        categorySearchInput.addEventListener("input", debounce(searchCategories, 300));
+        categorySearchInput.addEventListener("keypress", function (e) {
+            if (e.key === "Enter") {
                 searchCategories();
             }
         });
@@ -330,9 +249,9 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Modal product search
     if (modalSearchInput) {
-        modalSearchInput.addEventListener('input', debounce(searchProductsModal, 300));
-        modalSearchInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
+        modalSearchInput.addEventListener("input", debounce(searchProductsModal, 300));
+        modalSearchInput.addEventListener("keypress", function (e) {
+            if (e.key === "Enter") {
                 searchProductsModal();
             }
         });
@@ -340,29 +259,21 @@ document.addEventListener('DOMContentLoaded', function() {
 
     // Sort dropdown
     if (sortSelect) {
-        sortSelect.addEventListener('change', function() {
+        sortSelect.addEventListener("change", function () {
             sortCategories(this.value);
         });
     }
 
     // Search all products button
     if (searchAllButton) {
-        searchAllButton.addEventListener('click', function() {
+        searchAllButton.addEventListener("click", function () {
             searchModal.show();
             modalSearchInput.focus();
         });
     }
 
-    // Toggle details button
-    if (toggleButton) {
-        toggleButton.addEventListener('click', function() {
-            toggleCategoryDetails(this);
-        });
-    }
-
-    // Check if details should be shown based on last user preference
-    const shouldShowDetails = localStorage.getItem('categoryDetailsVisible') === 'true';
-    if (shouldShowDetails && toggleButton) {
-        toggleCategoryDetails(toggleButton);
+    // Initialize overlay handler if products.js function is available
+    if (typeof initOverlayHandler === 'function') {
+        initOverlayHandler();
     }
 });
