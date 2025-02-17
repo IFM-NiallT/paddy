@@ -1,92 +1,169 @@
 import os
 import json
+from typing import Dict, Tuple, Set
 
-def rename_category_images(directory, json_file):
+def load_category_mappings(json_file: str) -> list:
     """
-    Renames image files using category descriptions from JSON data.
-    Can handle both:
-    - Adding ID to files that only have description
-    - Renaming existing ID files to proper format
+    Loads category data from JSON file.
     """
-    # Load JSON data
     with open(json_file, 'r') as f:
         data = json.load(f)
-    
-    # Create mappings
-    description_to_id = {
-        category['Description'].lower().replace(' ', '_'): str(category['ID'])
-        for category in data['Data']
-    }
-    
-    id_to_description = {
-        str(category['ID']): category['Description'].lower().replace(' ', '_')
-        for category in data['Data']
-    }
-    
-    # List all files in directory
+    return data.get('Data', [])
+
+def get_image_files(directory: str) -> list[str]:
+    """
+    Gets all image files from directory.
+    """
     files = os.listdir(directory)
+    return [f for f in files if f.lower().endswith(('.png', '.jpg', '.jpeg'))]
+
+def create_category_mappings(categories: list) -> Tuple[Dict[str, str], Dict[str, str], Dict[str, str]]:
+    """
+    Creates mappings for both ID to description and description to ID.
+    """
+    id_to_desc = {}  # Maps ID to proper description format
+    desc_to_id = {}  # Maps description variations to ID
+    raw_desc_to_id = {}  # Maps raw descriptions to ID
     
-    # Filter for jpg files
-    jpg_files = [f for f in files if f.endswith('.jpg')]
-    
-    for filename in jpg_files:
-        # Skip the default image
-        if filename == '404_default.jpg':
-            continue
+    for category in categories:
+        category_id = str(category['ID'])
+        desc = category['Description'].lower().replace(' ', '_')
+        raw_desc = category['Description']
+        
+        # Store the proper format mapping
+        id_to_desc[category_id] = desc
+        
+        # Store various description formats that might be in filenames
+        desc_variations = [
+            desc,  # normal_format
+            desc.replace('_', ''),  # nounderscores
+            desc.replace('.', ''),  # nodots
+            desc.replace('_', '').replace('.', ''),  # clean
+            raw_desc.lower().replace(' ', '_'),  # raw_with_underscores
+            raw_desc.lower().replace(' ', ''),  # raw_no_spaces
+        ]
+        
+        for variation in desc_variations:
+            desc_to_id[variation] = category_id
             
-        # Remove .jpg extension for processing
-        name_without_ext = filename[:-4]
+        # Store raw description mapping
+        raw_desc_to_id[raw_desc] = category_id
+    
+    return id_to_desc, desc_to_id, raw_desc_to_id
+
+def get_file_details(filename: str) -> Tuple[str, str]:
+    """
+    Gets the name without extension and the extension.
+    """
+    name_without_ext = os.path.splitext(filename)[0]
+    extension = os.path.splitext(filename)[1].lower()
+    return name_without_ext, extension
+
+def rename_category_images(directory: str, json_file: str) -> None:
+    """
+    Renames image files to match template format.
+    Handles both ID-only and description-only files.
+    """
+    try:
+        # Load categories and create mappings
+        categories = load_category_mappings(json_file)
+        id_to_desc, desc_to_id, raw_desc_to_id = create_category_mappings(categories)
         
-        if '_' in name_without_ext:
-            # File already has an ID or description part
-            current_id = name_without_ext.split('_')[0]
-            if current_id in id_to_description:
-                # Has correct ID, just needs proper format
-                new_name = f"{current_id}_{id_to_description[current_id]}.jpg"
-            else:
-                # Might be description only, try to find matching ID
-                desc_part = name_without_ext.lower()
-                if desc_part in description_to_id:
-                    category_id = description_to_id[desc_part]
-                    new_name = f"{category_id}_{desc_part}.jpg"
-                else:
-                    print(f"No matching category found for: {filename}")
-                    continue
-        else:
-            # Try to match with description mapping
-            name_to_check = name_without_ext.lower()
-            if name_to_check in description_to_id:
-                category_id = description_to_id[name_to_check]
-                new_name = f"{category_id}_{name_to_check}.jpg"
-            else:
-                print(f"No matching category found for: {filename}")
+        # Get all image files
+        image_files = get_image_files(directory)
+        
+        # Track changes
+        renamed_count = 0
+        skipped_count = 0
+        error_count = 0
+        processed_files = set()
+        
+        # Process each file
+        for filename in image_files:
+            if filename.startswith('404_default'):
+                print(f"Skipping default image: {filename}")
+                processed_files.add(filename)
+                skipped_count += 1
                 continue
-        
-        # Full paths
-        old_path = os.path.join(directory, filename)
-        new_path = os.path.join(directory, new_name)
-        
-        try:
-            # Rename the file
-            if filename != new_name:  # Only rename if name is different
-                os.rename(old_path, new_path)
-                print(f"Renamed: {filename} -> {new_name}")
+                
+            name_without_ext, extension = get_file_details(filename)
+            new_filename = None
+            
+            # Try to match by ID first
+            if name_without_ext in id_to_desc:
+                # File has just an ID
+                new_filename = f"{name_without_ext}_{id_to_desc[name_without_ext]}.jpg"
             else:
-                print(f"File already in correct format: {filename}")
-        except Exception as e:
-            print(f"Error renaming {filename}: {str(e)}")
+                # Try to match by description
+                # First, try with the name as is
+                name_lower = name_without_ext.lower()
+                if name_lower in desc_to_id:
+                    category_id = desc_to_id[name_lower]
+                    new_filename = f"{category_id}_{id_to_desc[category_id]}.jpg"
+                else:
+                    # Try additional variations
+                    name_clean = ''.join(c.lower() for c in name_without_ext if c.isalnum())
+                    for desc in desc_to_id:
+                        desc_clean = ''.join(c for c in desc if c.isalnum())
+                        if name_clean == desc_clean:
+                            category_id = desc_to_id[desc]
+                            new_filename = f"{category_id}_{id_to_desc[category_id]}.jpg"
+                            break
+            
+            if new_filename:
+                processed_files.add(filename)
+                if filename != new_filename:
+                    try:
+                        old_path = os.path.join(directory, filename)
+                        new_path = os.path.join(directory, new_filename)
+                        os.rename(old_path, new_path)
+                        print(f"Renamed: {filename} -> {new_filename}")
+                        renamed_count += 1
+                    except Exception as e:
+                        print(f"Error renaming {filename}: {str(e)}")
+                        error_count += 1
+                else:
+                    print(f"File already in correct format: {filename}")
+                    skipped_count += 1
+        
+        # Check for unprocessed files
+        unprocessed = set(image_files) - processed_files
+        if unprocessed:
+            print("\nUnprocessed files:")
+            for file in sorted(unprocessed):
+                print(f"- {file}")
+        
+        # Print summary
+        print("\nRename Summary:")
+        print(f"Successfully renamed: {renamed_count}")
+        print(f"Skipped (no changes needed): {skipped_count}")
+        print(f"Errors encountered: {error_count}")
+        print(f"Unprocessed files: {len(unprocessed)}")
+                
+    except Exception as e:
+        print(f"An error occurred: {str(e)}")
 
-# Set correct paths
-directory_path = "static/img/categories"
-json_file_path = "json/categories.json"
+def main():
+    # Set correct paths
+    directory_path = "static/img/categories"
+    json_file_path = "json/categories.json"
 
-# Confirmation prompt
-print(f"This will rename all .jpg files in {directory_path} using data from {json_file_path}")
-print("Files will be renamed to 'ID_category_description.jpg' format")
-confirmation = input("Do you want to continue? (yes/no): ")
+    # Confirmation prompt
+    print(f"This will rename image files in {directory_path}")
+    print(f"using data from {json_file_path}")
+    print("Files will be renamed to match the Flask template format:")
+    print("  <ID>_<description_lowercase_with_underscores>.jpg")
+    print("\nThe script will handle these formats:")
+    print("  - ID only (e.g., 21487729612688.jpg)")
+    print("  - Description only (e.g., adaptor_kits.jpg)")
+    print("  - Mixed format (e.g., 21487721498616_hyd._hose.jpg)")
+    
+    confirmation = input("\nDo you want to continue? (yes/no): ")
 
-if confirmation.lower() == 'yes' or confirmation.lower() == 'y':
-    rename_category_images(directory_path, json_file_path)
-    print("Renaming complete!")
-else:
-    print("Operation cancelled")
+    if confirmation.lower() in ('yes', 'y'):
+        rename_category_images(directory_path, json_file_path)
+    else:
+        print("Operation cancelled")
+
+if __name__ == "__main__":
+    main()
