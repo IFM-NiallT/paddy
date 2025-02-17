@@ -505,9 +505,7 @@ class PaddyApp:
     def _update_product_route(self, product_id: int) -> Union[Any, Tuple[Any, int]]:
         """
         Handle POST request to update a specific product.
-        
-        Processes update requests, validates input, and communicates
-        with the API to apply changes.
+        Allows empty strings to be saved in product fields.
         
         Args:
             product_id (int): The ID of the product to update.
@@ -516,15 +514,14 @@ class PaddyApp:
             JSON response indicating update success or failure
         """
         try:
-            # Get the updated data from the request
-            update_data: Dict[str, Any] = request.get_json() or {}
+            update_data = request.get_json() or {}
             
             logger.info(
                 "Processing product update request",
                 extra={
                     'product_id': product_id,
-                    'client_ip': request.remote_addr,
-                    'fields_to_update': list(update_data.keys()) if update_data else []
+                    'update_data': update_data,
+                    'client_ip': request.remote_addr
                 }
             )
 
@@ -535,88 +532,50 @@ class PaddyApp:
                 )
                 return jsonify({'error': 'No update data provided'}), 400
 
-            # Explicitly filter for allowed fields
-            allowed_fields: List[str] = [
+            # Only keep allowed fields
+            allowed_fields = [
                 "D_Classification", "D_ThreadGender", "D_SizeA", "D_SizeB",
                 "D_SizeC", "D_SizeD", "D_Orientation", "D_Configuration",
                 "D_Grade", "D_ManufacturerName", "D_Application", "D_WebCategory"
             ]
 
-            # Numeric fields to round
-            numeric_fields: List[str] = ["D_SizeA", "D_SizeB", "D_SizeC", "D_SizeD", "ImageCount"]
-
-            # Custom rounding function
-            def round_numeric_field(value: Union[int, float, str]) -> Union[int, float, str]:
-                if isinstance(value, (int, float)):
-                    return round(value)
-                return value
-
-            # Remove empty fields, filter for only allowed fields, and round numeric fields
-            update_payload: Dict[str, Any] = {
-                key: round_numeric_field(value) if key in numeric_fields else value 
+            # Create update payload preserving empty strings
+            update_payload = {
+                key: value
                 for key, value in update_data.items()
-                if value not in [None, ""] and key in allowed_fields
+                if key in allowed_fields
             }
 
-            if not update_payload:
-                logger.warning(
-                    "No valid fields to update",
-                    extra={
-                        'product_id': product_id,
-                        'provided_fields': list(update_data.keys()),
-                        'allowed_fields': allowed_fields
-                    }
-                )
-                return jsonify({'error': 'No valid fields to update'}), 400
-
             logger.debug(
-                "Filtered update payload",
+                "Update payload prepared",
                 extra={
                     'product_id': product_id,
-                    'field_count': len(update_payload),
-                    'fields': list(update_payload.keys())
+                    'payload': update_payload,
+                    'empty_fields': [k for k, v in update_payload.items() if v == ""]
                 }
             )
 
-            # Send the update request to the API
-            response: Dict[str, Any] = self.api_client._make_request(
-                f"Products/{product_id}",
-                method='PUT',
-                data=update_payload
-            )
-
-            # Handle the response based on its structure
-            if isinstance(response, dict) and 'Message' in response:
-                message: str = response['Message']
-                if message == "Ok":
-                    logger.info(
-                        "Product updated successfully",
-                        extra={
-                            'product_id': product_id,
-                            'updated_fields': list(update_payload.keys())
-                        }
-                    )
-                    return jsonify({'message': 'Product updated successfully'}), 200
-                else:
-                    logger.error(
-                        "Product update failed",
-                        extra={
-                            'product_id': product_id,
-                            'api_message': message,
-                            'attempted_fields': list(update_payload.keys())
-                        }
-                    )
-                    return jsonify({'error': f"Failed to update product: {message}"}), 500
-            else:
-                logger.error(
-                    "Unexpected API response format",
+            # Use the API client to update the product
+            response = self.api_client.update_product(product_id, update_payload)
+            
+            if response == "Product updated successfully":
+                logger.info(
+                    "Product updated successfully",
                     extra={
                         'product_id': product_id,
-                        'response_type': type(response).__name__,
-                        'has_message': 'Message' in response if isinstance(response, dict) else False
+                        'updated_fields': list(update_payload.keys())
                     }
                 )
-                return jsonify({'error': 'Unexpected response format from API'}), 500
+                return jsonify({'message': response}), 200
+            else:
+                logger.error(
+                    "Product update failed",
+                    extra={
+                        'product_id': product_id,
+                        'api_response': response
+                    }
+                )
+                return jsonify({'error': f"Failed to update product: {response}"}), 500
 
         except Exception as e:
             logger.error(
@@ -628,7 +587,7 @@ class PaddyApp:
                 },
                 exc_info=True
             )
-            return jsonify({'error': str(e)}), 500
+            return jsonify({'error': f"Error updating product: {str(e)}"}), 500
 
     def _api_search_route(self) -> Union[Any, Tuple[Any, int]]:
         """

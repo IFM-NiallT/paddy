@@ -700,33 +700,22 @@ function populateEditForm(product, productId, dynamicFields) {
         const secondColumnFields = dynamicFields.slice(midpoint);
 
         firstColumnFields.forEach(field => {
-            field.value = product[field.name] || '';
+            // Preserve null or empty values
+            field.value = product[field.name] !== undefined ? product[field.name] : '';
             const fieldGroup = createFieldGroup(field);
             firstColumn.appendChild(fieldGroup);
         });
 
         secondColumnFields.forEach(field => {
-            field.value = product[field.name] || '';
+            // Preserve null or empty values
+            field.value = product[field.name] !== undefined ? product[field.name] : '';
             const fieldGroup = createFieldGroup(field);
             secondColumn.appendChild(fieldGroup);
         });
     }
 }
 
-function createFieldGroup(field) {
-    const group = document.createElement('div');
-    group.className = 'form-group';
-    
-    const label = document.createElement('label');
-    label.innerHTML = `<b> ${field.label || field.name}</b>`;
-    
-    const input = createFieldInput(field);
-    
-    group.appendChild(label);
-    group.appendChild(input);
-    return group;
-}
-
+// Updated createFieldInput function to handle empty strings
 function createFieldInput(field) {
     let input;
     console.log('Creating input field:', {
@@ -747,11 +736,18 @@ function createFieldInput(field) {
         input = document.createElement('input');
         input.type = 'text';
         input.name = field.name;
-        input.value = field.value !== null && field.value !== undefined ? field.value : '';
+        input.value = field.value !== undefined ? field.value : '';
         input.setAttribute('data-type', 'number');
     } else if (field.options && field.options.length > 0) {
         input = document.createElement('select');
         input.name = field.name;
+        
+        // Add an empty option at the start
+        const emptyOption = document.createElement('option');
+        emptyOption.value = '';
+        emptyOption.textContent = '-- Select --';
+        input.appendChild(emptyOption);
+        
         field.options.forEach(option => {
             const opt = document.createElement('option');
             opt.value = option.value;
@@ -765,11 +761,25 @@ function createFieldInput(field) {
         input = document.createElement('input');
         input.type = 'text';
         input.name = field.name;
-        input.value = field.value !== null && field.value !== undefined ? field.value : '';
+        input.value = field.value !== undefined ? field.value : '';
     }
 
     input.className = 'form-control';
     return input;
+}
+
+function createFieldGroup(field) {
+    const group = document.createElement('div');
+    group.className = 'form-group';
+    
+    const label = document.createElement('label');
+    label.innerHTML = `<b> ${field.label || field.name}</b>`;
+    
+    const input = createFieldInput(field);
+    
+    group.appendChild(label);
+    group.appendChild(input);
+    return group;
 }
 
 // ====================
@@ -831,6 +841,95 @@ function escapeHtml(str) {
     return div.innerHTML;
 }
 
+function submitProductEdit(event) {
+    event.preventDefault();
+    
+    const form = event.target;
+    const submitButton = form.querySelector('button[type="submit"]');
+    const cancelButton = form.querySelector('button.cancel');
+    const productId = document.getElementById('popupProductId').value;
+    
+    // Disable buttons during submission
+    submitButton.textContent = 'Saving...';
+    submitButton.disabled = true;
+    cancelButton.disabled = true;
+    
+    const formData = new FormData(form);
+    const updatedFields = {};
+    
+    // Process all form fields, preserving empty strings
+    for (let [key, value] of formData.entries()) {
+        // Include all values, including empty strings
+        updatedFields[key] = value;
+        
+        // Log the field values for debugging
+        console.log(`Field ${key}:`, {
+            rawValue: value,
+            length: value.length,
+            isEmptyString: value === ''
+        });
+    }
+    
+    // Add the product ID
+    updatedFields.product_id = productId;
+    
+    // Log the complete payload for debugging
+    console.log('Sending update payload:', updatedFields);
+    
+    fetch(`/product/${productId}/update`, {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(updatedFields)
+    })
+    .then(response => {
+        console.log('Server response:', response);
+        
+        if (!response.ok) {
+            return response.text().then(text => {
+                throw new Error(text || 'Failed to update product');
+            });
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log('Update successful:', data);
+        showSuccessPopup('Product updated successfully!');
+        closeEditForm();
+        setTimeout(() => {
+            window.location.reload();
+        }, 1000);
+    })
+    .catch(error => {
+        console.error('Error updating product:', error);
+        showErrorMessage(`Error updating product: ${error.message}`);
+    })
+    .finally(() => {
+        submitButton.textContent = 'Save Changes';
+        submitButton.disabled = false;
+        cancelButton.disabled = false;
+    });
+}
+
+// New error message display function
+function showErrorMessage(message) {
+    const errorDiv = document.createElement('div');
+    errorDiv.className = 'alert alert-danger';
+    errorDiv.style.position = 'fixed';
+    errorDiv.style.top = '20px';
+    errorDiv.style.right = '20px';
+    errorDiv.style.zIndex = '9999';
+    errorDiv.textContent = message;
+    
+    document.body.appendChild(errorDiv);
+    
+    setTimeout(() => {
+        errorDiv.remove();
+    }, 5000);
+}
+
+// Keep your existing showSuccessPopup function
 function showSuccessPopup(message = 'Operation completed successfully', duration = 3000) {
     const popup = document.getElementById('successPopup');
     if (!popup) return;
@@ -857,61 +956,4 @@ function showSuccessPopup(message = 'Operation completed successfully', duration
             popup.classList.remove('fade-out');
         }, 300);
     }, duration);
-}
-
-function submitProductEdit(event) {
-    event.preventDefault();
-    
-    const form = event.target;
-    const submitButton = form.querySelector('button[type="submit"]');
-    const cancelButton = form.querySelector('button.cancel');
-    const productId = document.getElementById('popupProductId').value;
-    
-    submitButton.textContent = 'Saving...';
-    submitButton.disabled = true;
-    cancelButton.disabled = true;
-    
-    const formData = new FormData(form);
-    const updatedFields = {};
-    
-    for (let [key, value] of formData.entries()) {
-        if (value.trim() !== '') {
-            const input = form.querySelector(`[name="${key}"]`);
-            updatedFields[key] = String(value).trim();
-        }
-    }
-    
-    updatedFields.product_id = productId;
-    
-    fetch(`/product/${productId}/update`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updatedFields)
-    })
-    .then(response => {
-        if (!response.ok) {
-            return response.text().then(text => {
-                throw new Error(text || 'Failed to update product');
-            });
-        }
-        return response.json();
-    })
-    .then(data => {
-        showSuccessPopup('Product updated successfully!');
-        closeEditForm();
-        setTimeout(() => {
-            window.location.reload();
-        }, 1000);
-    })
-    .catch(error => {
-        console.error('Error updating product:', error);
-        alert(`Failed to update product: ${error.message}`);
-    })
-    .finally(() => {
-        submitButton.textContent = 'Save Changes';
-        submitButton.disabled = false;
-        cancelButton.disabled = false;
-    });
 }

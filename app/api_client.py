@@ -439,11 +439,7 @@ class APIClient:
                 "Data": []
             }
 
-    def update_product(
-        self, 
-        product_id: int, 
-        update_payload: Dict[str, Any]
-    ) -> str:
+    def update_product(self, product_id: int, update_payload: Dict[str, Any]) -> str:
         """
         Update a product with the given ID and payload.
         
@@ -455,21 +451,26 @@ class APIClient:
             str: Status message of the update operation
         """
         try:
-            endpoint: str = f"Products/{product_id}"
-
+            endpoint = f"Products/{product_id}"
+            
             logger.info(
                 "Updating product",
                 extra={
                     'product_id': product_id,
                     'payload_size': len(json.dumps(update_payload)),
-                    'fields_to_update': list(update_payload.keys())
+                    'fields_to_update': list(update_payload.keys()),
+                    'empty_fields': [k for k, v in update_payload.items() if v == ""]
                 }
             )
 
-            response: Dict[str, Any] = self._make_request(endpoint, method='PUT', data=update_payload)
+            response = self._make_request(
+                endpoint,
+                method='PUT',
+                data=update_payload
+            )
 
-            if 'Message' in response:
-                message: str = response['Message']
+            if isinstance(response, dict) and 'Message' in response:
+                message = response['Message']
                 if message == "Ok":
                     logger.info(
                         "Product updated successfully",
@@ -487,10 +488,10 @@ class APIClient:
                     return f"Failed to update product: {message}"
             else:
                 logger.warning(
-                    "No message in API response",
+                    "Unexpected API response format",
                     extra={'product_id': product_id}
                 )
-                return "No message returned from the API"
+                return "Unexpected response format from API"
 
         except Exception as e:
             logger.error(
