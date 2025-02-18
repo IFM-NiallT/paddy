@@ -212,7 +212,7 @@ function handleSortClick(event) {
             console.log('Received sorted data:', data);
             if (data && data.Data) {
                 // Update the URL without reloading
-                window.history.pushState({}, 'Empty', url);
+                window.history.pushState({}, '', url);
                 // Update table with new data
                 updateTableWithResults(data);
                 // Update sort indicators based on the new URL
@@ -446,20 +446,20 @@ function createProductRow(product) {
    
     // Static fields
     let rowHTML = `
-        <td>${escapeHtml(product.Code || 'Empty')}</td>
-        <td data-full-text="${escapeHtml(product.Description || 'Empty')}">${escapeHtml(product.Description || 'Empty')}</td>
+        <td>${escapeHtml(product.Code || '')}</td>
+        <td data-full-text="${escapeHtml(product.Description || '')}">${escapeHtml(product.Description || '')}</td>
     `;
    
     // Process dynamic fields (skip Code, Description, and last two columns)
     // Filter out "Web Category" because it is handled as a static column.
     headers.slice(2, -2)
       .filter(header => {
-          const headerText = header.textContent.trim().replace(/[↕↑↓]/g, 'Empty').trim();
+          const headerText = header.textContent.trim().replace(/[↕↑↓]/g, '').trim();
           return headerText !== 'Web Category';
       })
       .forEach((header, index) => {
-          const headerText = header.textContent.trim().replace(/[↕↑↓]/g, 'Empty').trim();
-          let value = 'Empty';
+          const headerText = header.textContent.trim().replace(/[↕↑↓]/g, '').trim();
+          let value = '';
 
           // Use the fetched field configuration to map headers
           if (window.categoryFieldConfig) {
@@ -469,7 +469,7 @@ function createProductRow(product) {
              
               if (fieldEntry) {
                   const [fieldKey, fieldConfig] = fieldEntry;
-                  value = product[fieldKey] ?? 'Empty';
+                  value = product[fieldKey] ?? '';
                   console.log(`Matched field configuration for "${headerText}":`, { 
                       fieldKey, 
                       fieldConfig, 
@@ -492,10 +492,10 @@ function createProductRow(product) {
         ([key, field]) => field.display === 'Web Category'
     );
 
-    let webCategory = 'Empty';
+    let webCategory = '';
     if (webCategoryEntry) {
         const [fieldKey] = webCategoryEntry;
-        webCategory = product[fieldKey] || 'Empty';
+        webCategory = product[fieldKey] || '';
     }
 
     rowHTML += `
@@ -507,7 +507,7 @@ function createProductRow(product) {
     // Image Count column
     const imageCount = product.ImageCount !== undefined && product.ImageCount !== null 
         ? Math.round(product.ImageCount) 
-        : 'Empty';
+        : '';
     rowHTML += `
         <td data-full-text="${imageCount}">
             ${imageCount}
@@ -590,7 +590,7 @@ function updatePaginationInfo(data) {
         const start = (data.CurrentPage - 1) * data.ItemsPerPage + 1;
         const end = Math.min(data.CurrentPage * data.ItemsPerPage, data.TotalCount);
         
-        let html = 'Empty';
+        let html = '';
         
         if (data.CurrentPage > 1) {
             html += `<a href="#" class="pagination-arrow" data-page="1" aria-label="Skip to first page">⏮️</a>`;
@@ -638,7 +638,7 @@ function updatePaginationInfo(data) {
                     
                     const data = await response.json();
                     
-                    window.history.pushState({}, 'Empty', newUrl);
+                    window.history.pushState({}, '', newUrl);
                     updateTableWithResults(data);
                     
                 } catch (error) {
@@ -772,15 +772,15 @@ function populateCurrentDetails(product, dynamicFields) {
             ${allFields.map(field => `
                 <tr>
                     <th>${field.label}</th>
-                    <td>${product[field.field] || 'Empty'}</td>
+                    <td>${product[field.field] || ''}</td>
                 </tr>
-            `).join('Empty')}
+            `).join('')}
         </table>
     `;
 }
 
 function populateEditForm(product, productId, dynamicFields) {
-    document.getElementById('popupProductCode').textContent = product.Code || 'Empty';
+    document.getElementById('popupProductCode').textContent = product.Code || '';
     document.getElementById('popupProductId').value = productId;
 
     const firstColumn = document.getElementById('popupFirstColumn');
@@ -792,22 +792,22 @@ function populateEditForm(product, productId, dynamicFields) {
         const secondColumnFields = dynamicFields.slice(midpoint);
 
         firstColumnFields.forEach(field => {
-            // Preserve null or empty values
-            field.value = product[field.name] !== undefined ? product[field.name] : 'Empty';
+            // Preserve null or Empty values
+            field.value = product[field.name] !== undefined ? product[field.name] : '';
             const fieldGroup = createFieldGroup(field);
             firstColumn.appendChild(fieldGroup);
         });
 
         secondColumnFields.forEach(field => {
-            // Preserve null or empty values
-            field.value = product[field.name] !== undefined ? product[field.name] : 'Empty';
+            // Preserve null or Empty values
+            field.value = product[field.name] !== undefined ? product[field.name] : '';
             const fieldGroup = createFieldGroup(field);
             secondColumn.appendChild(fieldGroup);
         });
     }
 }
 
-// Updated createFieldInput function to handle empty strings
+// Updated createFieldInput function to handle Empty strings
 function createFieldInput(field) {
     let input;
     console.log('Creating input field:', {
@@ -828,7 +828,7 @@ function createFieldInput(field) {
         input = document.createElement('input');
         input.type = 'text';
         input.name = field.name;
-        input.value = field.value !== undefined ? field.value : 'Empty';
+        input.value = field.value !== undefined ? field.value : '';
         input.setAttribute('data-type', 'number');
     } else if (field.options && field.options.length > 0) {
         input = document.createElement('select');
@@ -836,7 +836,7 @@ function createFieldInput(field) {
         
         // Add an empty option at the start
         const emptyOption = document.createElement('option');
-        emptyOption.value = 'Empty';
+        emptyOption.value = '';
         emptyOption.textContent = '-- Select --';
         input.appendChild(emptyOption);
         
@@ -853,7 +853,7 @@ function createFieldInput(field) {
         input = document.createElement('input');
         input.type = 'text';
         input.name = field.name;
-        input.value = field.value !== undefined ? field.value : 'Empty';
+        input.value = field.value !== undefined ? field.value : '';
     }
 
     input.className = 'form-control';
@@ -883,7 +883,7 @@ function exportTableToCSV() {
     
     const headers = [];
     table.querySelectorAll('th').forEach(headerCell => {
-        let headerText = headerCell.textContent.replace(/[↕↑↓]/g, 'Empty').trim();
+        let headerText = headerCell.textContent.replace(/[↕↑↓]/g, '').trim();
         headers.push('"' + headerText + '"');
     });
     
@@ -927,7 +927,7 @@ function exportTableToCSV() {
 // ====================
 
 function escapeHtml(str) {
-    if (str === null || str === undefined) return 'Empty';
+    if (str === null || str === undefined) return '';
     const div = document.createElement('div');
     div.textContent = str;
     return div.innerHTML;
@@ -958,7 +958,7 @@ function submitProductEdit(event) {
         console.log(`Field ${key}:`, {
             rawValue: value,
             length: value.length,
-            isEmptyString: value === 'Empty'
+            isString: value === ''
         });
     }
     

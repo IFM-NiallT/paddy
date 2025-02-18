@@ -64,7 +64,7 @@
           <thead>
             <tr>
               <!-- Code Column -->
-              <th class="{{ 'current-sort ' + ('asc' if current_sort == 'Code[asc]' else 'dsc' if current_sort == 'Code[dsc]' else 'Empty') }}">
+              <th class="{{ 'current-sort ' + ('asc' if current_sort == 'Code[asc]' else 'dsc' if current_sort == 'Code[dsc]' else '') }}">
                 {% set current_direction = 'asc' if current_sort == 'Code[asc]' else 'dsc' if current_sort == 'Code[dsc]' else 'asc' %}
                 {% set next_direction = 'dsc' if current_direction == 'asc' else 'asc' %}
                 <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage, sort='Code[' + next_direction + ']') }}">Code</a>
@@ -72,7 +72,7 @@
               </th>
 
               <!-- Description Column -->
-              <th class="{{ 'current-sort ' + ('asc' if current_sort == 'Description[asc]' else 'dsc' if current_sort == 'Description[dsc]' else 'Empty') }}">
+              <th class="{{ 'current-sort ' + ('asc' if current_sort == 'Description[asc]' else 'dsc' if current_sort == 'Description[dsc]' else '') }}">
                 {% set current_direction = 'asc' if current_sort == 'Description[asc]' else 'dsc' if current_sort == 'Description[dsc]' else 'asc' %}
                 {% set next_direction = 'dsc' if current_direction == 'asc' else 'asc' %}
                 <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage, sort='Description[' + next_direction + ']') }}">Product Name</a>
@@ -81,7 +81,7 @@
 
               <!-- Dynamic Fields Columns -->
               {% for field in active_fields %}
-                <th class="{{ 'current-sort ' + ('asc' if current_sort == field.field + '[asc]' else 'dsc' if current_sort == field.field + '[dsc]' else 'Empty') }}">
+                <th class="{{ 'current-sort ' + ('asc' if current_sort == field.field + '[asc]' else 'dsc' if current_sort == field.field + '[dsc]' else '') }}">
                   {% set current_direction = 'asc' if current_sort == field.field + '[asc]' else 'dsc' if current_sort == field.field + '[dsc]' else 'asc' %}
                   {% set next_direction = 'dsc' if current_direction == 'asc' else 'asc' %}
                   <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage, sort=field.field + '[' + next_direction + ']') }}">{{ field.display }}</a>
@@ -90,7 +90,7 @@
               {% endfor %}
 
               <!-- Web Category Column (Static Header) -->
-              <th class="{{ 'current-sort ' + ('asc' if current_sort == 'D_WebCategory[asc]' else 'dsc' if current_sort == 'D_WebCategory[dsc]' else 'Empty') }}">
+              <th class="{{ 'current-sort ' + ('asc' if current_sort == 'D_WebCategory[asc]' else 'dsc' if current_sort == 'D_WebCategory[dsc]' else '') }}">
                 {% set current_direction = 'asc' if current_sort == 'D_WebCategory[asc]' else 'dsc' if current_sort == 'D_WebCategory[dsc]' else 'asc' %}
                 {% set next_direction = 'dsc' if current_direction == 'asc' else 'asc' %}
                 <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage, sort='D_WebCategory[' + next_direction + ']') }}">Web Category</a>
@@ -116,15 +116,15 @@
                 <td>{{ product.Code }}</td>
                 <td data-full-text="{{ product.Description }}">{{ product.Description }}</td>
                 {% for field in active_fields %}
-                  <td data-full-text="{{ product[field.field] if product[field.field] else 'Empty' }}">
-                    {{ product[field.field] if product[field.field] else 'Empty' }}
+                  <td data-full-text="{{ product[field.field] if product[field.field] else '' }}">
+                    {{ product[field.field] if product[field.field] else '' }}
                   </td>
                 {% endfor %}
-                <td data-full-text="{{ product.D_WebCategory if product.D_WebCategory else 'Empty' }}">
-                  {{ product.D_WebCategory if product.D_WebCategory else 'Empty' }}
+                <td data-full-text="{{ product.D_WebCategory if product.D_WebCategory else '' }}">
+                  {{ product.D_WebCategory if product.D_WebCategory else '' }}
                 </td>
-                <td data-full-text="{{ product.ImageCount if product.ImageCount else 'Empty' }}">
-                  {{ product.ImageCount|round|int if product.ImageCount is number else 'Empty' }}
+                <td data-full-text="{{ product.ImageCount if product.ImageCount else '' }}">
+                  {{ product.ImageCount|round|int if product.ImageCount is number else '' }}
                 </td>
                 <td>
                   <button class="btn-uni edit-product-btn" data-product-id="{{ product.ID }}" aria-label="Edit {{ product.ID }}"> Edit </button>
