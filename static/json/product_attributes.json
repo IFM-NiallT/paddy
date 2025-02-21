@@ -15,22 +15,22 @@
       },
       "D_SizeA": {
         "display": "Inner Diameter",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeB": {
         "display": "Outer Diameter",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeC": {
         "display": "Thread Size C",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_SizeD": {
         "display": "Thread Size D",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_Orientation": {
@@ -81,22 +81,22 @@
       },
       "D_SizeA": {
         "display": "Inner Diameter",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeB": {
         "display": "Outer Diameter",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeC": {
         "display": "Size C",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_SizeD": {
         "display": "Size D",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_Orientation": {
@@ -147,22 +147,22 @@
       },
       "D_SizeA": {
         "display": "Thread Size A",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeB": {
         "display": "Thread Size B",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeC": {
         "display": "Thread Size C",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeD": {
         "display": "Thread Size D",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_Orientation": {
@@ -213,22 +213,22 @@
       },
       "D_SizeA": {
         "display": "Thread Size",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeB": {
         "display": "Diameter",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeC": {
         "display": "Size C",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_SizeD": {
         "display": "Size D",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_Orientation": {
@@ -279,22 +279,22 @@
       },
       "D_SizeA": {
         "display": "Thread Size",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeB": {
         "display": "Size B",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_SizeC": {
         "display": "Size C",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_SizeD": {
         "display": "Size D",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_Orientation": {
@@ -345,22 +345,22 @@
       },
       "D_SizeA": {
         "display": "Thread Size",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeB": {
         "display": "Outer Diameter",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeC": {
         "display": "Length",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeD": {
         "display": "Size D",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_Orientation": {
@@ -411,22 +411,22 @@
       },
       "D_SizeA": {
         "display": "Size A",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_SizeB": {
         "display": "Size B",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_SizeC": {
         "display": "Size C",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_SizeD": {
         "display": "Size D",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_Orientation": {
@@ -477,22 +477,22 @@
       },
       "D_SizeA": {
         "display": "Size A",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_SizeB": {
         "display": "Size B",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_SizeC": {
         "display": "Size C",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_SizeD": {
         "display": "Size D",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_Orientation": {
@@ -543,22 +543,22 @@
       },
       "D_SizeA": {
         "display": "Width",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeB": {
         "display": "Links",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeC": {
         "display": "Size C",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_SizeD": {
         "display": "Size D",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_Orientation": {
@@ -609,22 +609,22 @@
       },
       "D_SizeA": {
         "display": "Size A",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_SizeB": {
         "display": "Size B",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_SizeC": {
         "display": "Size C",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_SizeD": {
         "display": "Size D",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_Orientation": {
@@ -675,22 +675,22 @@
       },
       "D_SizeA": {
         "display": "Inner Diameter",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeB": {
         "display": "Outer Diameter",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeC": {
         "display": "Size C",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_SizeD": {
         "display": "Size D",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_Orientation": {
@@ -741,22 +741,22 @@
       },
       "D_SizeA": {
         "display": "Voltage",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeB": {
         "display": "AMP hr",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeC": {
         "display": "CCA",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeD": {
         "display": "Size D",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_Orientation": {
@@ -807,22 +807,22 @@
       },
       "D_SizeA": {
         "display": "Length",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeB": {
         "display": "Thickness",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeC": {
         "display": "Size C",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_SizeD": {
         "display": "Size D",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_Orientation": {
@@ -873,22 +873,22 @@
       },
       "D_SizeA": {
         "display": "Thread Size",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeB": {
         "display": "Length",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeC": {
         "display": "Thickness",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeD": {
         "display": "Size D",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_Orientation": {
@@ -939,22 +939,22 @@
       },
       "D_SizeA": {
         "display": "Thread Size",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeB": {
         "display": "Length",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeC": {
         "display": "Size C",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_SizeD": {
         "display": "Size D",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_Orientation": {
@@ -1005,22 +1005,22 @@
       },
       "D_SizeA": {
         "display": "Voltage",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeB": {
         "display": "Size B",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeC": {
         "display": "Size C",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeD": {
         "display": "Size D",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_Orientation": {
@@ -1071,22 +1071,22 @@
       },
       "D_SizeA": {
         "display": "Thread Size",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeB": {
         "display": "Size B",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_SizeC": {
         "display": "Size C",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_SizeD": {
         "display": "Size D",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_Orientation": {
@@ -1137,22 +1137,22 @@
       },
       "D_SizeA": {
         "display": "Inner Diameter",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeB": {
         "display": "Outer Diameter",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeC": {
         "display": "Size C",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_SizeD": {
         "display": "Size D",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_Orientation": {
@@ -1203,22 +1203,22 @@
       },
       "D_SizeA": {
         "display": "Inner Diameter",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeB": {
         "display": "Outer Diameter",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeC": {
         "display": "Thickness",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeD": {
         "display": "Length",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_Orientation": {
@@ -1269,22 +1269,22 @@
       },
       "D_SizeA": {
         "display": "Voltage",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeB": {
         "display": "Size",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeC": {
         "display": "Size C",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_SizeD": {
         "display": "Size D",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_Orientation": {
@@ -1335,22 +1335,22 @@
       },
       "D_SizeA": {
         "display": "Voltage",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeB": {
         "display": "Size",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeC": {
         "display": "Capacity",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeD": {
         "display": "Length",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_Orientation": {
@@ -1401,22 +1401,22 @@
       },
       "D_SizeA": {
         "display": "Size A",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_SizeB": {
         "display": "Size B",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_SizeC": {
         "display": "Size C",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_SizeD": {
         "display": "Size D",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_Orientation": {
@@ -1467,22 +1467,22 @@
       },
       "D_SizeA": {
         "display": "Age",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeB": {
         "display": "Size",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeC": {
         "display": "Waist",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeD": {
         "display": "Leg",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_Orientation": {
@@ -1533,22 +1533,22 @@
       },
       "D_SizeA": {
         "display": "Width",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeB": {
         "display": "Length",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeC": {
         "display": "Thickness",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeD": {
         "display": "Size D",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_Orientation": {
@@ -1599,22 +1599,22 @@
       },
       "D_SizeA": {
         "display": "Width",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeB": {
         "display": "Length",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeC": {
         "display": "Size C",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_SizeD": {
         "display": "Size D",
-        "type": "Integer",
+        "type": "String",
         "used": false
       },
       "D_Orientation": {
@@ -1665,22 +1665,22 @@
       },
       "D_SizeA": {
         "display": "Voltage",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeB": {
         "display": "Watts",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeC": {
         "display": "Lumens",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_SizeD": {
         "display": "Length",
-        "type": "Integer",
+        "type": "String",
         "used": true
       },
       "D_Orientation": {

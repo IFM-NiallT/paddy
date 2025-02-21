@@ -495,6 +495,63 @@ async function fetchFieldConfig(categoryId) {
     }
 }
 
+function determineWebStatus(product) {
+    console.log('Web Status Detection - Raw Product:', product);
+
+    // Check ECommerceSettings object first
+    if (product.ECommerceSettings?.ECommerceStatus) {
+        const statusObj = product.ECommerceSettings.ECommerceStatus;
+        
+        // Object format with Value/Name
+        if (typeof statusObj === 'object') {
+            const isAvailable = statusObj.Value === 0 || statusObj.Name === 'Enabled';
+            console.log('Object Status Check:', {
+                statusValue: statusObj.Value,
+                statusName: statusObj.Name,
+                isAvailable: isAvailable
+            });
+            return isAvailable;
+        }
+        
+        // String format
+        if (typeof statusObj === 'string') {
+            const isAvailable = statusObj === 'Enabled';
+            console.log('String Status Check:', {
+                statusValue: statusObj,
+                isAvailable: isAvailable
+            });
+            return isAvailable;
+        }
+    }
+
+    // Fallback checks
+    const directStatusCheck = [
+        product['ECommerceSettings.ECommerceStatus'],
+        product.web_status,
+        product.WebStatus
+    ];
+
+    for (let status of directStatusCheck) {
+        if (status !== undefined) {
+            const isAvailable = 
+                status === 'Enabled' || 
+                status === '0' || 
+                status === 0 || 
+                status === true;
+            
+            console.log('Fallback Status Check:', {
+                statusValue: status,
+                isAvailable: isAvailable
+            });
+            
+            return isAvailable;
+        }
+    }
+
+    console.warn('No valid web status found, defaulting to not available');
+    return false;
+}
+
 function createProductRow(product) {
     const row = document.createElement('tr');
     row.className = 'product-row';
@@ -543,33 +600,14 @@ function createProductRow(product) {
             `;
         });
 
-    // Determine web status - More robust logic
-    let isAvailable = false;
-    console.log('Checking web status for product:', {
+    // Determine web status
+    const isAvailable = determineWebStatus(product);
+    console.log('Web Status Determination:', {
+        productId: product.ID,
         ECommerceSettings: product.ECommerceSettings,
-        web_status: product.web_status,
-        WebStatus: product.WebStatus
+        ecommerceStatus: product.ECommerceSettings?.ECommerceStatus,
+        isAvailable: isAvailable
     });
-
-    // Check multiple possible sources of web status
-    if (product.ECommerceSettings) {
-        // Check if ECommerceSettings has a Value property
-        isAvailable = product.ECommerceSettings.Value === 0 || 
-                      product.ECommerceSettings.ECommerceStatus === '0' || 
-                      product.ECommerceSettings.ECommerceStatus === 0;
-    } 
-    
-    if (!isAvailable && product.web_status !== undefined) {
-        // If not yet determined, check web_status
-        isAvailable = product.web_status === '0' || product.web_status === 0;
-    }
-    
-    if (!isAvailable && product.WebStatus !== undefined) {
-        // Final fallback to WebStatus
-        isAvailable = product.WebStatus === '0' || product.WebStatus === 0;
-    }
-
-    console.log('Final availability:', isAvailable);
 
     // Add Web Status column with proper styling
     rowHTML += `
@@ -780,49 +818,70 @@ async function updateTableRow(productId, updatedProduct) {
     }
 
     if (specialColumnIndices.webStatus > -1) {
-        // Determine web status with more robust logic for nested ECommerceStatus
         let isAvailable = false;
-        console.log('Checking web status for updated product:', {
+        
+        // Log initial state
+        console.log('Web Status Update - Initial Check:', {
             ECommerceSettings: updatedProduct.ECommerceSettings,
-            web_status: updatedProduct.web_status,
-            WebStatus: updatedProduct.WebStatus,
-            'ECommerceSettings.ECommerceStatus': updatedProduct['ECommerceSettings.ECommerceStatus']
+            statusDetails: updatedProduct.ECommerceSettings?.ECommerceStatus,
+            product: updatedProduct
         });
 
-        // Check the nested ECommerceStatus structure
-        if (updatedProduct.ECommerceSettings && 
-            updatedProduct.ECommerceSettings.ECommerceStatus) {
-            const statusDetails = updatedProduct.ECommerceSettings.ECommerceStatus;
+        // Check for ECommerceStatus object with Value and Name properties
+        if (updatedProduct.ECommerceSettings?.ECommerceStatus) {
+            const statusObj = updatedProduct.ECommerceSettings.ECommerceStatus;
             
-            // Check if statusDetails is an object with Name and Value
-            if (typeof statusDetails === 'object') {
-                isAvailable = statusDetails.Value === 0 || 
-                              statusDetails.Name === 'Enabled';
+            // Handle object format (with Value/Name)
+            if (typeof statusObj === 'object') {
+                isAvailable = statusObj.Value === 0 || statusObj.Name === 'Enabled';
+                console.log('Status from object format:', {
+                    statusObj: statusObj,
+                    value: statusObj.Value,
+                    name: statusObj.Name,
+                    isAvailable: isAvailable
+                });
+            } else {
+                // Handle string format
+                isAvailable = statusObj === 'Enabled';
+                console.log('Status from string format:', {
+                    statusValue: statusObj,
+                    isAvailable: isAvailable
+                });
             }
         }
 
-        // Fallback to direct ECommerceStatus
-        if (!isAvailable && updatedProduct['ECommerceSettings.ECommerceStatus']) {
-            isAvailable = updatedProduct['ECommerceSettings.ECommerceStatus'] === 'Enabled';
-        }
-
-        console.log('Final availability:', isAvailable);
+        console.log('Final status determination:', {
+            isAvailable: isAvailable,
+            productId: updatedProduct.ID
+        });
 
         const webStatusCell = cells[specialColumnIndices.webStatus];
         if (webStatusCell) {
             const statusSpan = webStatusCell.querySelector('.web-status-cell');
             if (statusSpan) {
+                const oldClass = statusSpan.className;
+                const oldText = statusSpan.textContent;
+                
                 statusSpan.className = `web-status-cell ${isAvailable ? 'available' : 'not-available'}`;
                 statusSpan.textContent = isAvailable ? 'Available' : 'Not Available';
-                console.log('Updated web status cell:', {
-                    className: statusSpan.className,
-                    text: statusSpan.textContent
+                
+                console.log('Web status cell updated:', {
+                    oldClass: oldClass,
+                    newClass: statusSpan.className,
+                    oldText: oldText,
+                    newText: statusSpan.textContent
                 });
             } else {
-                console.warn('Web status span not found in cell');
+                // If span doesn't exist, create it
+                const newSpan = document.createElement('span');
+                newSpan.className = `web-status-cell ${isAvailable ? 'available' : 'not-available'}`;
+                newSpan.textContent = isAvailable ? 'Available' : 'Not Available';
+                webStatusCell.innerHTML = '';
+                webStatusCell.appendChild(newSpan);
+                console.log('Created new web status span');
             }
         } else {
-            console.warn('Web status cell not found');
+            console.warn('Web status cell not found at index:', specialColumnIndices.webStatus);
         }
     }
 
@@ -1019,12 +1078,9 @@ function populateCurrentDetails(product, dynamicFields) {
 
     // Helper function to determine web status
     function getWebStatus(product) {
-        if (product.ECommerceSettings?.ECommerceStatus) {
-            const statusObj = product.ECommerceSettings.ECommerceStatus;
-            // Handle the nested object format with Value and Name
-            return (statusObj.Value === 0 || statusObj.Name === 'Enabled') ? 'Available' : 'Not Available';
-        }
-        return 'Not Available'; // Default state
+        // Use the shared determineWebStatus function
+        const isAvailable = determineWebStatus(product);
+        return isAvailable ? 'Available' : 'Not Available';
     }
 
     const allFields = [
@@ -1055,10 +1111,10 @@ function populateCurrentDetails(product, dynamicFields) {
     container.innerHTML = `
         <table class="table table-bordered">
             ${allFields.map(field => {
-                let displayValue = field.getValue ? 
-                    field.getValue() : 
+                let displayValue = field.getValue ?
+                    field.getValue() :
                     (product[field.field] || '');
-                
+               
                 // Special handling for web status display
                 if (field.field === 'ECommerceStatus') {
                     return `
@@ -1541,7 +1597,6 @@ async function submitProductEdit(event) {
     event.preventDefault();
    
     const form = event.target;
-    const formContainer = document.getElementById('editProductForm');
     const submitButton = form.querySelector('button[type="submit"]');
     const cancelButton = form.querySelector('.cancel');
     const productId = form.querySelector('#popupProductId')?.value;
@@ -1553,25 +1608,79 @@ async function submitProductEdit(event) {
         return;
     }
 
+    // Disable buttons during update to prevent multiple submissions
+    submitButton.disabled = true;
+    submitButton.textContent = 'Saving...';
+    if (cancelButton) cancelButton.disabled = true;
+
     try {
-        // Get form data
+        // Create a clean payload object to ensure precise data transmission
+        const updatedFields = {};
+
+        // Manually add form fields to prevent unexpected transformations
         const formData = new FormData(form);
-        const updatedFields = Object.fromEntries(formData.entries());
+        for (let [key, value] of formData.entries()) {
+            // Skip empty strings and the problematic web_status field
+            if (value !== "" && key !== 'web_status') {
+                updatedFields[key] = String(value).trim();
+            }
+        }
+
+        // Explicitly add product ID
         updatedFields.product_id = productId;
 
-        // Explicitly handle web status
+        // Carefully handle web status update:
+        // Map UI value ("Available") to "0" (available on web) and others to "1"
         if (webStatusSelect) {
-            // Set ECommerceSettings.ECommerceStatus directly as a string
-            updatedFields['ECommerceSettings.ECommerceStatus'] = 
-                webStatusSelect.value === 'Available' ? 'Enabled' : 'Disabled';
+            const rawStatus = webStatusSelect.value;
+            const normalizedStatus = rawStatus === 'Available' ? '0' : '1';
+            
+            // Enhanced payload construction
+            updatedFields.ECommerceSettings = {
+                ECommerceStatus: {
+                    Value: parseInt(normalizedStatus),
+                    Name: normalizedStatus === '0' ? 'Enabled' : 'Disabled',
+                    isAvailable: normalizedStatus === '0'
+                },
+                // Preserve any existing extended description
+                ...(updatedFields.ECommerceSettings || {})
+            };
 
-            console.log('Web Status Update:', {
-                webStatusSelect: webStatusSelect.value,
-                ecommerceStatus: updatedFields['ECommerceSettings.ECommerceStatus']
+            console.log('Detailed Web Status Update', {
+                rawInput: rawStatus,
+                normalizedStatus,
+                fullPayload: JSON.stringify(updatedFields, null, 2)
             });
         }
 
-        // Step 1: Send update request
+        // Validate payload before sending
+        function validatePayload(payload) {
+            const errors = [];
+            
+            if (!payload.product_id) errors.push('Missing Product ID');
+            if (!payload.ECommerceSettings) errors.push('Missing ECommerceSettings');
+            if (!payload.ECommerceSettings.ECommerceStatus) errors.push('Missing ECommerceStatus');
+            
+            return {
+                isValid: errors.length === 0,
+                errors
+            };
+        }
+
+        const payloadValidation = validatePayload(updatedFields);
+        if (!payloadValidation.isValid) {
+            throw new Error(`Payload validation failed: ${payloadValidation.errors.join(', ')}`);
+        }
+
+        console.log('Sending update request with payload:', {
+            payloadKeys: Object.keys(updatedFields),
+            fullPayload: JSON.stringify(updatedFields, null, 2),
+            payloadTypes: Object.keys(updatedFields).reduce((acc, key) => {
+                acc[key] = typeof updatedFields[key];
+                return acc;
+            }, {})
+        });
+        
         const updateResponse = await fetch(`/product/${productId}/update`, {
             method: 'POST',
             headers: {
@@ -1581,58 +1690,136 @@ async function submitProductEdit(event) {
             body: JSON.stringify(updatedFields)
         });
 
-        // Log full response details
-        console.log('Update Response Status:', updateResponse.status);
-        console.log('Update Response Headers:',
-            Object.fromEntries(updateResponse.headers.entries())
-        );
+        console.log('Update Response Details:', {
+            status: updateResponse.status,
+            statusText: updateResponse.statusText,
+            headers: Object.fromEntries(updateResponse.headers.entries())
+        });
 
-        // Check response body for more details
         const responseText = await updateResponse.text();
-        console.log('Raw Response Body:', responseText);
+        console.log('Raw Response:', responseText);
 
-        // Try to parse response as JSON
         let responseData;
         try {
             responseData = JSON.parse(responseText);
-            console.log('Parsed Response Data:', responseData);
+            console.log('Parsed Response:', responseData);
         } catch (parseError) {
-            console.error('Failed to parse response:', parseError);
+            console.error('Response parsing error:', { 
+                error: parseError, 
+                rawText: responseText 
+            });
+            throw new Error('Invalid response format from server');
         }
 
+        // More comprehensive error checking
         if (!updateResponse.ok) {
-            throw new Error(responseText || 'Failed to update product');
+            const errorDetails = responseData?.error || responseText || 'Unspecified server error';
+            console.error('Update Error Details:', errorDetails);
+            throw new Error(errorDetails);
         }
 
-        // Step 2: Small delay to ensure server-side processing
-        await new Promise(resolve => setTimeout(resolve, 200));
+        // Check for successful update message with more flexibility
+        const successMessages = [
+            "Product updated successfully", 
+            "Ok", 
+            "Success"
+        ];
 
-        // Step 3: Fetch fresh product data
-        const detailsResponse = await fetch(`/product/${productId}/edit`);
-        if (!detailsResponse.ok) {
-            throw new Error('Failed to fetch updated product details');
+        if (successMessages.some(msg => responseData.message?.includes(msg))) {
+            console.log('Update successful, waiting for API sync...');
+            
+            // Slightly more robust sync wait
+            await new Promise(resolve => setTimeout(resolve, 750));
+            
+            console.log('Fetching updated product data...');
+            const detailsResponse = await fetch(`/product/${productId}/edit`);
+            
+            if (!detailsResponse.ok) {
+                throw new Error(`Failed to fetch updated details: ${detailsResponse.statusText}`);
+            }
+
+            const data = await detailsResponse.json();
+
+            // Enhanced status extraction with multiple fallback mechanisms
+            const extractWebStatus = (product) => {
+                // Check nested ECommerceSettings first
+                if (product.ECommerceSettings?.ECommerceStatus) {
+                    const status = product.ECommerceSettings.ECommerceStatus;
+                    
+                    // Handle object format
+                    if (typeof status === 'object') {
+                        // Prioritize extraction methods
+                        return status.Value ?? 
+                               status.value ?? 
+                               (status.Name === 'Enabled' ? 0 : 1) ?? 
+                               (status.isAvailable ? 0 : 1);
+                    }
+                    
+                    // Handle string format
+                    return status === 'Enabled' ? 0 : 1;
+                }
+
+                // Fallback checks
+                const fallbackChecks = [
+                    product.WebStatus,
+                    product.web_status,
+                    product.ECommerceSettings?.WebStatus
+                ];
+
+                for (let fallbackStatus of fallbackChecks) {
+                    if (fallbackStatus !== undefined) {
+                        return fallbackStatus === 'Enabled' || fallbackStatus === 0 ? 0 : 1;
+                    }
+                }
+
+                return 1; // Default to Not Available
+            };
+
+            // Ensure consistent WebStatus
+            if (data.product) {
+                data.product.WebStatus = extractWebStatus(data.product);
+            }
+
+            console.log('Received updated product data:', {
+                product: data.product,
+                webStatus: data.product?.WebStatus,
+                updatedFields: Object.keys(updatedFields)
+            });
+
+            if (!data?.product) {
+                throw new Error('Invalid or missing product data in response');
+            }
+
+            await updateTableRow(productId, data.product);
+            
+            showSuccessPopup('Product updated successfully');
+            closeEditForm();
+        } else {
+            throw new Error('Unexpected server response');
         }
-
-        const data = await detailsResponse.json();
-        if (!data?.product) {
-            throw new Error('Invalid product data received');
-        }
-
-        // Step 4: Update the table row
-        await updateTableRow(productId, data.product);
-       
-        // Step 5: Show success message and close form
-        showSuccessPopup('Product updated successfully');
-        closeEditForm();
 
     } catch (error) {
-        console.error('FULL Error in product update process:', error);
-       
-        // More detailed error message
-        const errorMessage = error.message || 'Unknown error occurred';
+        console.error('Comprehensive Product Update Error:', {
+            name: error.name,
+            message: error.message,
+            stack: error.stack
+        });
+        
+        // More granular error messaging
+        const errorMessageMap = {
+            'fetch updated details': 'Product was updated but failed to refresh display',
+            'Invalid response format': 'Received invalid response from server',
+            'Payload validation failed': 'Invalid update payload',
+            'Unexpected server response': 'Server did not confirm update'
+        };
+
+        const errorMessage = Object.entries(errorMessageMap)
+            .find(([key]) => error.message.includes(key))?.[1] 
+            || error.message 
+            || 'Unknown error occurred';
+        
         showErrorMessage(`Update failed: ${errorMessage}`);
     } finally {
-        // Reset button states
         submitButton.disabled = false;
         submitButton.textContent = 'Save Changes';
         if (cancelButton) cancelButton.disabled = false;

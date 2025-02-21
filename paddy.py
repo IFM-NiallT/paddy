@@ -483,33 +483,63 @@ class PaddyApp:
                 }
             )
 
-            # Web Status Field with more robust detection
-            web_status_value = False
-            status_value = None
+            # Normalize ECommerceStatus value
+            status_value: Optional[int] = None
             
-            # Check multiple possible keys and values
+            # Check for status in ECommerceSettings with enhanced normalization
             if ecommerce_settings:
-                status_value = (
-                    ecommerce_settings.get('ECommerceStatus') or 
-                    ecommerce_settings.get('Value') or 
-                    ecommerce_settings.get('WebStatus')
-                )
+                raw_status = ecommerce_settings.get('ECommerceStatus')
+                if raw_status is not None:
+                    # Convert to int if possible
+                    try:
+                        if isinstance(raw_status, str):
+                            status_value = 0 if raw_status.lower() in ['enabled', 'available', '0'] else 1
+                        elif isinstance(raw_status, bool):
+                            status_value = 0 if raw_status else 1
+                        else:
+                            status_value = int(raw_status)
+                            status_value = 0 if status_value == 0 else 1
+                    except (ValueError, TypeError):
+                        status_value = 1  # Default to Not Available
             
             # Fallback to other locations if not found in ECommerceSettings
             if status_value is None:
-                status_value = (
+                legacy_status = (
                     product.get('web_status') or 
-                    product.get('WebStatus')
+                    product.get('WebStatus') or
+                    ecommerce_settings.get('Value') or 
+                    ecommerce_settings.get('WebStatus')
                 )
+                if legacy_status is not None:
+                    try:
+                        if isinstance(legacy_status, str):
+                            status_value = 0 if legacy_status.lower() in ['0', 'true', 'enabled', 'available'] else 1
+                        elif isinstance(legacy_status, bool):
+                            status_value = 0 if legacy_status else 1
+                        else:
+                            status_value = int(legacy_status)
+                            status_value = 0 if status_value == 0 else 1
+                    except (ValueError, TypeError):
+                        status_value = 1
             
-            # Convert to boolean availability (0 means Available)
-            web_status_value = str(status_value) == '0' if status_value is not None else False
+            # Default if no status found
+            if status_value is None:
+                status_value = 1  # Default to Not Available
+
+            logger.debug(
+                "Status Value Processing",
+                extra={
+                    'raw_ecommerce_settings': ecommerce_settings,
+                    'final_status_value': status_value,
+                    'status_type': type(status_value).__name__
+                }
+            )
 
             web_status_field = {
                 'name': 'web_status',
                 'label': 'Web Status',
-                'type': 'select',  # Changed to select for more explicit handling
-                'value': 'Available' if web_status_value else 'Not Available',
+                'type': 'select',
+                'value': 'Available' if status_value == 0 else 'Not Available',
                 'options': [
                     {'value': 'Available', 'label': 'Available'},
                     {'value': 'Not Available', 'label': 'Not Available'}
@@ -556,8 +586,7 @@ class PaddyApp:
                 extra={
                     'product_id': product_id,
                     'category_id': category_id,
-                    'web_status_detected': web_status_value,
-                    'status_value': status_value,
+                    'normalized_status': status_value,
                     'fields_count': len(dynamic_fields)
                 }
             )
@@ -578,6 +607,159 @@ class PaddyApp:
                 exc_info=True
             )
             return jsonify({'error': str(e)}), 500
+
+    def _normalize_ecommerce_status(self, status) -> int:
+        """
+        Normalize various status inputs to integer value (0 or 1).
+        
+        Args:
+            status: Input status in various formats
+        
+        Returns:
+            int: Normalized status (0 for Available, 1 for Not Available)
+        """
+        # Log the input for debugging purposes with more detailed information
+        logger.debug(
+            "Normalizing ECommerce Status", 
+            extra={
+                'input_status': status,
+                'input_type': type(status).__name__,
+                'input_repr': repr(status)  # Added repr for more context
+            }
+        )
+
+        # Handle None input
+        if status is None:
+            logger.debug("Received None status, defaulting to Not Available")
+            return 1
+
+        # Handle string inputs (case-insensitive)
+        if isinstance(status, str):
+            status = status.strip().lower()
+            
+            # Comprehensive mapping of status values
+            status_mapping = {
+                # Available statuses
+                'available': 0,
+                'enabled': 0,
+                'true': 0,
+                '0': 0,
+                'active': 0,
+                
+                # Not Available statuses
+                'not available': 1,
+                'disabled': 1,
+                'false': 1,
+                '1': 1,
+                'inactive': 1
+            }
+            
+            if status in status_mapping:
+                logger.debug(
+                    "Status normalized from string", 
+                    extra={
+                        'original_status': status,
+                        'normalized_status': status_mapping[status]
+                    }
+                )
+                return status_mapping[status]
+
+        # Handle boolean inputs
+        if isinstance(status, bool):
+            normalized = 1 if status else 0
+            logger.debug(
+                "Status normalized from boolean", 
+                extra={
+                    'original_status': status,
+                    'normalized_status': normalized
+                }
+            )
+            return normalized
+
+        # Handle numeric inputs
+        try:
+            int_status = int(float(status))  # Handle both string and float inputs
+            normalized = 0 if int_status == 0 else 1
+            logger.debug(
+                "Status normalized from numeric input", 
+                extra={
+                    'original_status': status,
+                    'normalized_status': normalized
+                }
+            )
+            return normalized
+        except (ValueError, TypeError):
+            pass
+
+        # Handle dictionary format with enhanced detection
+        if isinstance(status, dict):
+            # Prioritized keys for checking availability
+            dict_keys_to_check = [
+                'Value',         # Exact match for our current structure
+                'value',         # Lowercase variant
+                'isAvailable',   # Boolean availability flag
+                'Status',        # Capitalized status
+                'status',        # Lowercase status
+                'Name',          # Name of status
+                'name',          
+                'ECommerceStatus',
+                'WebStatus',
+                'web_status'
+            ]
+            
+            for key in dict_keys_to_check:
+                if key in status:
+                    try:
+                        value = status[key]
+                        
+                        # Direct value checks
+                        if isinstance(value, int):
+                            return 0 if value == 0 else 1
+                        
+                        if isinstance(value, bool):
+                            return 0 if value else 1
+                        
+                        if isinstance(value, str):
+                            value = value.strip().lower()
+                            if value in ['available', 'enabled', 'true', '0']:
+                                return 0
+                            if value in ['not available', 'disabled', 'false', '1']:
+                                return 1
+                        
+                        # Recursive normalization for nested structures
+                        normalized = self._normalize_ecommerce_status(value)
+                        
+                        logger.debug(
+                            "Status normalized from dictionary", 
+                            extra={
+                                'key': key,
+                                'original_status': value,
+                                'normalized_status': normalized
+                            }
+                        )
+                        return normalized
+                    
+                    except Exception as e:
+                        logger.warning(
+                            "Failed to normalize status from dictionary", 
+                            extra={
+                                'key': key,
+                                'error': str(e),
+                                'status_value': status.get(key)
+                            }
+                        )
+                        continue
+
+        # Fallback to default with comprehensive logging
+        logger.warning(
+            "Unable to normalize status, using default", 
+            extra={
+                'unhandled_status': status,
+                'type': type(status).__name__,
+                'status_details': repr(status)
+            }
+        )
+        return 1  # Default to Not Available if invalid
 
     def _update_product_route(self, product_id: int) -> Union[Any, Tuple[Any, int]]:
         """
@@ -612,51 +794,53 @@ class PaddyApp:
             # Prepare update payload
             update_payload = {}
             
-            # Initialize ECommerceSettings if not already present
-            ecommerce_settings_update = {}
+            # Get current product data for proper nested field handling
+            current_product = self.api_client._make_request(f"Products/{product_id}")
+            ecommerce_settings_update = current_product.get('ECommerceSettings', {}).copy()
             
             # Handle web status field explicitly
             ecommerce_status_key = 'ECommerceSettings.ECommerceStatus'
             if ecommerce_status_key in update_data:
-                # Convert UI 'Available'/'Not Available' to API 'Enabled'/'Disabled'
                 web_status_value = update_data[ecommerce_status_key]
-                ecommerce_status = 'Enabled' if web_status_value == 'Available' else 'Disabled'
+                status_value = self._normalize_ecommerce_status(web_status_value)
                 
                 logger.debug(
                     "Web Status Update Details",
                     extra={
                         'input_status': web_status_value,
-                        'ecommerce_status': ecommerce_status
+                        'normalized_status': status_value,
+                        'status_type': type(status_value).__name__,
+                        'current_settings': ecommerce_settings_update
                     }
                 )
                 
-                # Add the status directly to the payload
-                update_payload[ecommerce_status_key] = ecommerce_status
+                # Update the ECommerceSettings while preserving other fields
+                ecommerce_settings_update['ECommerceStatus'] = status_value
+                update_payload['ECommerceSettings'] = ecommerce_settings_update
             
             # Handle previous web status field for backward compatibility
             elif 'web_status' in update_data:
                 web_status = update_data['web_status']
-                ecommerce_settings_update['ECommerceStatus'] = 'Enabled' if web_status in ['0', 0, True, 'true'] else 'Disabled'
+                status_value = self._normalize_ecommerce_status(web_status)
                 
                 logger.debug(
                     "Legacy Web Status Update Details",
                     extra={
                         'input_web_status': web_status,
-                        'ecommerce_status': ecommerce_settings_update['ECommerceStatus']
+                        'normalized_status': status_value,
+                        'status_type': type(status_value).__name__,
+                        'current_settings': ecommerce_settings_update
                     }
                 )
                 
-                # Add ECommerceSettings to payload if there are any updates
-                if ecommerce_settings_update:
-                    update_payload['ECommerceSettings'] = ecommerce_settings_update
+                ecommerce_settings_update['ECommerceStatus'] = status_value
+                update_payload['ECommerceSettings'] = ecommerce_settings_update
             
             # Handle extended description field
             if 'extended_description' in update_data:
-                ecommerce_settings_update['ExtendedDescription'] = update_data['extended_description']
-                
-                # Ensure ECommerceSettings is in the payload if extended description is present
                 if 'ECommerceSettings' not in update_payload:
                     update_payload['ECommerceSettings'] = ecommerce_settings_update
+                update_payload['ECommerceSettings']['ExtendedDescription'] = update_data['extended_description']
 
             # Handle dynamic fields
             allowed_fields = [
@@ -675,7 +859,8 @@ class PaddyApp:
                 extra={
                     'product_id': product_id,
                     'payload': update_payload,
-                    'ecommerce_settings': update_payload.get('ECommerceSettings', {})
+                    'ecommerce_settings': update_payload.get('ECommerceSettings', {}),
+                    'original_settings': current_product.get('ECommerceSettings', {})
                 }
             )
 
@@ -683,20 +868,52 @@ class PaddyApp:
             response = self.api_client.update_product(product_id, update_payload)
             
             if response == "Product updated successfully":
+                # Fetch the updated product to verify changes
+                updated_product = self.api_client._make_request(f"Products/{product_id}")
+                current_status = self._normalize_ecommerce_status(
+                    updated_product.get('ECommerceSettings', {}).get('ECommerceStatus')
+                )
+                
+                # Verify the status was updated correctly
+                expected_status = status_value if 'status_value' in locals() else None
+                if expected_status is not None and expected_status != current_status:
+                    logger.warning(
+                        "Status update verification failed",
+                        extra={
+                            'expected_status': expected_status,
+                            'current_status': current_status,
+                            'product_id': product_id
+                        }
+                    )
+                    return jsonify({
+                        'error': 'Status update verification failed',
+                        'current_status': current_status,
+                        'is_available': current_status == 0
+                    }), 500
+                
                 logger.info(
                     "Product updated successfully",
                     extra={
                         'product_id': product_id,
-                        'updated_fields': list(update_payload.keys())
+                        'updated_fields': list(update_payload.keys()),
+                        'current_status': current_status,
+                        'is_available': current_status == 0,
+                        'verified': True
                     }
                 )
-                return jsonify({'message': response}), 200
+                
+                return jsonify({
+                    'message': response,
+                    'current_status': current_status,
+                    'is_available': current_status == 0
+                }), 200
             else:
                 logger.error(
                     "Product update failed",
                     extra={
                         'product_id': product_id,
-                        'api_response': response
+                        'api_response': response,
+                        'attempted_payload': update_payload
                     }
                 )
                 return jsonify({'error': f"Failed to update product: {response}"}), 500
@@ -708,7 +925,7 @@ class PaddyApp:
                     'product_id': product_id,
                     'error_type': type(e).__name__,
                     'error_detail': str(e),
-                    'update_data': update_data
+                    'update_data': update_data if 'update_data' in locals() else None
                 },
                 exc_info=True
             )

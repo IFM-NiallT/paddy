@@ -480,28 +480,62 @@ class APIClient:
         try:
             endpoint = f"Products/{product_id}"
             
+            # Create a copy of the update payload
+            final_payload = update_payload.copy()
+            
+            # Transform ECommerceStatus to the expected format
+            if 'ECommerceSettings' in final_payload:
+                settings = final_payload['ECommerceSettings']
+                if 'ECommerceStatus' in settings:
+                    status_value = int(settings['ECommerceStatus'])
+                    final_payload['ECommerceSettings']['ECommerceStatus'] = {
+                        'Value': status_value,
+                        'Name': 'Disabled' if status_value == 1 else 'Enabled',
+                        'isAvailable': status_value == 0
+                    }
+
             logger.info(
                 "Updating product",
                 extra={
                     'product_id': product_id,
-                    'payload_size': len(json.dumps(update_payload)),
-                    'fields_to_update': list(update_payload.keys()),
-                    'empty_fields': [k for k, v in update_payload.items() if v == ""]
+                    'payload_size': len(json.dumps(final_payload)),
+                    'fields_to_update': list(final_payload.keys()),
+                    'ecommerce_settings': final_payload.get('ECommerceSettings', {})
                 }
             )
 
+            # Make the update request
             response = self._make_request(
                 endpoint,
                 method='PUT',
-                data=update_payload
+                data=final_payload
             )
 
-            if isinstance(response, dict) and 'Message' in response:
-                message = response['Message']
-                if message == "Ok":
+            if isinstance(response, dict):
+                api_status = response.get('Status')
+                api_message = response.get('Message', '')
+
+                logger.debug(
+                    "API Update Response",
+                    extra={
+                        'api_status': api_status,
+                        'api_message': api_message,
+                        'full_response': response
+                    }
+                )
+
+                if api_status == 'Processed':
+                    # Get updated product to verify changes
+                    updated_product = self._make_request(endpoint)
+                    ecommerce_settings = updated_product.get('ECommerceSettings', {})
+                    
                     logger.info(
-                        "Product updated successfully",
-                        extra={'product_id': product_id}
+                        "Product update processed",
+                        extra={
+                            'product_id': product_id,
+                            'updated_settings': ecommerce_settings,
+                            'input_payload': final_payload
+                        }
                     )
                     return "Product updated successfully"
                 else:
@@ -509,14 +543,20 @@ class APIClient:
                         "Product update failed",
                         extra={
                             'product_id': product_id,
-                            'api_message': message
+                            'api_status': api_status,
+                            'api_message': api_message,
+                            'attempted_payload': final_payload
                         }
                     )
-                    return f"Failed to update product: {message}"
+                    return f"Failed to update product: {api_message}"
             else:
                 logger.warning(
                     "Unexpected API response format",
-                    extra={'product_id': product_id}
+                    extra={
+                        'product_id': product_id,
+                        'response_type': type(response).__name__,
+                        'response_content': str(response)[:200]
+                    }
                 )
                 return "Unexpected response format from API"
 
@@ -526,7 +566,8 @@ class APIClient:
                 extra={
                     'product_id': product_id,
                     'error_type': type(e).__name__,
-                    'error_detail': str(e)
+                    'error_detail': str(e),
+                    'attempted_payload': final_payload if 'final_payload' in locals() else None
                 },
                 exc_info=True
             )
