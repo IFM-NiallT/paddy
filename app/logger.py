@@ -48,7 +48,7 @@ class PaddyLogger:
     def setup_logger(
         name='paddy', 
         log_dir='logs', 
-        log_level=logging.INFO,
+        log_level=logging.DEBUG,
         max_file_size_bytes=10 * 1024 * 1024,  # 10 MB
         backup_count=5
     ):

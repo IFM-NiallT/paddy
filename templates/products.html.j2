@@ -1,199 +1,342 @@
 <!DOCTYPE html>
-<html lang="en">
+<html lang="en" class="no-js">
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>PADDY - Products</title>
+  <title>PADDY - {{ category.Description }} Products</title>
 
+  <!-- Critical Meta Tags -->
+  <meta name="description" content="PADDY: Product Attribute Designer Deployment for efficient product management and category browsing">
+  <meta name="keywords" content="product management, inventory, categories, IFM, product attributes">
+  <meta name="author" content="IFM">
+  
+  <!-- Preload Critical Resources -->
+  <link rel="preload" href="{{ url_for('static', filename='img/ifm_logo.png') }}" as="image">
+  <link rel="preload" href="{{ url_for('static', filename='css/paddy.css') }}" as="style">
+  
   <!-- External Libraries -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" media="all">
   <link href="https://fonts.googleapis.com/css2?family=Liter:wght@400;700&display=swap" rel="stylesheet">
   
   <!-- Our Custom Stylesheet -->
   <link rel="stylesheet" href="{{ url_for('static', filename='css/paddy.css') }}">
+
+  <!-- No-JS Fallback Styles -->
+  <noscript>
+    <style>
+      .js-required { display: none; }
+      .no-js-message { display: block; }
+    </style>
+  </noscript>
 </head>
 
 <body>
+  <!-- Skip to Main Content Link -->
+  <a href="#main-content" class="skip-link">Skip to main content</a>
+
+  <!-- Accessibility Message for No JavaScript -->
+  <div class="no-js-message text-center bg-warning p-3" style="display:none;">
+    JavaScript is required for full functionality. Please enable JavaScript in your browser.
+  </div>
+
   <!-- Navigation Bar -->
-  <nav class="navbar navbar-expand-lg">
-    <div class="container-fluid px-4">
-      <div class="nav-brand-container d-flex align-items-center">
-        <img src="/static/img/ifm_logo.png" alt="IFM logo" class="logo me-2" id="ifmLogo">
-        <a class="navbar-brand" href="/">PADDY</a>
+  <header>
+    <nav class="navbar navbar-expand-lg" aria-label="Main Navigation">
+      <div class="container-fluid px-4">
+        <div class="nav-brand-container d-flex align-items-center">
+          <img 
+            src="/static/img/ifm_logo.png" 
+            alt="IFM logo" 
+            class="logo me-2" 
+            id="ifmLogo"
+            loading="lazy"
+          >
+          <a 
+            class="navbar-brand" 
+            href="/" 
+            aria-label="PADDY Home"
+          >
+            PADDY
+          </a>
+        </div>
+        <div class="d-flex gap-2">
+          <button 
+            class="btn-uni me-2" 
+            onclick="exportTableToCSV()" 
+            aria-label="Export current table to CSV"
+          >
+            Export to CSV
+          </button>
+          <button 
+            class="btn-uni" 
+            onclick="window.location.href='/'" 
+            aria-label="Return to Categories"
+          >
+            Back to Categories
+          </button>
+        </div>
       </div>
-      <div>
-        <button class="btn-uni me-2" onclick="exportTableToCSV()">Export to CSV</button>
-        <button class="btn-uni" onclick="window.location.href='/'">Back to Categories</button>
-      </div>
-    </div>
-  </nav>
+    </nav>
+  </header>
 
-  <!-- Main Content -->
-  <main>
+<!-- Main Content -->
+<main class="container-fluid px-4" id="main-content" role="main" tabindex="-1">
     <!-- Search Container -->
-    <div class="container-fluid px-4">
-      <div class="search-container">
-        <input type="text" class="search-input" id="productSearch" placeholder="Search products...">
-      </div>
+    <div class="search-container">
+        <div class="search-wrapper mb-4">
+            <label for="productSearch" class="visually-hidden">
+                Search products by code or description
+            </label>
+            <input 
+                type="search" 
+                class="search-input" 
+                id="productSearch" 
+                placeholder="Search products..."
+                aria-describedby="productSearchHelp"
+                autocomplete="off"
+            >
+        </div>
     </div>
 
-    <!-- Table Container -->
-    <div class="table-container">
-      <!-- Header with Category Info and Pagination -->
-      <h4 class="text-center">
+
+   <!-- Table Container -->
+<div class="table-container">
+    <!-- Header with Category Info and Pagination -->
+    <h4 class="text-center">
         {{ category.Description }} ({{ category.Code }})
         <div class="pagination-container">
-          {% if products.CurrentPage > 1 %}
-            <a href="{{ url_for('products', category_id=category.ID, page=1, sort=current_sort) }}" class="pagination-arrow" aria-label="Skip to first page">⏮️</a>
-            <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage-1, sort=current_sort) }}" class="pagination-arrow" aria-label="Previous page">⬅️</a>
-          {% endif %}
-          {% set start_item = (products.CurrentPage - 1) * products.ItemsPerPage + 1 %}
-          {% set end_item = [products.CurrentPage * products.ItemsPerPage, products.TotalCount] | min %}
-          <span class="pagination-count">{{ start_item }}-{{ end_item }}/{{ products.TotalCount }}</span>
-          {% if products.CurrentPage < products.TotalPages %}
-            <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage+1, sort=current_sort) }}" class="pagination-arrow" aria-label="Next page">➡️</a>
-            <a href="{{ url_for('products', category_id=category.ID, page=products.TotalPages, sort=current_sort) }}" class="pagination-arrow" aria-label="Skip to last page">⏭️</a>
-          {% endif %}
+            {% if products.CurrentPage > 1 %}
+                <a href="{{ url_for('products', category_id=category.ID, page=1, sort=current_sort) }}" class="pagination-arrow" aria-label="Skip to first page">⏮️</a>
+                <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage-1, sort=current_sort) }}" class="pagination-arrow" aria-label="Previous page">⬅️</a>
+            {% endif %}
+            {% set start_item = (products.CurrentPage - 1) * products.ItemsPerPage + 1 %}
+            {% set end_item = [products.CurrentPage * products.ItemsPerPage, products.TotalCount] | min %}
+            <span class="pagination-count">{{ start_item }}-{{ end_item }}/{{ products.TotalCount }}</span>
+            {% if products.CurrentPage < products.TotalPages %}
+                <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage+1, sort=current_sort) }}" class="pagination-arrow" aria-label="Next page">➡️</a>
+                <a href="{{ url_for('products', category_id=category.ID, page=products.TotalPages, sort=current_sort) }}" class="pagination-arrow" aria-label="Skip to last page">⏭️</a>
+            {% endif %}
         </div>
-      </h4>
+    </h4>
 
-      <!-- Table Content -->
-      <div class="table-responsive">
-        <table class="table table-bordered" id="productsTable">
-          <!-- Table Headers -->
-          <thead>
-            <tr>
-              <!-- Code Column -->
-              <th class="{{ 'current-sort ' + ('asc' if current_sort == 'Code[asc]' else 'dsc' if current_sort == 'Code[dsc]' else '') }}">
-                {% set current_direction = 'asc' if current_sort == 'Code[asc]' else 'dsc' if current_sort == 'Code[dsc]' else 'asc' %}
-                {% set next_direction = 'dsc' if current_direction == 'asc' else 'asc' %}
-                <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage, sort='Code[' + next_direction + ']') }}">Code</a>
-                <div class="resizer" data-column="0"></div>
-              </th>
+    <!-- Table Content -->
+    <div class="table-responsive">
+        <table class="table">
+            <thead>
+                <tr>
+                    <th class="{{ 'current-sort ' + ('asc' if current_sort == 'Code[asc]' else 'dsc' if current_sort == 'Code[dsc]' else '') }}">
+                        {% set current_direction = 'asc' if current_sort == 'Code[asc]' else 'dsc' if current_sort == 'Code[dsc]' else 'asc' %}
+                        {% set next_direction = 'dsc' if current_direction == 'asc' else 'asc' %}
+                        <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage, sort='Code[' + next_direction + ']') }}">Code</a>
+                        <div class="resizer" data-column="0"></div>
+                    </th>
 
-              <!-- Description Column -->
-              <th class="{{ 'current-sort ' + ('asc' if current_sort == 'Description[asc]' else 'dsc' if current_sort == 'Description[dsc]' else '') }}">
-                {% set current_direction = 'asc' if current_sort == 'Description[asc]' else 'dsc' if current_sort == 'Description[dsc]' else 'asc' %}
-                {% set next_direction = 'dsc' if current_direction == 'asc' else 'asc' %}
-                <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage, sort='Description[' + next_direction + ']') }}">Product Name</a>
-                <div class="resizer" data-column="1"></div>
-              </th>
+                    <th class="{{ 'current-sort ' + ('asc' if current_sort == 'Description[asc]' else 'dsc' if current_sort == 'Description[dsc]' else '') }}">
+                        {% set current_direction = 'asc' if current_sort == 'Description[asc]' else 'dsc' if current_sort == 'Description[dsc]' else 'asc' %}
+                        {% set next_direction = 'dsc' if current_direction == 'asc' else 'asc' %}
+                        <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage, sort='Description[' + next_direction + ']') }}">Product Name</a>
+                        <div class="resizer" data-column="1"></div>
+                    </th>
 
-              <!-- Dynamic Fields Columns -->
-              {% for field in active_fields %}
-                <th class="{{ 'current-sort ' + ('asc' if current_sort == field.field + '[asc]' else 'dsc' if current_sort == field.field + '[dsc]' else '') }}">
-                  {% set current_direction = 'asc' if current_sort == field.field + '[asc]' else 'dsc' if current_sort == field.field + '[dsc]' else 'asc' %}
-                  {% set next_direction = 'dsc' if current_direction == 'asc' else 'asc' %}
-                  <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage, sort=field.field + '[' + next_direction + ']') }}">{{ field.display }}</a>
-                  <div class="resizer" data-column="{{ loop.index + 2 }}"></div>
-                </th>
-              {% endfor %}
+                    {% for field in active_fields %}
+                        <th class="field-{{ field.field }} {{ 'current-sort ' + ('asc' if current_sort == field.field + '[asc]' else 'dsc' if current_sort == field.field + '[dsc]' else '') }}">
+                            {% set current_direction = 'asc' if current_sort == field.field + '[asc]' else 'dsc' if current_sort == field.field + '[dsc]' else 'asc' %}
+                            {% set next_direction = 'dsc' if current_direction == 'asc' else 'asc' %}
+                            <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage, sort=field.field + '[' + next_direction + ']') }}">{{ field.display }}</a>
+                            <div class="resizer" data-column="{{ loop.index + 1 }}"></div>
+                        </th>
+                    {% endfor %}
 
-              <!-- Web Category Column (Static Header) -->
-              <th class="{{ 'current-sort ' + ('asc' if current_sort == 'D_WebCategory[asc]' else 'dsc' if current_sort == 'D_WebCategory[dsc]' else '') }}">
-                {% set current_direction = 'asc' if current_sort == 'D_WebCategory[asc]' else 'dsc' if current_sort == 'D_WebCategory[dsc]' else 'asc' %}
-                {% set next_direction = 'dsc' if current_direction == 'asc' else 'asc' %}
-                <a href="{{ url_for('products', category_id=category.ID, page=products.CurrentPage, sort='D_WebCategory[' + next_direction + ']') }}">Web Category</a>
-                <div class="resizer" data-column="{{ active_fields|length + 3 }}"></div>
-              </th>
+                    <th>Images<div class="resizer" data-column="{{ active_fields|length + 2 }}"></div></th>
+                    <th>Web Status<div class="resizer" data-column="{{ active_fields|length + 3 }}"></div></th>
+                    <th>Actions<div class="resizer" data-column="{{ active_fields|length + 4 }}"></div></th>
+                </tr>
+            </thead>
 
-              <!-- Image Count Column -->
-              <th>
-                Image Count
-                <div class="resizer" data-column="{{ active_fields|length + 4 }}"></div>
-              </th>
-
-              <!-- Actions Column -->
-              <th>Actions
-                <div class="resizer" data-column="{{ active_fields|length + 5 }}"></div>
-              </th>
-            </tr>
-          </thead>
-
-          <tbody>
-            {% for product in products.Data %}
-              <tr class="product-row" data-product-id="{{ product.ID }}">
-                <td>{{ product.Code }}</td>
-                <td data-full-text="{{ product.Description }}">{{ product.Description }}</td>
-                {% for field in active_fields %}
-                  <td data-full-text="{{ product[field.field] if product[field.field] else '' }}">
-                    {{ product[field.field] if product[field.field] else '' }}
-                  </td>
+            <tbody>
+                {% for product in products.Data %}
+                    <tr class="product-row" data-product-id="{{ product.ID }}">
+                        <td>{{ product.Code }}</td>
+                        <td data-full-text="{{ product.Description }}">{{ product.Description }}</td>
+                        {% for field in active_fields %}
+                            <td data-full-text="{{ product[field.field] if product[field.field] else '' }}">
+                                {{ product[field.field] if product[field.field] else '' }}
+                            </td>
+                        {% endfor %}
+                        <td>{{ product.ImageCount|round|int if product.ImageCount is number else '' }}</td>
+                        <td>
+                            {% set web_status = product.ECommerceSettings.ECommerceStatus if product.ECommerceSettings and 'ECommerceStatus' in product.ECommerceSettings else '1' %}
+                            <span class="web-status-cell {{ 'available' if web_status == '0' else 'not-available' }}">
+                                {{ 'Available' if web_status == '0' else 'Not Available' }}
+                            </span>
+                        </td>
+                        <td>
+                            <button 
+                                class="btn-uni edit-product-btn" 
+                                data-product-id="{{ product.ID }}" 
+                                aria-label="Edit product {{ product.Code }}"
+                            >
+                                Edit
+                            </button>
+                        </td>
+                    </tr>
                 {% endfor %}
-                <td data-full-text="{{ product.D_WebCategory if product.D_WebCategory else '' }}">
-                  {{ product.D_WebCategory if product.D_WebCategory else '' }}
-                </td>
-                <td data-full-text="{{ product.ImageCount if product.ImageCount else '' }}">
-                  {{ product.ImageCount|round|int if product.ImageCount is number else '' }}
-                </td>
-                <td>
-                  <button class="btn-uni edit-product-btn" data-product-id="{{ product.ID }}" aria-label="Edit {{ product.ID }}"> Edit </button>
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
+            </tbody>
         </table>
-      </div>
     </div>
+</div>
 
-    <!-- Edit Product Popup Form -->
+<!-- Edit Product Popup Form -->
 <div class="form-popup-overlay" id="editFormOverlay"></div>
 <div class="form-popup" id="editProductForm" role="dialog" aria-labelledby="editFormTitle" aria-modal="true">
-  <form class="form-container">
-    <!-- Form Header with Product Code (as before) -->
+  <form class="form-container" id="editProductFormContainer">
     <div class="form-header">
-      <h2 id="editFormTitle">Edit Product: <span id="popupProductCode"></span></h2>
-      <button type="button" class="close-button" onclick="closeEditForm()" aria-label="Close">X</button>
+      <h2 id="editFormTitle">
+        Edit Product: <span id="popupProductCode"></span>
+      </h2>
+      <button type="button" class="close-button cancel" onclick="closeEditForm()" aria-label="Close edit form">X</button>
     </div>
     
-    <!-- Hidden input for product ID -->
     <input type="hidden" id="popupProductId" name="product_id">
     
-    <!-- Two-column layout -->
-    <div class="form-grid" style="display: flex; gap: 20px;">
-      <!-- Left Column: Dynamic Fields -->
-      <div class="form-column" style="flex: 1;">
-        <!-- These will be populated by populateEditForm -->
-        <div id="popupFirstColumn"></div>
-        <div id="popupSecondColumn"></div>
+    <div class="form-content">
+      <div id="errorContainer" class="alert alert-destructive" style="display: none;" role="alert">
+        <div class="alert-content"></div>
+      </div>
+      <div id="successContainer" class="alert alert-success" style="display: none;" role="alert">
+        <div class="alert-content"></div>
       </div>
       
-      <!-- Right Column: Static Fields (Image Count and Web Category) -->
-      <div class="form-column" style="flex: 1;">
-        <div class="form-group">
-          <label for="popupImageCount">Image Count</label>
-          <input type="text" id="popupImageCount" name="ImageCount" readonly style="width: 100%; max-width: 200px;">
+      <div class="form-grid" style="display: flex; gap: 20px;">
+        <!-- Left Column: Static Fields -->
+        <div class="form-column" style="flex: 1;">
+          <!-- Product Name (Now a Display Field) -->
+          <div class="form-group">
+            <label for="popupProductName">Product Name</label>
+            <small id="productNameHelp" class="form-text text-muted">Display name (from product description)</small>
+            <div id="popupProductName" class="form-control readonly-input" aria-describedby="productNameHelp"></div>
+          </div>
+          <div class="form-group">
+            <label for="popupExtendedDescription">Extended Description</label>
+            <small id="extendedDescriptionHelp" class="form-text text-muted">Additional product details</small>
+            <textarea
+              id="popupExtendedDescription"
+              name="extended_description"
+              class="form-control"
+              rows="4"
+              aria-describedby="extendedDescriptionHelp"
+            ></textarea>
+          </div>
+          <div class="form-group">
+            <label for="popupImageCount">Image Count</label>
+            <small id="imageCountHelp" class="form-text text-muted">Total number of images for this product</small>
+            <input
+              type="text"
+              id="popupImageCount"
+              name="ImageCount"
+              readonly
+              class="form-control readonly-input"
+              aria-describedby="imageCountHelp"
+            >
+          </div>
+          <div class="form-group">
+            <label for="popupWebCategory">Web Category</label>
+            <small id="webCategoryHelp" class="form-text text-muted">Category for web display</small>
+            <input
+              type="text"
+              id="popupWebCategory"
+              name="D_WebCategory"
+              class="form-control"
+              aria-describedby="webCategoryHelp"
+            >
+          </div>
+          <div class="form-group">
+            <label for="popupWebStatus">Web Status <span class="required">*</span></label>
+            <small id="webStatusHelp" class="form-text text-muted">Determines product visibility on the website</small>
+            <select
+              id="popupWebStatus"
+              name="web_status"
+              class="form-control"
+              required
+              aria-describedby="webStatusHelp"
+            >
+              <option value="">Select Status</option>
+              <option value="Available">Available</option>
+              <option value="Not Available">Not Available</option>
+            </select>
+          </div>
         </div>
-        <div class="form-group">
-          <label for="popupWebCategory">Web Category</label>
-          <input type="text" id="popupWebCategory" name="D_WebCategory" style="width: 100%; max-width: 300px;">
+        
+        <!-- Right Column: Dynamic Fields -->
+        <div class="form-column" style="flex: 1;">
+          <div id="popupFirstColumn"></div>
+          <div id="popupSecondColumn"></div>
         </div>
       </div>
     </div>
     
     <div class="form-actions">
-      <button type="button" class="btn cancel" onclick="closeEditForm()" aria-label="Cancel editing">Cancel</button>
-      <button type="submit" class="btn" aria-label="Save product changes">Save Changes</button>
+      <button
+        type="button"
+        class="btn-cancel cancel"
+        onclick="closeEditForm()"
+        aria-label="Cancel edit"
+      >
+        Cancel
+      </button>
+      <button
+        type="submit"
+        class="btn-submit"
+        aria-label="Save product changes"
+      >
+        Save Changes
+      </button>
     </div>
   </form>
 </div>
-  </main>
+</main>
 
   <!-- Footer -->
-  <footer>
-    <p>PADDY &copy; 2025 - IFM</p>
-    <p class="quote">"Product Attribute Designer Deployment (for) You"</p>
-    <p class="version-quote">"v0.4"</p>
+  <footer role="contentinfo">
+    <div class="container">
+      <p class="text-center mb-2">
+        PADDY &copy; 2025 - IFM
+      </p>
+      <p class="quote text-center">
+        "Product Attribute Designer Deployment (for) You"
+      </p>
+      <p class="version-quote text-center">
+        "v0.4"
+      </p>
+    </div>
   </footer>
+
+  <!-- Success Popup -->
+  <div 
+    id="successPopup" 
+    class="success-popup" 
+    role="alert" 
+    aria-live="assertive"
+  >
+    <span 
+      class="success-icon" 
+      aria-hidden="true"
+    >
+      ✓
+    </span>
+    <span class="success-content">
+      Success!
+    </span>
+  </div>
 
   <!-- Scripts -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
   <script src="{{ url_for('static', filename='js/products.js') }}"></script>
 
-  <!-- Success Popup -->
-  <div id="successPopup" class="success-popup" style="display: none;">
-    <div class="success-icon">✓</div>
-    <div class="success-content">Success!</div>
-  </div>
+  <!-- Inline Script to Remove No-JS Message -->
+  <script>
+    document.documentElement.classList.remove('no-js');
+    document.documentElement.classList.add('js');
+  </script>
 </body>
 </html>

@@ -101,9 +101,11 @@ class PaddyApp:
                 ("/product/<int:product_id>/edit", "edit_product", self._edit_product_route, ['GET']),
                 ("/product/<int:product_id>/update", "update_product", self._update_product_route, ['POST']),
                 ("/api/search", "api_search", self._api_search_route, ['GET']),
-                ("/api/search/all", "all_products_search", self._all_products_search_route, ['GET'])  # New route
+                ("/api/search/all", "all_products_search", self._all_products_search_route, ['GET']),  
+                ("/api/bulk-update", "bulk_update", self._bulk_update_products_route, ['POST'])  
             ]
             
+            # Process routes
             for route in routes:
                 if len(route) == 4:
                     path, name, handler, methods = route
@@ -204,7 +206,7 @@ class PaddyApp:
         try:
             page: int = request.args.get('page', 1, type=int)
             sort_param: Optional[str] = request.args.get('sort')
-            
+        
             logger.debug(
                 f"Before parse - sort_param: {sort_param}",
                 extra={
@@ -214,14 +216,14 @@ class PaddyApp:
                     'all_args': dict(request.args)
                 }
             )
-            
+        
             # Check if this is an AJAX request
             is_ajax: bool = request.headers.get('X-Requested-With') == 'XMLHttpRequest'
-            
+        
             sort_field: Optional[str] = None
             sort_direction: str = 'asc'
             sort_field, sort_direction = self._parse_sort_param(sort_param)
-            
+        
             logger.debug(
                 f"After parse - field: {sort_field}, direction: {sort_direction}",
                 extra={
@@ -230,27 +232,27 @@ class PaddyApp:
                     'original_param': sort_param
                 }
             )
-            
+        
             products: Dict[str, Any] = self.api_client.get_products(
-                category_id, 
+                category_id,
                 page=page,
                 sort_field=sort_field,
                 sort_direction=sort_direction
             )
-            
+        
             # If it's an AJAX request, return JSON
             if is_ajax:
                 return jsonify(products)
-            
+        
             # Otherwise return the full template
             categories: Dict[str, Any] = self.api_client.get_categories()
             category: Optional[Dict[str, Any]] = next((c for c in categories['Data'] if c['ID'] == category_id), None)
-            
+        
             if not category:
                 return render_template("error.html.j2", error="Category not found"), 404
-                
-            active_fields: List[Dict[str, Any]] = self.api_client.field_config.get_category_fields(category_id)
             
+            active_fields: List[Dict[str, Any]] = self.api_client.field_config.get_category_fields(category_id)
+        
             # Log what we're sending to template
             logger.debug(
                 f"Sending to template - current_sort: {sort_param}",
@@ -260,7 +262,24 @@ class PaddyApp:
                     'fields_count': len(active_fields) if active_fields else 0
                 }
             )
-            
+        
+            # Debug: Log full product JSON for each product
+            if products and products.get('Data'):
+                logger.debug(
+                    "Full product data for this category",
+                    extra={
+                        'category_id': category_id,
+                        'total_products': len(products['Data']),
+                        'product_details': [
+                            {
+                                'ID': product.get('ID'),
+                                'Code': product.get('Code'),
+                                'Full JSON': product  # This will print the entire product dictionary
+                            } for product in products['Data']
+                        ]
+                    }
+                )
+
             return render_template(
                 "products.html.j2",
                 products=products,
@@ -453,6 +472,62 @@ class PaddyApp:
             category_fields: List[Dict[str, Any]] = self.api_client.field_config.get_category_fields(category_id)
             
             dynamic_fields: List[Dict[str, Any]] = []
+
+            # Enhanced web status handling
+            ecommerce_settings = product.get('ECommerceSettings', {})
+            logger.debug(
+                "Web Status Processing", 
+                extra={
+                    'ecommerce_settings': ecommerce_settings,
+                    'raw_settings': product.get('ECommerceSettings')
+                }
+            )
+
+            # Web Status Field with more robust detection
+            web_status_value = False
+            status_value = None
+            
+            # Check multiple possible keys and values
+            if ecommerce_settings:
+                status_value = (
+                    ecommerce_settings.get('ECommerceStatus') or 
+                    ecommerce_settings.get('Value') or 
+                    ecommerce_settings.get('WebStatus')
+                )
+            
+            # Fallback to other locations if not found in ECommerceSettings
+            if status_value is None:
+                status_value = (
+                    product.get('web_status') or 
+                    product.get('WebStatus')
+                )
+            
+            # Convert to boolean availability (0 means Available)
+            web_status_value = str(status_value) == '0' if status_value is not None else False
+
+            web_status_field = {
+                'name': 'web_status',
+                'label': 'Web Status',
+                'type': 'select',  # Changed to select for more explicit handling
+                'value': 'Available' if web_status_value else 'Not Available',
+                'options': [
+                    {'value': 'Available', 'label': 'Available'},
+                    {'value': 'Not Available', 'label': 'Not Available'}
+                ],
+                'apiPath': 'ECommerceSettings.ECommerceStatus'
+            }
+            dynamic_fields.append(web_status_field)
+            
+            # Extended Description Field
+            extended_description_field = {
+                'name': 'extended_description',
+                'label': 'Extended Description',
+                'type': 'textarea',
+                'value': ecommerce_settings.get('ExtendedDescription', ''),
+                'apiPath': 'ECommerceSettings.ExtendedDescription'
+            }
+            dynamic_fields.append(extended_description_field)
+            
             if category_fields:
                 # Define the allowed generic fields for editing
                 allowed_fields: List[str] = [
@@ -481,6 +556,8 @@ class PaddyApp:
                 extra={
                     'product_id': product_id,
                     'category_id': category_id,
+                    'web_status_detected': web_status_value,
+                    'status_value': status_value,
                     'fields_count': len(dynamic_fields)
                 }
             )
@@ -532,26 +609,73 @@ class PaddyApp:
                 )
                 return jsonify({'error': 'No update data provided'}), 400
 
-            # Only keep allowed fields
+            # Prepare update payload
+            update_payload = {}
+            
+            # Initialize ECommerceSettings if not already present
+            ecommerce_settings_update = {}
+            
+            # Handle web status field explicitly
+            ecommerce_status_key = 'ECommerceSettings.ECommerceStatus'
+            if ecommerce_status_key in update_data:
+                # Convert UI 'Available'/'Not Available' to API 'Enabled'/'Disabled'
+                web_status_value = update_data[ecommerce_status_key]
+                ecommerce_status = 'Enabled' if web_status_value == 'Available' else 'Disabled'
+                
+                logger.debug(
+                    "Web Status Update Details",
+                    extra={
+                        'input_status': web_status_value,
+                        'ecommerce_status': ecommerce_status
+                    }
+                )
+                
+                # Add the status directly to the payload
+                update_payload[ecommerce_status_key] = ecommerce_status
+            
+            # Handle previous web status field for backward compatibility
+            elif 'web_status' in update_data:
+                web_status = update_data['web_status']
+                ecommerce_settings_update['ECommerceStatus'] = 'Enabled' if web_status in ['0', 0, True, 'true'] else 'Disabled'
+                
+                logger.debug(
+                    "Legacy Web Status Update Details",
+                    extra={
+                        'input_web_status': web_status,
+                        'ecommerce_status': ecommerce_settings_update['ECommerceStatus']
+                    }
+                )
+                
+                # Add ECommerceSettings to payload if there are any updates
+                if ecommerce_settings_update:
+                    update_payload['ECommerceSettings'] = ecommerce_settings_update
+            
+            # Handle extended description field
+            if 'extended_description' in update_data:
+                ecommerce_settings_update['ExtendedDescription'] = update_data['extended_description']
+                
+                # Ensure ECommerceSettings is in the payload if extended description is present
+                if 'ECommerceSettings' not in update_payload:
+                    update_payload['ECommerceSettings'] = ecommerce_settings_update
+
+            # Handle dynamic fields
             allowed_fields = [
                 "D_Classification", "D_ThreadGender", "D_SizeA", "D_SizeB",
                 "D_SizeC", "D_SizeD", "D_Orientation", "D_Configuration",
                 "D_Grade", "D_ManufacturerName", "D_Application", "D_WebCategory"
             ]
 
-            # Create update payload preserving empty strings
-            update_payload = {
-                key: value
-                for key, value in update_data.items()
-                if key in allowed_fields
-            }
+            # Add dynamic fields to payload
+            for key, value in update_data.items():
+                if key in allowed_fields:
+                    update_payload[key] = value
 
             logger.debug(
-                "Update payload prepared",
+                "Final Update Payload",
                 extra={
                     'product_id': product_id,
                     'payload': update_payload,
-                    'empty_fields': [k for k, v in update_payload.items() if v == ""]
+                    'ecommerce_settings': update_payload.get('ECommerceSettings', {})
                 }
             )
 
@@ -583,7 +707,8 @@ class PaddyApp:
                 extra={
                     'product_id': product_id,
                     'error_type': type(e).__name__,
-                    'error_detail': str(e)
+                    'error_detail': str(e),
+                    'update_data': update_data
                 },
                 exc_info=True
             )
@@ -688,6 +813,61 @@ class PaddyApp:
         except Exception as e:
             logger.error(
                 "Error in all products search route",
+                extra={
+                    'error_type': type(e).__name__,
+                    'error_detail': str(e)
+                },
+                exc_info=True
+            )
+            return jsonify({'error': str(e)}), 500
+        
+    def _bulk_update_products_route(self) -> Union[Any, Tuple[Any, int]]:
+        """
+        Handle bulk update requests for multiple products.
+        """
+        try:
+            data = request.get_json()
+            if not data or 'products' not in data:
+                return jsonify({'error': 'No products provided for update'}), 400
+
+            results = {
+                'successful': [],
+                'failed': [],
+                'errors': {}
+            }
+
+            # Process each product update
+            for product in data['products']:
+                product_id = product.get('id')
+                updates = product.get('updates', {})
+                
+                if not product_id or not updates:
+                    continue
+                    
+                try:
+                    response = self.api_client.update_product(product_id, updates)
+                    if response == "Product updated successfully":
+                        results['successful'].append(product_id)
+                    else:
+                        results['failed'].append(product_id)
+                        results['errors'][product_id] = response
+                except Exception as e:
+                    results['failed'].append(product_id)
+                    results['errors'][product_id] = str(e)
+
+            # Determine response status code
+            if not results['successful'] and results['failed']:
+                status_code = 500  # All updates failed
+            elif results['failed']:
+                status_code = 207  # Multi-Status - some succeeded, some failed
+            else:
+                status_code = 200  # All successful
+
+            return jsonify(results), status_code
+
+        except Exception as e:
+            logger.error(
+                "Error in bulk update route",
                 extra={
                     'error_type': type(e).__name__,
                     'error_detail': str(e)

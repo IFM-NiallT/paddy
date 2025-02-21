@@ -396,6 +396,33 @@ class APIClient:
         try:
             all_products: Dict[str, Any] = self._make_request("Products", params=params)
             
+            # Enhanced debug logging for products
+            logger.debug(
+                "Products API Response Details",
+                extra={
+                    'category_id': category_id,
+                    'total_count': all_products.get('TotalCount', 0),
+                    'products_count': len(all_products.get('Data', [])),
+                    'products_sample': [
+                        {
+                            'ID': product.get('ID'),
+                            'Code': product.get('Code'),
+                            'keys': list(product.keys())
+                        } for product in all_products.get('Data', [])[:5]  # First 5 products
+                    ],
+                    'full_response_keys': list(all_products.keys())
+                }
+            )
+            
+            # Optional: Log full first product in detail
+            if all_products.get('Data'):
+                logger.debug(
+                    "First Product Full JSON",
+                    extra={
+                        'first_product': json.dumps(all_products['Data'][0], indent=2)
+                    }
+                )
+            
             total_count: int = all_products.get('TotalCount', 0)
             total_pages: int = (total_count + items_per_page - 1) // items_per_page
 
@@ -562,6 +589,35 @@ class APIClient:
                 "Products",
                 params=params
             )
+            
+            # Enhanced debug logging for search results
+            logger.debug(
+                "Search API Response Details",
+                extra={
+                    'category': category,
+                    'code_query': code_query,
+                    'description_query': description_query,
+                    'total_count': response.get('TotalCount', 0),
+                    'products_count': len(response.get('Data', [])),
+                    'products_sample': [
+                        {
+                            'ID': product.get('ID'),
+                            'Code': product.get('Code'),
+                            'keys': list(product.keys())
+                        } for product in response.get('Data', [])[:5]  # First 5 products
+                    ],
+                    'full_response_keys': list(response.keys())
+                }
+            )
+            
+            # Optional: Log full first product in detail
+            if response.get('Data'):
+                logger.debug(
+                    "First Search Result Full JSON",
+                    extra={
+                        'first_product': json.dumps(response['Data'][0], indent=2)
+                    }
+                )
             
             # Process and format the response
             total_count: int = response.get('TotalCount', 0)

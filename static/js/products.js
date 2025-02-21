@@ -157,14 +157,23 @@ function initSearchHandlers() {
 }
 
 function initEditFormHandlers() {
-    const editForm = document.getElementById('editProductForm');
-    if (editForm) {
-        const form = editForm.querySelector('form');
-        if (form) {
-            form.removeEventListener('submit', submitProductEdit);
-            form.addEventListener('submit', submitProductEdit);
-        }
+    const editFormContainer = document.getElementById('editProductForm');
+    if (!editFormContainer) {
+        console.warn('Edit form container not found');
+        return;
     }
+
+    const form = editFormContainer.querySelector('form');
+    if (!form) {
+        console.warn('Form element not found in container');
+        return;
+    }
+
+    // Remove any existing listeners to prevent duplicates
+    form.removeEventListener('submit', submitProductEdit);
+    form.addEventListener('submit', submitProductEdit);
+
+    // Initialize other handlers
     initEditButtons();
     initOverlayHandler();
 }
@@ -190,6 +199,62 @@ function initOverlayHandler() {
         overlay.addEventListener('click', closeEditForm);
     }
 }
+
+function logTableStructure() {
+    const table = document.querySelector('table');
+    if (!table) {
+        console.warn('No table found in document');
+        return;
+    }
+    
+    const headers = Array.from(table.querySelectorAll('thead th'))
+        .map((th, i) => ({
+            index: i,
+            text: th.textContent.trim().replace(/[↕↑↓]/g, '').trim()
+        }));
+    
+    console.log('Table Headers:', headers);
+    
+    const sampleRow = table.querySelector('tbody tr');
+    if (sampleRow) {
+        const cells = Array.from(sampleRow.cells)
+            .map((cell, i) => ({
+                index: i,
+                content: cell.textContent.trim(),
+                headerName: headers[i]?.text
+            }));
+        console.log('Sample Row:', cells);
+    }
+}
+
+function reinitializeTableHandlers() {
+    console.log('Reinitializing table handlers...');
+    
+    const table = document.querySelector('table');
+    if (!table) {
+        console.error('Table not found during reinitialization');
+        return false;
+    }
+
+    // Re-initialize all table-related handlers
+    initColumnResizers();
+    initSortHandlers();
+    initEditButtons();
+    
+    console.log('Table handlers reinitialized successfully');
+    return true;
+}
+
+// Initialize event listeners
+document.addEventListener('DOMContentLoaded', () => {
+    logTableStructure();
+    
+    const form = document.getElementById('editProductFormContainer');
+    if (form) {
+        form.removeEventListener('submit', submitProductEdit);
+        form.addEventListener('submit', submitProductEdit);
+    }
+});
 
 // ====================
 // Sort Functionality
@@ -431,18 +496,11 @@ async function fetchFieldConfig(categoryId) {
 }
 
 function createProductRow(product) {
-    // Log field configuration details
-    console.log('Full Field Configuration:', Object.entries(window.categoryFieldConfig).map(([key, field]) => ({
-        key,
-        display: field.display,
-        used: field.used
-    })));
-
     const row = document.createElement('tr');
     row.className = 'product-row';
     row.setAttribute('data-product-id', product.ID);
    
-    const headers = Array.from(document.querySelectorAll('#productsTable thead th'));
+    const headers = Array.from(document.querySelector('table thead th'));
    
     // Static fields
     let rowHTML = `
@@ -450,54 +508,87 @@ function createProductRow(product) {
         <td data-full-text="${escapeHtml(product.Description || '')}">${escapeHtml(product.Description || '')}</td>
     `;
    
-    // Process dynamic fields (skip Code, Description, and last two columns)
-    // Filter out "Web Category" because it is handled as a static column.
-    headers.slice(2, -2)
-      .filter(header => {
-          const headerText = header.textContent.trim().replace(/[↕↑↓]/g, '').trim();
-          return headerText !== 'Web Category';
-      })
-      .forEach((header, index) => {
-          const headerText = header.textContent.trim().replace(/[↕↑↓]/g, '').trim();
-          let value = '';
+    // Process dynamic fields (skip Code, Description, and last three columns)
+    headers.slice(2, -3)
+        .filter(header => {
+            const headerText = header.textContent.trim().replace(/[↕↑↓]/g, '').trim();
+            return headerText !== 'Web Category';
+        })
+        .forEach((header, index) => {
+            const headerText = header.textContent.trim().replace(/[↕↑↓]/g, '').trim();
+            let value = '';
 
-          // Use the fetched field configuration to map headers
-          if (window.categoryFieldConfig) {
-              const fieldEntry = Object.entries(window.categoryFieldConfig).find(([key, field]) => 
-                  field.display === headerText && field.used
-              );
-             
-              if (fieldEntry) {
-                  const [fieldKey, fieldConfig] = fieldEntry;
-                  value = product[fieldKey] ?? '';
-                  console.log(`Matched field configuration for "${headerText}":`, { 
-                      fieldKey, 
-                      fieldConfig, 
-                      value 
-                  });
-              } else {
-                  console.warn(`No matching field found for header: "${headerText}"`);
-              }
-          }
-         
-          rowHTML += `
-              <td data-full-text="${escapeHtml(String(value))}">
-                  ${escapeHtml(String(value))}
-              </td>
-          `;
-      });
-   
-    // Web Category column (static)
-    const webCategoryEntry = Object.entries(window.categoryFieldConfig).find(
+            if (window.categoryFieldConfig) {
+                const fieldEntry = Object.entries(window.categoryFieldConfig).find(([key, field]) =>
+                    field.display === headerText && field.used
+                );
+               
+                if (fieldEntry) {
+                    const [fieldKey, fieldConfig] = fieldEntry;
+                    value = product[fieldKey] ?? '';
+                    console.log(`Matched field configuration for "${headerText}":`, {
+                        fieldKey,
+                        fieldConfig,
+                        value
+                    });
+                } else {
+                    console.warn(`No matching field found for header: "${headerText}"`);
+                }
+            }
+           
+            rowHTML += `
+                <td data-full-text="${escapeHtml(String(value))}">
+                    ${escapeHtml(String(value))}
+                </td>
+            `;
+        });
+
+    // Determine web status - More robust logic
+    let isAvailable = false;
+    console.log('Checking web status for product:', {
+        ECommerceSettings: product.ECommerceSettings,
+        web_status: product.web_status,
+        WebStatus: product.WebStatus
+    });
+
+    // Check multiple possible sources of web status
+    if (product.ECommerceSettings) {
+        // Check if ECommerceSettings has a Value property
+        isAvailable = product.ECommerceSettings.Value === 0 || 
+                      product.ECommerceSettings.ECommerceStatus === '0' || 
+                      product.ECommerceSettings.ECommerceStatus === 0;
+    } 
+    
+    if (!isAvailable && product.web_status !== undefined) {
+        // If not yet determined, check web_status
+        isAvailable = product.web_status === '0' || product.web_status === 0;
+    }
+    
+    if (!isAvailable && product.WebStatus !== undefined) {
+        // Final fallback to WebStatus
+        isAvailable = product.WebStatus === '0' || product.WebStatus === 0;
+    }
+
+    console.log('Final availability:', isAvailable);
+
+    // Add Web Status column with proper styling
+    rowHTML += `
+        <td>
+            <span class="web-status-cell ${isAvailable ? 'available' : 'not-available'}">
+                ${isAvailable ? 'Available' : 'Not Available'}
+            </span>
+        </td>
+    `;
+
+    // Web Category column
+    const webCategoryEntry = Object.entries(window.categoryFieldConfig || {}).find(
         ([key, field]) => field.display === 'Web Category'
     );
-
     let webCategory = '';
     if (webCategoryEntry) {
         const [fieldKey] = webCategoryEntry;
         webCategory = product[fieldKey] || '';
     }
-
     rowHTML += `
         <td data-full-text="${escapeHtml(webCategory)}">
             ${escapeHtml(webCategory)}
@@ -505,8 +596,8 @@ function createProductRow(product) {
     `;
 
     // Image Count column
-    const imageCount = product.ImageCount !== undefined && product.ImageCount !== null 
-        ? Math.round(product.ImageCount) 
+    const imageCount = product.ImageCount !== undefined && product.ImageCount !== null
+        ? Math.round(product.ImageCount)
         : '';
     rowHTML += `
         <td data-full-text="${imageCount}">
@@ -584,6 +675,170 @@ async function updateTableWithResults(data) {
     initEditButtons();
 }
 
+async function updateTableRow(productId, updatedProduct) {
+    console.log('Starting table row update for product:', productId, updatedProduct);
+    
+    if (!productId || !updatedProduct) {
+        console.error('Missing required data for table update:', { productId, updatedProduct });
+        return;
+    }
+
+    // Try to find the table
+    const table = document.querySelector('table');
+    if (!table) {
+        console.error('Table not found');
+        return;
+    }
+
+    const row = table.querySelector(`tr[data-product-id="${productId}"]`);
+    console.log('Looking for row with product ID:', productId);
+    
+    if (!row) {
+        console.error('Row not found for product:', productId);
+        const allRows = table.querySelectorAll('tr[data-product-id]');
+        console.log('Available product rows:', Array.from(allRows).map(r => r.getAttribute('data-product-id')));
+        return;
+    }
+
+    // Get headers and find special column indices
+    const headers = Array.from(table.querySelectorAll('thead th'))
+        .map(th => th.textContent.trim().replace(/[↕↑↓]/g, '').trim());
+    console.log('Found headers:', headers);
+
+    // Find indices for special columns
+    const specialColumnIndices = {
+        images: headers.findIndex(h => h.includes('Images')),
+        webStatus: headers.findIndex(h => h.includes('Web Status')),
+        actions: headers.findIndex(h => h.includes('Actions'))
+    };
+    console.log('Special column indices:', specialColumnIndices);
+
+    const cells = row.getElementsByTagName('td');
+    console.log('Found cells:', cells.length);
+
+    // Helper function to update a cell
+    const updateCell = (cell, value, fieldName) => {
+        if (cell) {
+            const oldValue = cell.textContent;
+            const displayValue = value !== undefined && value !== null ? value : '';
+            
+            // Update both text content and data attribute
+            cell.textContent = displayValue;
+            cell.setAttribute('data-full-text', displayValue);
+            
+            console.log(`Updated cell ${fieldName}:`, {
+                oldValue,
+                newValue: displayValue,
+                success: cell.textContent === displayValue
+            });
+        }
+    };
+
+    // Update static fields
+    console.log('Updating static fields...');
+    updateCell(cells[0], updatedProduct.Code, 'Code');
+    updateCell(cells[1], updatedProduct.Description, 'Description');
+
+    // Ensure we have the category field configuration
+    if (!window.categoryFieldConfig && updatedProduct.Category) {
+        console.log('Fetching missing category field config...');
+        try {
+            await fetchFieldConfig(updatedProduct.Category.ID);
+            window.categoryFieldConfig = categoryFieldConfig;
+        } catch (error) {
+            console.error('Failed to fetch field configuration:', error);
+            return;
+        }
+    }
+
+    // Update dynamic fields
+    let cellIndex = 2;
+    console.log('Updating dynamic fields...');
+    
+    // Process all columns between Description and Images
+    for (let i = 2; i < specialColumnIndices.images; i++) {
+        const header = headers[i];
+        if (cells[i] && window.categoryFieldConfig) {
+            const fieldEntry = Object.entries(window.categoryFieldConfig)
+                .find(([key, field]) => field.display === header && field.used);
+
+            if (fieldEntry) {
+                const [fieldKey] = fieldEntry;
+                console.log(`Updating dynamic field: ${header} (${fieldKey}) at index ${i}`);
+                updateCell(cells[i], updatedProduct[fieldKey], fieldKey);
+            }
+        }
+        cellIndex++;
+    }
+
+    // Update special columns in their correct positions
+    if (specialColumnIndices.images > -1) {
+        const imageCount = updatedProduct.ImageCount !== undefined ? 
+            Math.round(updatedProduct.ImageCount) : '';
+        console.log('Updating Image Count at index:', specialColumnIndices.images);
+        updateCell(cells[specialColumnIndices.images], imageCount, 'Image Count');
+    }
+
+    if (specialColumnIndices.webStatus > -1) {
+        // Determine web status with more robust logic for nested ECommerceStatus
+        let isAvailable = false;
+        console.log('Checking web status for updated product:', {
+            ECommerceSettings: updatedProduct.ECommerceSettings,
+            web_status: updatedProduct.web_status,
+            WebStatus: updatedProduct.WebStatus,
+            'ECommerceSettings.ECommerceStatus': updatedProduct['ECommerceSettings.ECommerceStatus']
+        });
+
+        // Check the nested ECommerceStatus structure
+        if (updatedProduct.ECommerceSettings && 
+            updatedProduct.ECommerceSettings.ECommerceStatus) {
+            const statusDetails = updatedProduct.ECommerceSettings.ECommerceStatus;
+            
+            // Check if statusDetails is an object with Name and Value
+            if (typeof statusDetails === 'object') {
+                isAvailable = statusDetails.Value === 0 || 
+                              statusDetails.Name === 'Enabled';
+            }
+        }
+
+        // Fallback to direct ECommerceStatus
+        if (!isAvailable && updatedProduct['ECommerceSettings.ECommerceStatus']) {
+            isAvailable = updatedProduct['ECommerceSettings.ECommerceStatus'] === 'Enabled';
+        }
+
+        console.log('Final availability:', isAvailable);
+
+        const webStatusCell = cells[specialColumnIndices.webStatus];
+        if (webStatusCell) {
+            const statusSpan = webStatusCell.querySelector('.web-status-cell');
+            if (statusSpan) {
+                statusSpan.className = `web-status-cell ${isAvailable ? 'available' : 'not-available'}`;
+                statusSpan.textContent = isAvailable ? 'Available' : 'Not Available';
+                console.log('Updated web status cell:', {
+                    className: statusSpan.className,
+                    text: statusSpan.textContent
+                });
+            } else {
+                console.warn('Web status span not found in cell');
+            }
+        } else {
+            console.warn('Web status cell not found');
+        }
+    }
+
+    // Visual feedback
+    row.style.opacity = '0.99';
+    requestAnimationFrame(() => {
+        row.style.opacity = '1';
+        row.style.opacity = '';  // Remove the inline style
+    });
+
+    // Try to reinitialize table handlers
+    reinitializeTableHandlers();
+
+    console.log('Row update completed for product:', productId);
+}
+
 function updatePaginationInfo(data) {
     const paginationContainer = document.querySelector('.pagination-container');
     if (paginationContainer) {
@@ -654,6 +909,13 @@ function updatePaginationInfo(data) {
 // Edit Form System
 // ====================
 
+document.addEventListener('DOMContentLoaded', logTableStructure);
+
+// Expose functions globally
+window.openEditForm = openEditForm;
+window.closeEditForm = closeEditForm;
+window.fetchProductDetails = fetchProductDetails;
+
 function openEditForm() {
     const editForm = document.getElementById("editProductForm");
     const overlay = document.getElementById("editFormOverlay");
@@ -662,6 +924,7 @@ function openEditForm() {
         overlay.style.display = "block";
         editForm.style.display = "block";
         
+        // Trigger reflow to enable CSS animations
         overlay.offsetHeight;
         editForm.offsetHeight;
         
@@ -670,6 +933,7 @@ function openEditForm() {
         
         document.addEventListener('keydown', handleEditFormKeypress);
         
+        // Focus the first input field in the form
         const firstInput = editForm.querySelector('input:not([type="hidden"])');
         if (firstInput) {
             firstInput.focus();
@@ -687,16 +951,19 @@ function closeEditForm() {
         
         document.removeEventListener('keydown', handleEditFormKeypress);
         
+        // Wait for CSS animation to complete before hiding
         setTimeout(() => {
             overlay.style.display = "none";
             editForm.style.display = "none";
             
+            // Reset the form fields
             const form = editForm.querySelector('form');
             if (form) {
                 form.reset();
             }
         }, 300);
         
+        // Return focus to the main content
         const mainContent = document.querySelector('main');
         if (mainContent) {
             mainContent.focus();
@@ -750,6 +1017,16 @@ function populateCurrentDetails(product, dynamicFields) {
     const container = document.getElementById('currentProductDetails');
     if (!container) return;
 
+    // Helper function to determine web status
+    function getWebStatus(product) {
+        if (product.ECommerceSettings?.ECommerceStatus) {
+            const statusObj = product.ECommerceSettings.ECommerceStatus;
+            // Handle the nested object format with Value and Name
+            return (statusObj.Value === 0 || statusObj.Name === 'Enabled') ? 'Available' : 'Not Available';
+        }
+        return 'Not Available'; // Default state
+    }
+
     const allFields = [
         { field: 'Code', label: 'Product Code' },
         { field: 'Description', label: 'Description' },
@@ -764,114 +1041,295 @@ function populateCurrentDetails(product, dynamicFields) {
         { field: 'D_Grade', label: 'Grade' },
         { field: 'D_ManufacturerName', label: 'Manufacturer Name' },
         { field: 'D_Application', label: 'Application' },
-        { field: 'D_WebCategory', label: 'Web Category' }
+        { field: 'D_WebCategory', label: 'Web Category' },
+        { field: 'ECommerceStatus', label: 'Web Status', getValue: () => getWebStatus(product) }
     ];
+
+    console.log('Current Product Details:', {
+        productId: product.ID,
+        ecommerceSettings: product.ECommerceSettings,
+        ecommerceStatus: product.ECommerceSettings?.ECommerceStatus,
+        webStatus: getWebStatus(product)
+    });
 
     container.innerHTML = `
         <table class="table table-bordered">
-            ${allFields.map(field => `
-                <tr>
-                    <th>${field.label}</th>
-                    <td>${product[field.field] || ''}</td>
-                </tr>
-            `).join('')}
+            ${allFields.map(field => {
+                let displayValue = field.getValue ? 
+                    field.getValue() : 
+                    (product[field.field] || '');
+                
+                // Special handling for web status display
+                if (field.field === 'ECommerceStatus') {
+                    return `
+                        <tr>
+                            <th>${field.label}</th>
+                            <td>
+                                <span class="web-status-cell ${displayValue === 'Available' ? 'available' : 'not-available'}">
+                                    ${displayValue}
+                                </span>
+                            </td>
+                        </tr>
+                    `;
+                }
+
+                return `
+                    <tr>
+                        <th>${field.label}</th>
+                        <td>${displayValue}</td>
+                    </tr>
+                `;
+            }).join('')}
         </table>
     `;
 }
 
+function isFieldReadOnly(fieldName) {
+    const readOnlyFields = [
+        'Code',
+        'Description',
+        'ImageCount',
+        'popupProductName'
+        // Add other read-only fields as needed
+    ];
+    return readOnlyFields.includes(fieldName);
+}
+
 function populateEditForm(product, productId, dynamicFields) {
+    // Set read-only fields using textContent
     document.getElementById('popupProductCode').textContent = product.Code || '';
     document.getElementById('popupProductId').value = productId;
+   
+    // Handle product name (read-only)
+    const productNameElement = document.getElementById('popupProductName');
+    if (productNameElement) {
+        productNameElement.textContent = product.Description || '';
+    }
 
     const firstColumn = document.getElementById('popupFirstColumn');
     const secondColumn = document.getElementById('popupSecondColumn');
 
+    firstColumn.innerHTML = '';
+    secondColumn.innerHTML = '';
+
     if (Array.isArray(dynamicFields)) {
-        const midpoint = Math.ceil(dynamicFields.length / 2);
-        const firstColumnFields = dynamicFields.slice(0, midpoint);
-        const secondColumnFields = dynamicFields.slice(midpoint);
-
-        firstColumnFields.forEach(field => {
-            // Preserve null or Empty values
+        const filteredDynamicFields = dynamicFields.filter(field =>
+            field.name !== 'web_status' &&
+            field.name !== 'extended_description'
+        );
+        const midpoint = Math.ceil(filteredDynamicFields.length / 2);
+       
+        filteredDynamicFields.forEach((field, index) => {
             field.value = product[field.name] !== undefined ? product[field.name] : '';
+            field.readonly = isFieldReadOnly(field.name);
             const fieldGroup = createFieldGroup(field);
-            firstColumn.appendChild(fieldGroup);
-        });
-
-        secondColumnFields.forEach(field => {
-            // Preserve null or Empty values
-            field.value = product[field.name] !== undefined ? product[field.name] : '';
-            const fieldGroup = createFieldGroup(field);
-            secondColumn.appendChild(fieldGroup);
+            (index < midpoint ? firstColumn : secondColumn).appendChild(fieldGroup);
         });
     }
-}
 
-// Updated createFieldInput function to handle Empty strings
-function createFieldInput(field) {
-    let input;
-    console.log('Creating input field:', {
-        name: field.name,
-        type: field.type,
-        value: field.value,
-        options: field.options
-    });
+    // Handle remaining fields
+    const imageCountInput = document.getElementById('popupImageCount');
+    if (imageCountInput) {
+        imageCountInput.value = product.ImageCount || '';
+        imageCountInput.setAttribute('readonly', 'readonly');
+    }
 
-    const fieldType = (field.type || 'text').toLowerCase();
+    const webCategoryInput = document.getElementById('popupWebCategory');
+    if (webCategoryInput) {
+        webCategoryInput.value = product.D_WebCategory || '';
+    }
 
-    if (fieldType === 'boolean') {
-        input = document.createElement('input');
-        input.type = 'checkbox';
-        input.name = field.name;
-        input.checked = field.value === true || field.value === 'true';
-    } else if (fieldType === 'integer' || fieldType === 'number') {
-        input = document.createElement('input');
-        input.type = 'text';
-        input.name = field.name;
-        input.value = field.value !== undefined ? field.value : '';
-        input.setAttribute('data-type', 'number');
-    } else if (field.options && field.options.length > 0) {
-        input = document.createElement('select');
-        input.name = field.name;
-        
-        // Add an empty option at the start
-        const emptyOption = document.createElement('option');
-        emptyOption.value = '';
-        emptyOption.textContent = '-- Select --';
-        input.appendChild(emptyOption);
-        
-        field.options.forEach(option => {
-            const opt = document.createElement('option');
-            opt.value = option.value;
-            opt.textContent = option.label;
-            if (field.value == option.value) {
-                opt.selected = true;
+    const extendedDescInput = document.getElementById('popupExtendedDescription');
+    if (extendedDescInput) {
+        extendedDescInput.value = product.extended_description || '';
+    }
+
+    // Enhanced web status handling logic
+    const webStatusSelect = document.getElementById('popupWebStatus');
+    if (webStatusSelect) {
+        let isAvailable = false;
+
+        // Check for ECommerceStatus object with Value and Name properties
+        if (product.ECommerceSettings && product.ECommerceSettings.ECommerceStatus) {
+            const statusObj = product.ECommerceSettings.ECommerceStatus;
+            
+            // Check if it's the object format
+            if (typeof statusObj === 'object') {
+                isAvailable = statusObj.Value === 0 || statusObj.Name === 'Enabled';
+                console.log('Status from object:', {
+                    value: statusObj.Value,
+                    name: statusObj.Name,
+                    isAvailable: isAvailable
+                });
+            } else {
+                // Handle string format
+                isAvailable = statusObj === 'Enabled';
+                console.log('Status from string:', {
+                    status: statusObj,
+                    isAvailable: isAvailable
+                });
             }
-            input.appendChild(opt);
-        });
-    } else {
-        input = document.createElement('input');
-        input.type = 'text';
-        input.name = field.name;
-        input.value = field.value !== undefined ? field.value : '';
-    }
+        }
+        
+        // Fallback checks if needed
+        if (!isAvailable && product.web_status !== undefined) {
+            isAvailable = product.web_status === 'Enabled' || 
+                         product.web_status === '0' || 
+                         product.web_status === 0;
+        }
 
-    input.className = 'form-control';
-    return input;
+        if (!isAvailable && product.WebStatus !== undefined) {
+            isAvailable = product.WebStatus === 'Enabled' || 
+                         product.WebStatus === '0' || 
+                         product.WebStatus === 0;
+        }
+
+        console.log('Edit Form Web Status:', {
+            ECommerceSettings: product.ECommerceSettings,
+            statusObj: product.ECommerceSettings?.ECommerceStatus,
+            web_status: product.web_status,
+            WebStatus: product.WebStatus,
+            finalIsAvailable: isAvailable
+        });
+
+        // Set the select value based on availability
+        webStatusSelect.value = isAvailable ? 'Available' : 'Not Available';
+    }
 }
 
 function createFieldGroup(field) {
     const group = document.createElement('div');
     group.className = 'form-group';
-    
+
     const label = document.createElement('label');
-    label.innerHTML = `<b> ${field.label || field.name}</b>`;
-    
-    const input = createFieldInput(field);
-    
+    label.textContent = field.label || field.name;
     group.appendChild(label);
-    group.appendChild(input);
+
+    if (field.readonly) {
+        // Create read-only display element
+        const readOnlyDiv = document.createElement('div');
+        readOnlyDiv.className = 'form-control readonly-input';
+        readOnlyDiv.textContent = field.value || '';
+        group.appendChild(readOnlyDiv);
+        
+        // Add hidden input to preserve the value
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = field.name;
+        hiddenInput.value = field.value || '';
+        group.appendChild(hiddenInput);
+    } else if (field.type === 'checkbox') {
+        const inputElement = document.createElement('input');
+        inputElement.type = 'checkbox';
+        inputElement.name = field.name;
+        inputElement.id = field.name;
+        inputElement.className = 'form-control';
+        inputElement.checked = field.value === true || field.value === 'true' || field.value === '0';
+        
+        label.appendChild(inputElement);
+        label.appendChild(document.createTextNode(` ${field.label}`));
+    } else if (field.type === 'select' && field.options) {
+        const selectElement = document.createElement('select');
+        selectElement.name = field.name;
+        selectElement.id = field.name;
+        selectElement.className = 'form-control form-select';
+
+        field.options.forEach(option => {
+            const optionElement = document.createElement('option');
+            optionElement.value = option.value;
+            optionElement.textContent = option.label;
+            if (option.value === field.value) {
+                optionElement.selected = true;
+            }
+            selectElement.appendChild(optionElement);
+        });
+        group.appendChild(selectElement);
+    } else if (field.type === 'textarea') {
+        const textarea = document.createElement('textarea');
+        textarea.name = field.name;
+        textarea.className = 'form-control';
+        textarea.value = field.value || '';
+        group.appendChild(textarea);
+    } else {
+        const input = document.createElement('input');
+        input.type = field.type || 'text';
+        input.name = field.name;
+        input.className = 'form-control';
+        input.value = field.value || '';
+        group.appendChild(input);
+    }
+
     return group;
+}
+
+function renderFormField(field) {
+    const fieldContainer = document.createElement('div');
+    fieldContainer.classList.add('form-group');
+
+    const label = document.createElement('label');
+    label.classList.add('form-label');
+
+    if (field.readonly) {
+        label.textContent = field.label;
+        fieldContainer.appendChild(label);
+
+        const readOnlyDiv = document.createElement('div');
+        readOnlyDiv.className = 'form-control readonly-input';
+        readOnlyDiv.textContent = field.value || '';
+        fieldContainer.appendChild(readOnlyDiv);
+
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = field.name;
+        hiddenInput.value = field.value || '';
+        fieldContainer.appendChild(hiddenInput);
+    } else if (field.type === 'checkbox') {
+        const inputElement = document.createElement('input');
+        inputElement.type = 'checkbox';
+        inputElement.name = field.name;
+        inputElement.id = field.name;
+        inputElement.classList.add('form-control');
+        inputElement.checked = field.value === true || field.value === 'true' || field.value === '0';
+
+        label.appendChild(inputElement);
+        label.appendChild(document.createTextNode(` ${field.label}`));
+        fieldContainer.appendChild(label);
+    } else {
+        label.textContent = field.label;
+        label.setAttribute('for', field.name);
+
+        if (field.options) {
+            const selectElement = document.createElement('select');
+            selectElement.name = field.name;
+            selectElement.id = field.name;
+            selectElement.classList.add('form-control', 'form-select');
+
+            field.options.forEach(option => {
+                const optionElement = document.createElement('option');
+                optionElement.value = option.value;
+                optionElement.textContent = option.label;
+                if (option.value === field.value) {
+                    optionElement.selected = true;
+                }
+                selectElement.appendChild(optionElement);
+            });
+
+            fieldContainer.appendChild(label);
+            fieldContainer.appendChild(selectElement);
+        } else {
+            const inputElement = document.createElement('input');
+            inputElement.type = field.type || 'text';
+            inputElement.name = field.name;
+            inputElement.id = field.name;
+            inputElement.classList.add('form-control');
+            inputElement.value = field.value || '';
+            
+            fieldContainer.appendChild(label);
+            fieldContainer.appendChild(inputElement);
+        }
+    }
+
+    return fieldContainer;
 }
 
 // ====================
@@ -933,93 +1391,297 @@ function escapeHtml(str) {
     return div.innerHTML;
 }
 
-function submitProductEdit(event) {
-    event.preventDefault();
-    
-    const form = event.target;
-    const submitButton = form.querySelector('button[type="submit"]');
-    const cancelButton = form.querySelector('button.cancel');
-    const productId = document.getElementById('popupProductId').value;
-    
-    // Disable buttons during submission
-    submitButton.textContent = 'Saving...';
-    submitButton.disabled = true;
-    cancelButton.disabled = true;
-    
-    const formData = new FormData(form);
-    const updatedFields = {};
-    
-    // Process all form fields, preserving empty strings
-    for (let [key, value] of formData.entries()) {
-        // Include all values, including empty strings
-        updatedFields[key] = value;
-        
-        // Log the field values for debugging
-        console.log(`Field ${key}:`, {
-            rawValue: value,
-            length: value.length,
-            isString: value === ''
-        });
-    }
-    
-    // Add the product ID
-    updatedFields.product_id = productId;
-    
-    // Log the complete payload for debugging
-    console.log('Sending update payload:', updatedFields);
-    
-    fetch(`/product/${productId}/update`, {
-        method: 'POST',
-        headers: {
-            'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(updatedFields)
-    })
-    .then(response => {
-        console.log('Server response:', response);
-        
-        if (!response.ok) {
-            return response.text().then(text => {
-                throw new Error(text || 'Failed to update product');
-            });
-        }
-        return response.json();
-    })
-    .then(data => {
-        console.log('Update successful:', data);
-        showSuccessPopup('Product updated successfully!');
-        closeEditForm();
-        setTimeout(() => {
-            window.location.reload();
-        }, 1000);
-    })
-    .catch(error => {
-        console.error('Error updating product:', error);
-        showErrorMessage(`Error updating product: ${error.message}`);
-    })
-    .finally(() => {
-        submitButton.textContent = 'Save Changes';
-        submitButton.disabled = false;
-        cancelButton.disabled = false;
-    });
+function isFieldReadOnly(fieldName) {
+    const readOnlyFields = [
+        'Code',
+        'Description',
+        'ImageCount',
+        'popupProductName'
+        // Add other read-only fields as needed
+    ];
+    return readOnlyFields.includes(fieldName);
 }
 
-// New error message display function
+function createFieldGroup(field) {
+    const group = document.createElement('div');
+    group.className = 'form-group';
+
+    const label = document.createElement('label');
+    label.textContent = field.label || field.name;
+    group.appendChild(label);
+
+    if (field.readonly) {
+        // Create read-only display element
+        const readOnlyDiv = document.createElement('div');
+        readOnlyDiv.className = 'form-control readonly-input';
+        readOnlyDiv.textContent = field.value || '';
+        group.appendChild(readOnlyDiv);
+        
+        // Add hidden input to preserve the value
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = field.name;
+        hiddenInput.value = field.value || '';
+        group.appendChild(hiddenInput);
+    } else if (field.type === 'checkbox') {
+        const inputElement = document.createElement('input');
+        inputElement.type = 'checkbox';
+        inputElement.name = field.name;
+        inputElement.id = field.name;
+        inputElement.className = 'form-control';
+        inputElement.checked = field.value === true || field.value === 'true' || field.value === '0';
+        
+        label.appendChild(inputElement);
+        label.appendChild(document.createTextNode(` ${field.label}`));
+    } else if (field.type === 'select' && field.options) {
+        const selectElement = document.createElement('select');
+        selectElement.name = field.name;
+        selectElement.id = field.name;
+        selectElement.className = 'form-control form-select';
+
+        field.options.forEach(option => {
+            const optionElement = document.createElement('option');
+            optionElement.value = option.value;
+            optionElement.textContent = option.label;
+            if (option.value === field.value) {
+                optionElement.selected = true;
+            }
+            selectElement.appendChild(optionElement);
+        });
+        group.appendChild(selectElement);
+    } else if (field.type === 'textarea') {
+        const textarea = document.createElement('textarea');
+        textarea.name = field.name;
+        textarea.className = 'form-control';
+        textarea.value = field.value || '';
+        group.appendChild(textarea);
+    } else {
+        const input = document.createElement('input');
+        input.type = field.type || 'text';
+        input.name = field.name;
+        input.className = 'form-control';
+        input.value = field.value || '';
+        group.appendChild(input);
+    }
+
+    return group;
+}
+
+function renderFormField(field) {
+    const fieldContainer = document.createElement('div');
+    fieldContainer.classList.add('form-group');
+
+    const label = document.createElement('label');
+    label.classList.add('form-label');
+
+    if (field.readonly) {
+        label.textContent = field.label;
+        fieldContainer.appendChild(label);
+
+        const readOnlyDiv = document.createElement('div');
+        readOnlyDiv.className = 'form-control readonly-input';
+        readOnlyDiv.textContent = field.value || '';
+        fieldContainer.appendChild(readOnlyDiv);
+
+        const hiddenInput = document.createElement('input');
+        hiddenInput.type = 'hidden';
+        hiddenInput.name = field.name;
+        hiddenInput.value = field.value || '';
+        fieldContainer.appendChild(hiddenInput);
+    } else if (field.type === 'checkbox') {
+        const inputElement = document.createElement('input');
+        inputElement.type = 'checkbox';
+        inputElement.name = field.name;
+        inputElement.id = field.name;
+        inputElement.classList.add('form-control');
+        inputElement.checked = field.value === true || field.value === 'true' || field.value === '0';
+
+        label.appendChild(inputElement);
+        label.appendChild(document.createTextNode(` ${field.label}`));
+        fieldContainer.appendChild(label);
+    } else {
+        label.textContent = field.label;
+        label.setAttribute('for', field.name);
+
+        if (field.options) {
+            const selectElement = document.createElement('select');
+            selectElement.name = field.name;
+            selectElement.id = field.name;
+            selectElement.classList.add('form-control', 'form-select');
+
+            field.options.forEach(option => {
+                const optionElement = document.createElement('option');
+                optionElement.value = option.value;
+                optionElement.textContent = option.label;
+                if (option.value === field.value) {
+                    optionElement.selected = true;
+                }
+                selectElement.appendChild(optionElement);
+            });
+
+            fieldContainer.appendChild(label);
+            fieldContainer.appendChild(selectElement);
+        } else {
+            const inputElement = document.createElement('input');
+            inputElement.type = field.type || 'text';
+            inputElement.name = field.name;
+            inputElement.id = field.name;
+            inputElement.classList.add('form-control');
+            inputElement.value = field.value || '';
+            
+            fieldContainer.appendChild(label);
+            fieldContainer.appendChild(inputElement);
+        }
+    }
+
+    return fieldContainer;
+}
+
+async function submitProductEdit(event) {
+    event.preventDefault();
+   
+    const form = event.target;
+    const formContainer = document.getElementById('editProductForm');
+    const submitButton = form.querySelector('button[type="submit"]');
+    const cancelButton = form.querySelector('.cancel');
+    const productId = form.querySelector('#popupProductId')?.value;
+    const webStatusSelect = form.querySelector('#popupWebStatus');
+
+    if (!productId) {
+        console.error('Product ID not found');
+        showErrorMessage('Error: Product ID not found');
+        return;
+    }
+
+    try {
+        // Get form data
+        const formData = new FormData(form);
+        const updatedFields = Object.fromEntries(formData.entries());
+        updatedFields.product_id = productId;
+
+        // Explicitly handle web status
+        if (webStatusSelect) {
+            // Set ECommerceSettings.ECommerceStatus directly as a string
+            updatedFields['ECommerceSettings.ECommerceStatus'] = 
+                webStatusSelect.value === 'Available' ? 'Enabled' : 'Disabled';
+
+            console.log('Web Status Update:', {
+                webStatusSelect: webStatusSelect.value,
+                ecommerceStatus: updatedFields['ECommerceSettings.ECommerceStatus']
+            });
+        }
+
+        // Step 1: Send update request
+        const updateResponse = await fetch(`/product/${productId}/update`, {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                'Accept': 'application/json'
+            },
+            body: JSON.stringify(updatedFields)
+        });
+
+        // Log full response details
+        console.log('Update Response Status:', updateResponse.status);
+        console.log('Update Response Headers:',
+            Object.fromEntries(updateResponse.headers.entries())
+        );
+
+        // Check response body for more details
+        const responseText = await updateResponse.text();
+        console.log('Raw Response Body:', responseText);
+
+        // Try to parse response as JSON
+        let responseData;
+        try {
+            responseData = JSON.parse(responseText);
+            console.log('Parsed Response Data:', responseData);
+        } catch (parseError) {
+            console.error('Failed to parse response:', parseError);
+        }
+
+        if (!updateResponse.ok) {
+            throw new Error(responseText || 'Failed to update product');
+        }
+
+        // Step 2: Small delay to ensure server-side processing
+        await new Promise(resolve => setTimeout(resolve, 200));
+
+        // Step 3: Fetch fresh product data
+        const detailsResponse = await fetch(`/product/${productId}/edit`);
+        if (!detailsResponse.ok) {
+            throw new Error('Failed to fetch updated product details');
+        }
+
+        const data = await detailsResponse.json();
+        if (!data?.product) {
+            throw new Error('Invalid product data received');
+        }
+
+        // Step 4: Update the table row
+        await updateTableRow(productId, data.product);
+       
+        // Step 5: Show success message and close form
+        showSuccessPopup('Product updated successfully');
+        closeEditForm();
+
+    } catch (error) {
+        console.error('FULL Error in product update process:', error);
+       
+        // More detailed error message
+        const errorMessage = error.message || 'Unknown error occurred';
+        showErrorMessage(`Update failed: ${errorMessage}`);
+    } finally {
+        // Reset button states
+        submitButton.disabled = false;
+        submitButton.textContent = 'Save Changes';
+        if (cancelButton) cancelButton.disabled = false;
+    }
+}
+
 function showErrorMessage(message) {
     const errorDiv = document.createElement('div');
-    errorDiv.className = 'alert alert-danger';
-    errorDiv.style.position = 'fixed';
-    errorDiv.style.top = '20px';
-    errorDiv.style.right = '20px';
-    errorDiv.style.zIndex = '9999';
-    errorDiv.textContent = message;
+    errorDiv.className = 'alert alert-danger position-fixed';
+    errorDiv.style.cssText = `
+        top: 20px;
+        right: 20px;
+        z-index: 9999;
+        padding: 1rem;
+        border-radius: 4px;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+        animation: slideIn 0.3s ease-out;
+    `;
     
+    errorDiv.textContent = message;
     document.body.appendChild(errorDiv);
     
+    // Add animation keyframes
+    if (!document.querySelector('#error-animation')) {
+        const style = document.createElement('style');
+        style.id = 'error-animation';
+        style.textContent = `
+            @keyframes slideIn {
+                from { transform: translateX(100%); }
+                to { transform: translateX(0); }
+            }
+        `;
+        document.head.appendChild(style);
+    }
+    
     setTimeout(() => {
-        errorDiv.remove();
+        errorDiv.style.animation = 'slideOut 0.3s ease-in';
+        setTimeout(() => errorDiv.remove(), 300);
     }, 5000);
 }
+
+// Initialize event listeners
+document.addEventListener('DOMContentLoaded', () => {
+    const form = document.getElementById('editProductFormContainer');
+    if (form) {
+        form.removeEventListener('submit', submitProductEdit);
+        form.addEventListener('submit', submitProductEdit);
+    }
+});
 
 // Keep your existing showSuccessPopup function
 function showSuccessPopup(message = 'Operation completed successfully', duration = 3000) {
