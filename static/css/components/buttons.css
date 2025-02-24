@@ -1,0 +1,131 @@
+/* Button Base Styles */
+.btn-uni {
+    width: auto;  
+    padding: 0.5rem 1rem;  
+    font-size: 0.9rem;
+    white-space: nowrap;
+    background-color: var(--primary-color);
+    color: var(--white-color);
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+    cursor: pointer;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+    min-height: 40px;  
+}
+
+/* Button States */
+.btn-uni:hover {
+    background-color: var(--secondary-color);
+}
+
+.btn-uni:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+.btn-uni:disabled {
+    background-color: #d0d0d0;
+    cursor: not-allowed;
+    opacity: 0.7;
+}
+
+/* Button Variants */
+.btn-submit {
+    background-color: var(--primary-color);
+    color: var(--white-color);
+    border: none;
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.btn-submit:hover {
+    background-color: var(--secondary-color);
+}
+
+.btn-submit:disabled {
+    background-color: #d0d0d0;
+    cursor: not-allowed;
+}
+
+.btn-cancel {
+    background-color: transparent;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+    padding: 0.75rem 1rem;
+    border-radius: 4px;
+    font-weight: 500;
+    transition: all 0.2s ease;
+    font-size: 0.9rem;
+}
+
+.btn-cancel:hover {
+    background-color: rgba(178, 0, 0, 0.05);
+}
+
+/* Close Button */
+.close-button {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    font-size: 1.5rem;
+    cursor: pointer;
+    padding: 0.25rem;
+    transition: all 0.2s ease;
+}
+
+.close-button:hover {
+    opacity: 0.8;
+    transform: scale(1.1);
+}
+
+.close-button:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--primary-color);
+    border-radius: 4px;
+}
+
+/* Button Groups */
+.button-group {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .button-group {
+        flex-direction: column;
+        width: 100%;
+    }
+
+    .button-group .btn-uni,
+    .button-group .btn-submit,
+    .button-group .btn-cancel {
+        width: 100%;
+    }
+}
+
+/* Accessibility */
+@media (prefers-reduced-motion: reduce) {
+    .btn-uni,
+    .btn-submit,
+    .btn-cancel,
+    .close-button {
+        transition: none;
+    }
+}
+
+.btn-uni:focus-visible,
+.btn-submit:focus-visible,
+.btn-cancel:focus-visible,
+.close-button:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}

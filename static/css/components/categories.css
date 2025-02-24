@@ -1,0 +1,331 @@
+/* components/categories.css */
+
+/* Category Card */
+.category-container {
+    background: var(--white-color);
+    border: 1px solid var(--primary-color);
+    border-radius: 10px;
+    height: 95%;
+    padding: 1rem;
+    transition: all 0.3s ease;
+    max-width: 250px;
+    margin: 0 auto;
+    display: flex;
+    flex-direction: column;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.05);
+    position: relative;
+    overflow: hidden;
+}
+
+.category-container:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-color: var(--secondary-color);
+}
+
+/* Category Content */
+.category-content {
+    display: flex;
+    flex-direction: column;
+    height: 100%;
+    gap: 0.75rem;
+}
+
+/* Category Image */
+.category-image {
+    width: 100%;
+    height: 140px;
+    overflow: hidden;
+    border-radius: 8px;
+    margin-bottom: 0.5rem;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--white-color);
+}
+
+.category-img {
+    width: 100%;
+    height: 100%;
+    object-fit: contain;
+    padding: 0.5rem;
+    transition: transform 0.3s ease;
+}
+
+.category-container:hover .category-img {
+    transform: scale(1.05);
+}
+
+/* Category Text */
+.category-text {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+    text-align: center;
+    padding: 0.75rem 0;
+}
+
+.category-name {
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: var(--primary-color);
+    margin: 0;
+    display: -webkit-box;
+    -webkit-line-clamp: 3;
+    line-clamp: 3;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.category-code {
+    font-size: 0.9rem;
+    color: #666;
+    margin: 0.25rem 0;
+    padding: 0.25rem 0;
+    border-top: 1px solid rgba(178, 0, 0, 0.1);
+}
+
+/* Category Button */
+.category-button {
+    margin-top: auto;
+    padding-top: 0.5rem;
+}
+
+.category-button .btn-uni {
+    width: 100%;
+    padding: 0.75rem 1rem;
+    font-size: 0.9rem;
+    white-space: nowrap;
+    background-color: var(--primary-color);
+    color: var(--white-color);
+    border: none;
+    border-radius: 5px;
+    transition: background-color 0.3s ease;
+}
+
+.category-button .btn-uni:hover {
+    background-color: var(--secondary-color);
+}
+
+/* Loading State */
+.category-container.loading {
+    position: relative;
+    min-height: 200px;
+}
+
+.category-container.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 40px;
+    height: 40px;
+    border: 3px solid var(--primary-color);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+}
+
+/* Empty State */
+.category-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-color);
+    background: var(--background-color);
+    border-radius: 8px;
+}
+
+/* Grid Container */
+#category-grid {
+    display: grid;
+    gap: 1.5rem;
+    padding: 1.5rem;
+    margin: 0 auto;
+    max-width: 100%;
+    position: relative;
+}
+
+/* Responsive Grid */
+@media (min-width: 576px) {
+    #category-grid {
+        grid-template-columns: repeat(2, 1fr);
+    }
+}
+
+@media (min-width: 768px) {
+    #category-grid {
+        grid-template-columns: repeat(3, 1fr);
+    }
+}
+
+@media (min-width: 992px) {
+    #category-grid {
+        grid-template-columns: repeat(4, 1fr);
+    }
+}
+
+@media (min-width: 1200px) {
+    #category-grid {
+        grid-template-columns: repeat(5, 1fr);
+    }
+}
+
+@media (min-width: 1400px) {
+    #category-grid {
+        grid-template-columns: repeat(6, 1fr);
+    }
+}
+
+/* Mobile Optimizations */
+@media (max-width: 576px) {
+    #category-grid {
+        gap: 1rem;
+        padding: 1rem;
+    }
+
+    .category-container {
+        max-width: 100%;
+    }
+
+    .category-image {
+        height: 120px;
+    }
+}
+
+/* Hover Effects and Transitions */
+.category-container {
+    transition: transform 0.3s ease,
+                box-shadow 0.3s ease,
+                border-color 0.3s ease;
+}
+
+.category-container:hover {
+    transform: translateY(-4px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1);
+    border-color: var(--secondary-color);
+}
+
+.category-img {
+    transition: transform 0.3s ease;
+}
+
+.category-container:hover .category-img {
+    transform: scale(1.05);
+}
+
+/* Accessibility Features */
+.category-container:focus-within {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+.category-button .btn-uni:focus {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Animation for Loading State */
+@keyframes spin {
+    to {
+        transform: translate(-50%, -50%) rotate(360deg);
+    }
+}
+
+/* Reduced Motion Preferences */
+@media (prefers-reduced-motion: reduce) {
+    .category-container,
+    .category-img {
+        transition: none;
+    }
+
+    .category-container.loading::after {
+        animation: none;
+    }
+}
+
+/* Web Status Indicators */
+.category-status {
+    position: absolute;
+    top: 0.5rem;
+    right: 0.5rem;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    font-size: 0.8rem;
+    font-weight: 500;
+}
+
+.category-status.active {
+    background-color: #d1e7dd;
+    color: #198754;
+}
+
+.category-status.inactive {
+    background-color: #f8d7da;
+    color: #dc3545;
+}
+
+/* Empty State Styling */
+.category-empty {
+    grid-column: 1 / -1;
+    text-align: center;
+    padding: 2rem;
+    color: var(--text-color);
+    background: var(--background-color);
+    border-radius: 8px;
+    font-style: italic;
+}
+
+/* Image Loading States */
+.category-image.loading {
+    position: relative;
+    background-color: var(--background-color);
+}
+
+.category-image.loading::after {
+    content: '';
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    width: 30px;
+    height: 30px;
+    border: 2px solid var(--primary-color);
+    border-top-color: transparent;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    transform: translate(-50%, -50%);
+}
+
+/* Error State */
+.category-container.error {
+    border-color: #dc3545;
+}
+
+.category-container.error .category-name {
+    color: #dc3545;
+}
+
+/* Interactive States */
+.category-container.selected {
+    border-color: var(--secondary-color);
+    background-color: rgba(255, 64, 64, 0.05);
+}
+
+/* Print Styles */
+@media print {
+    .category-container {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #000;
+    }
+
+    .category-button {
+        display: none;
+    }
+
+    #category-grid {
+        gap: 2rem;
+    }
+}

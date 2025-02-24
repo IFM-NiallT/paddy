@@ -1,0 +1,105 @@
+/* base/print.css */
+
+@media print {
+    /* Hide Non-Printable Elements */
+    .no-print {
+        display: none !important;
+    }
+
+    /* Basic Print Styles */
+    body {
+        background: var(--white-color);
+    }
+
+    /* Table Print Styles */
+    .table {
+        border-collapse: collapse !important;
+    }
+
+    .table td,
+    .table th {
+        background-color: var(--white-color) !important;
+    }
+
+    /* Enhanced Print Accessibility */
+    * {
+        background: transparent !important;
+        color: #000 !important;
+        box-shadow: none !important;
+        text-shadow: none !important;
+    }
+
+    /* Link Handling */
+    a,
+    a:visited {
+        text-decoration: underline;
+    }
+
+    a[href]:after {
+        content: " (" attr(href) ")";
+    }
+
+    /* Category Print Styles */
+    .category-container {
+        break-inside: avoid;
+        box-shadow: none;
+        border: 1px solid #000;
+    }
+
+    .category-button {
+        display: none;
+    }
+
+    #category-grid {
+        gap: 2rem;
+    }
+
+    /* Pagination Print Styles */
+    .pagination-container {
+        display: none;
+    }
+
+    /* Modal Print Styles */
+    .modal,
+    .modal-backdrop {
+        display: none !important;
+    }
+
+    /* Form Print Styles */
+    .form-actions {
+        display: none;
+    }
+
+    /* Print Layout */
+    @page {
+        margin: 2cm;
+    }
+
+    /* Optimize Text for Print */
+    body {
+        font: 12pt Georgia, "Times New Roman", Times, serif;
+        line-height: 1.3;
+    }
+
+    h1 {
+        font-size: 24pt;
+    }
+
+    h2 {
+        font-size: 20pt;
+    }
+
+    h3 {
+        font-size: 16pt;
+    }
+
+    /* Ensure Tables Break Properly */
+    table {
+        page-break-inside: avoid;
+    }
+
+    /* Optimize Images for Print */
+    img {
+        max-width: 100% !important;
+    }
+}

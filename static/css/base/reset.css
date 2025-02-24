@@ -1,0 +1,62 @@
+/* base/reset.css */
+*, *::before, *::after {
+    box-sizing: border-box;
+    margin: 0;
+    padding: 0;
+}
+
+html {
+    scroll-behavior: smooth;
+    -webkit-text-size-adjust: 100%;
+}
+
+body {
+    background-color: var(--background-color);
+    font-family: 'Liter', sans-serif;
+    color: var(--text-color);
+    display: flex;
+    flex-direction: column;
+    min-height: 100vh;
+    line-height: 1.6;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+}
+
+main {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+/* Container Base Styles */
+.container {
+    width: 100%;
+    max-width: 1200px;
+    padding: 0 15px;
+    margin: 0 auto;
+}
+
+.content-wrapper {
+    flex: 1 0 auto;
+    padding: 20px 0;
+}
+
+/* Container Responsive Breakpoints */
+@media (max-width: 1200px) {
+    .container { max-width: 960px; }
+}
+
+@media (max-width: 992px) {
+    .container { max-width: 720px; }
+}
+
+@media (max-width: 768px) {
+    .container { max-width: 540px; }
+}
+
+@media (max-width: 576px) {
+    .container {
+        max-width: 100%;
+        padding: 0 10px;
+    }
+}

@@ -1,0 +1,103 @@
+/* base/animations.css */
+
+/* Spin Animation */
+@keyframes spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* Slide Down Animation */
+@keyframes slideDown {
+    from {
+        transform: translateY(-100%);
+    }
+    to {
+        transform: translateY(0);
+    }
+}
+
+/* Modal Fade In Animation */
+@keyframes modalFadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(-20px);
+    }
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Success Popup Animations */
+@keyframes slideInAndFade {
+    0% {
+        transform: translateY(-100%);
+        opacity: 0;
+    }
+    100% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+@keyframes fadeOut {
+    0% {
+        transform: translateY(0);
+        opacity: 1;
+    }
+    100% {
+        transform: translateY(-10px);
+        opacity: 0;
+    }
+}
+
+/* Progress Bar Animation */
+@keyframes progress {
+    from { 
+        transform: scaleX(1); 
+    }
+    to { 
+        transform: scaleX(0); 
+    }
+}
+
+/* Reduced Motion Preferences */
+@media (prefers-reduced-motion: reduce) {
+    * {
+        animation-duration: 0.01ms !important;
+        animation-iteration-count: 1 !important;
+        transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+
+    /* Specific Component Reductions */
+    .modal.show .modal-content {
+        animation: none;
+    }
+
+    .success-popup {
+        animation: none;
+    }
+
+    .success-popup.fade-out {
+        animation: none;
+        opacity: 0;
+    }
+
+    .success-popup .progress-bar {
+        animation: none;
+    }
+
+    .form-popup,
+    .form-popup-overlay,
+    .form-control,
+    .close-button {
+        transition: none;
+    }
+
+    .category-container,
+    .category-img {
+        transition: none;
+    }
+}

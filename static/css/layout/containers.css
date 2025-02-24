@@ -1,0 +1,61 @@
+/* layout/containers.css */
+
+/* Base Container */
+.container {
+    width: 100%;
+    max-width: 1200px;
+    padding: 0 15px;
+    margin: 0 auto;
+}
+
+/* Content Wrapper */
+.content-wrapper {
+    flex: 1 0 auto;
+    padding: 20px 0;
+}
+
+/* Container Responsive Breakpoints */
+@media (max-width: 1200px) {
+    .container {
+        max-width: 960px;
+    }
+}
+
+@media (max-width: 992px) {
+    .container {
+        max-width: 720px;
+    }
+}
+
+@media (max-width: 768px) {
+    .container {
+        max-width: 540px;
+    }
+}
+
+@media (max-width: 576px) {
+    .container {
+        max-width: 100%;
+        padding: 0 10px;
+    }
+}
+
+/* Form Container */
+.form-content {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+    padding: 1rem;
+}
+
+/* Modal Content Container */
+.modal-content {
+    background-color: var(--background-color);
+    border: 2px solid var(--primary-color);
+    border-radius: 10px;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+    max-height: 90vh;
+}

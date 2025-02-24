@@ -1,0 +1,114 @@
+/* components/popup.css */
+
+/* Base Popup Styles */
+.success-popup {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background-color: var(--background-color);
+    border: 2px solid var(--primary-color);
+    border-radius: 5px;
+    padding: 15px 20px;
+    z-index: 9999 !important;
+    box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+    display: none;
+    align-items: center;
+    gap: 10px;
+    animation: slideInAndFade 0.3s ease-out forwards;
+    max-width: 300px;
+    transform-origin: top right;
+}
+
+.success-popup.fade-out {
+    animation: fadeOut 0.3s ease-out forwards;
+}
+
+/* Popup Content */
+.success-popup .success-icon {
+    color: var(--primary-color);
+    font-size: 20px;
+    font-weight: bold;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 24px;
+}
+
+.success-popup .success-content {
+    color: var(--primary-color);
+    font-weight: 500;
+    line-height: 1.4;
+    flex: 1;
+}
+
+/* Close Button */
+.success-popup .close-btn {
+    background: none;
+    border: none;
+    color: var(--primary-color);
+    padding: 4px;
+    cursor: pointer;
+    font-size: 16px;
+    opacity: 0.7;
+    transition: opacity 0.2s ease;
+    margin-left: auto;
+}
+
+.success-popup .close-btn:hover {
+    opacity: 1;
+}
+
+/* Progress Bar */
+.success-popup .progress-bar {
+    position: absolute;
+    bottom: 0;
+    left: 0;
+    height: 3px;
+    background-color: var(--primary-color);
+    width: 100%;
+    transform-origin: left;
+    animation: progress 3s linear forwards;
+}
+
+/* Different States */
+.success-popup.warning {
+    border-color: #ffc107;
+    background-color: #fff8e1;
+}
+
+.success-popup.error {
+    border-color: #dc3545;
+    background-color: #f8d7da;
+}
+
+.success-popup.info {
+    border-color: #0dcaf0;
+    background-color: #e8f8fb;
+}
+
+/* Stacked Popups */
+.success-popup:not(:first-of-type) {
+    margin-top: 10px;
+}
+
+/* Accessibility */
+.success-popup:focus-within {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+.success-popup .close-btn:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--primary-color);
+    border-radius: 4px;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+    .success-popup {
+        top: 10px;
+        right: 10px;
+        left: 10px;
+        max-width: calc(100% - 20px);
+    }
+}

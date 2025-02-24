@@ -1,0 +1,24 @@
+/* base/typography.css */
+body {
+    font-size: 16px;
+}
+
+/* Typography Scale */
+h1 { font-size: 1.8rem; }
+h2 { font-size: 1.6rem; }
+h3 { font-size: 1.4rem; }
+h4 { font-size: 1.2rem; }
+h5 { font-size: 1rem; }
+h6 { font-size: 0.9rem; }
+
+/* Responsive Typography */
+@media (max-width: 768px) {
+    body { font-size: 14px; }
+    
+    h1 { font-size: 1.8rem; }
+    h2 { font-size: 1.6rem; }
+    h3 { font-size: 1.4rem; }
+    h4 { font-size: 1.2rem; }
+    h5 { font-size: 1rem; }
+    h6 { font-size: 0.9rem; }
+}

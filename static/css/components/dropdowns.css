@@ -1,0 +1,113 @@
+/* components/dropdowns.css */
+
+/* Dropdown Container */
+.dropdown-container {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+    margin-left: auto;
+    position: relative;
+}
+
+/* Select Element Styling */
+.dropdown-container select {
+    width: 140px;
+    padding: 8px 12px;
+    border: 2px solid var(--primary-color);
+    border-radius: 5px;
+    background-color: var(--white-color);
+    color: var(--primary-color);
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    -webkit-appearance: none;
+    -moz-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath d='M1 4l5 5 5-5z' fill='%23B20000'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 12px center;
+    padding-right: 32px;
+}
+
+/* Hover and Focus States */
+.dropdown-container select:hover {
+    background-color: var(--background-color);
+    border-color: var(--secondary-color);
+}
+
+.dropdown-container select:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--primary-color);
+    border-color: var(--primary-color);
+}
+
+.dropdown-container select:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Option Styles */
+.dropdown-container select option[disabled] {
+    color: #999;
+    background-color: var(--background-color);
+}
+
+.dropdown-container select option:checked {
+    background-color: var(--primary-color);
+    color: var(--white-color);
+}
+
+/* Disabled State */
+.dropdown-container select:disabled {
+    background-color: var(--background-color);
+    color: #999;
+    cursor: not-allowed;
+    border-color: #ccc;
+}
+
+/* Dropdown Group */
+.dropdown-group {
+    display: flex;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+/* Dropdown Label */
+.dropdown-label {
+    font-size: 0.9rem;
+    color: var(--text-color);
+    white-space: nowrap;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 768px) {
+    .dropdown-container {
+        flex-direction: column;
+        align-items: stretch;
+        margin-left: 0;
+    }
+
+    .dropdown-container select {
+        width: 100%;
+    }
+}
+
+/* Accessibility Features */
+.dropdown-container select:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    .dropdown-container select {
+        transition: none;
+    }
+}
+
+/* High Contrast Mode */
+@media (forced-colors: active) {
+    .dropdown-container select {
+        border: 2px solid CanvasText;
+    }
+}

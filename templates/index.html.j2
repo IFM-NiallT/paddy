@@ -17,10 +17,10 @@
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" media="all">
     <link href="https://fonts.googleapis.com/css2?family=Liter:wght@400;700&display=swap" rel="stylesheet">
     
-    <!-- Our Custom Stylesheet -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/paddy.css') }}">
+    <!-- Main Stylesheet -->
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
     
-    <!-- No-JS Fallback Styles -->
+    <!-- No-JS Fallback -->
     <noscript>
         <style>
             .js-required { display: none; }
@@ -29,7 +29,6 @@
     </noscript>
 </head>
 <body>
-
     <!-- Accessibility Message for No JavaScript -->
     <div class="no-js-message text-center bg-warning p-3" style="display:none;">
         JavaScript is required for full functionality. Please enable JavaScript in your browser.
@@ -71,58 +70,58 @@
     </header>
 
     <!-- Search Modal -->
-    <div 
-        class="modal fade" 
-        id="searchProductsModal" 
-        tabindex="-1" 
-        aria-labelledby="searchProductsModalLabel" 
-        aria-hidden="true"
-    >
-        <div class="modal-dialog modal-xl">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h5 
-                        class="modal-title" 
-                        id="searchProductsModalLabel"
-                    >
-                        Search Products
-                    </h5>
-                    <button 
-                        type="button" 
-                        class="btn-close" 
-                        data-bs-dismiss="modal" 
-                        aria-label="Close Search Modal"
-                    ></button>
-                </div>
-                <div class="modal-body">
-                    <div class="search-wrapper mb-4">
-                        <input 
-                            type="text" 
-                            class="search-input" 
-                            id="modalProductSearch" 
-                            placeholder="Search products by code or description..."
-                        >
-                    </div>
-
-                    <div class="table-responsive">
-                        <table class="table" id="modalProductsTable">
-                            <thead>
-                                <tr>
-                                    <th>Code</th>
-                                    <th>Description</th>
-                                    <th>Category</th>
-                                    <th>Actions</th>
-                                </tr>
-                            </thead>
-                            <tbody id="modalProductResultsBody">
-                                <!-- Results will be populated dynamically -->
-                            </tbody>
-                        </table>
-                    </div>
-                </div>
-            </div>
+<div 
+  class="modal fade" 
+  id="searchProductsModal" 
+  tabindex="-1" 
+  aria-labelledby="searchProductsModalLabel" 
+  aria-hidden="true"
+>
+  <div class="modal-dialog modal-xl">
+    <div class="modal-content">
+      <div class="modal-header">
+        <h5 class="modal-title" id="searchProductsModalLabel">Search Products</h5>
+        <button 
+          type="button" 
+          class="btn-close" 
+          data-bs-dismiss="modal" 
+          aria-label="Close Search Modal"
+        ></button>
+      </div>
+      <div class="modal-body">
+        <div class="search-container mb-4">
+          <div class="search-wrapper">
+            <label for="modalProductSearch" class="visually-hidden">
+              Search products by code or description
+            </label>
+            <input 
+              type="text" 
+              class="search-input" 
+              id="modalProductSearch" 
+              placeholder="Search products by code or description..."
+            >
+          </div>
         </div>
+
+        <div class="table-responsive">
+          <table class="table" id="modalProductsTable">
+            <thead>
+              <tr>
+                <th>Code</th>
+                <th>Description</th>
+                <th>Category</th>
+                <th>Actions</th>
+              </tr>
+            </thead>
+            <tbody id="modalProductResultsBody">
+              <!-- Results will be populated dynamically -->
+            </tbody>
+          </table>
+        </div>
+      </div>
     </div>
+  </div>
+</div>
 
     <!-- Edit Product Popup Form -->
     <div class="form-popup-overlay" id="editFormOverlay"></div>

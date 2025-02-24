@@ -1,0 +1,155 @@
+/* components/bulk-edit.css */
+
+/* Bulk Edit Controls */
+.bulk-edit-controls {
+    display: flex !important;
+    justify-content: flex-start;
+    align-items: center;
+    margin-bottom: 15px;
+    padding: 10px 20px;
+    background-color: var(--background-color);
+    border-bottom: 1px solid var(--primary-color);
+}
+
+.bulk-edit-wrapper {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background-color: var(--white-color);
+    border: 1px solid var(--primary-color);
+    border-radius: 5px;
+    padding: 5px 10px;
+}
+
+/* Bulk Select Styles */
+.bulk-select-column {
+    width: 50px;
+    min-width: 50px;
+    max-width: 50px;
+    text-align: center;
+}
+
+.bulk-select-cell {
+    text-align: center;
+    width: 50px;
+    max-width: 50px;
+}
+
+.bulk-header-content {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.bulk-select-checkbox {
+    width: 18px;
+    height: 18px;
+}
+
+/* Bulk Edit Button */
+.bulk-edit-btn {
+    display: none;
+    margin-left: 10px;
+    padding: 2px 8px;
+    font-size: 0.8em;
+    background-color: var(--primary-color);
+    color: var(--white-color);
+    border: none;
+    border-radius: 4px;
+    cursor: pointer;
+    transition: background-color 0.3s ease;
+}
+
+.bulk-edit-btn:hover {
+    background-color: var(--secondary-color);
+}
+
+/* Warning Message */
+.bulk-edit-warning {
+    margin-bottom: 15px;
+    background-color: var(--background-color);
+    padding: 10px;
+    border-radius: 5px;
+    border: 1px solid var(--primary-color);
+    color: var(--primary-color);
+}
+
+/* Progress Indicator */
+.bulk-edit-progress {
+    margin-top: 15px;
+}
+
+.progress {
+    height: 20px;
+    margin-bottom: 10px;
+    background-color: var(--background-color);
+    border: 1px solid var(--primary-color);
+    border-radius: 5px;
+    overflow: hidden;
+}
+
+.progress-bar {
+    background-color: var(--primary-color);
+    height: 100%;
+    width: 0;
+    transition: width 0.5s ease;
+}
+
+.progress-text {
+    text-align: center;
+    font-size: 0.9em;
+    color: var(--primary-color);
+    margin-top: 5px;
+}
+
+/* Bulk Selection States */
+.bulk-select-all:checked ~ table tbody tr {
+    background-color: rgba(178, 0, 0, 0.05);
+}
+
+/* Button States */
+.bulk-edit-btn.active {
+    display: inline-flex;
+}
+
+/* Mobile Adjustments */
+@media (max-width: 768px) {
+    .bulk-edit-controls {
+        flex-direction: column;
+        gap: 10px;
+        padding: 10px;
+    }
+
+    .bulk-edit-wrapper {
+        width: 100%;
+        justify-content: space-between;
+    }
+
+    .bulk-edit-btn {
+        width: 100%;
+        margin-left: 0;
+        margin-top: 10px;
+    }
+}
+
+/* Accessibility */
+.bulk-select-checkbox:focus-visible,
+.bulk-edit-btn:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Print Styles */
+@media print {
+    .bulk-edit-controls,
+    .bulk-edit-progress,
+    .bulk-edit-warning {
+        display: none !important;
+    }
+}
+
+/* Loading State */
+.bulk-edit-controls.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}

@@ -1,0 +1,22 @@
+/* base/variables.css */
+:root {
+    /* Colors */
+    --primary-color: #B20000;
+    --secondary-color: #FF4040;
+    --background-color: #FEE9E9;
+    --text-color: #000;
+    --subtext-color: #4a2a2a;
+    --white-color: #FFFFFF;
+    --border-color: #dee2e6;
+    --footer-color: #FE0000;
+    font-size: 16px;
+}
+
+/* Media Query Adjustments */
+@media (max-width: 768px) {
+    :root { font-size: 14px; }
+}
+
+@media (min-width: 769px) and (max-width: 1200px) {
+    :root { font-size: 15px; }
+}

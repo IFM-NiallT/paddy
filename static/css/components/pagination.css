@@ -1,0 +1,119 @@
+/* components/pagination.css */
+/* Pagination Container */
+.section-header {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    margin-bottom: 1rem;
+}
+
+.section-header h4 {
+    margin-bottom: 0.75rem;
+}
+
+.pagination-container {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    width: 100%;
+    margin-left: 0; /* Override previous left margin */
+}
+
+/* Pagination Arrow Buttons */
+.pagination-arrow {
+    text-decoration: none;
+    color: var(--primary-color);
+    font-size: clamp(20px, 4vw, 24px);
+    min-height: 44px;
+    min-width: 44px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    transition: color 0.3s ease;
+    border-radius: 4px;
+}
+
+/* Hover and Focus States */
+.pagination-arrow:hover {
+    color: var(--secondary-color);
+    background-color: rgba(178, 0, 0, 0.1);
+}
+.pagination-arrow:focus-visible {
+    outline: 2px solid var(--primary-color);
+    outline-offset: 2px;
+}
+
+/* Disabled State */
+.pagination-arrow:disabled {
+    color: #999;
+    cursor: not-allowed;
+    background-color: transparent;
+}
+
+/* Page Count */
+.pagination-count {
+    font-size: clamp(0.8rem, 3vw, 0.9rem);
+    color: #666;
+    font-weight: 500;
+}
+
+/* Page Info */
+.pagination-info {
+    font-size: 0.85rem;
+    color: var(--text-color);
+    margin: 0 10px;
+}
+
+/* Responsive Adjustments */
+@media (max-width: 576px) {
+    .pagination-container {
+        flex-direction: column;
+        align-items: center;
+        margin-left: 0;
+    }
+    .pagination-arrow {
+        justify-content: center;
+        padding: 10px;
+    }
+}
+
+/* Accessibility Features */
+.pagination-arrow:focus {
+    outline: none;
+    box-shadow: 0 0 0 2px var(--primary-color);
+}
+
+/* High Contrast Mode */
+@media (forced-colors: active) {
+    .pagination-arrow {
+        border: 1px solid CanvasText;
+    }
+}
+
+/* Reduced Motion */
+@media (prefers-reduced-motion: reduce) {
+    .pagination-arrow {
+        transition: none;
+    }
+}
+
+/* Loading State */
+.pagination-container.loading {
+    opacity: 0.7;
+    pointer-events: none;
+}
+
+/* Active Page */
+.pagination-arrow.active {
+    background-color: var(--primary-color);
+    color: var(--white-color);
+}
+
+/* Print Styles */
+@media print {
+    .pagination-container {
+        display: none;
+    }
+}

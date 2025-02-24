@@ -1,0 +1,94 @@
+/* components/status.css */
+
+/* Web Status Base */
+.web-status-cell {
+    text-align: center;
+    font-weight: 500;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
+    display: inline-block;
+    min-width: 100px;
+    text-transform: capitalize;
+}
+
+/* Available Status */
+.web-status-cell.available {
+    color: #198754;
+    background-color: #d1e7dd;
+    border: 1px solid #c3e6cb;
+}
+
+/* Not Available Status */
+.web-status-cell.not-available {
+    color: #dc3545;
+    background-color: #f8d7da;
+    border: 1px solid #f5c6cb;
+}
+
+/* Pending Status */
+.web-status-cell.pending {
+    color: #ffc107;
+    background-color: #fff3cd;
+    border: 1px solid #ffeeba;
+}
+
+/* Under Review Status */
+.web-status-cell.under-review {
+    color: #6c757d;
+    background-color: #e9ecef;
+    border: 1px solid #dee2e6;
+}
+
+/* Status with Icon */
+.web-status-cell.with-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.5rem;
+}
+
+.web-status-cell.with-icon::before {
+    content: '';
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+}
+
+.web-status-cell.available.with-icon::before {
+    background-color: #198754;
+}
+
+.web-status-cell.not-available.with-icon::before {
+    background-color: #dc3545;
+}
+
+.web-status-cell.pending.with-icon::before {
+    background-color: #ffc107;
+}
+
+/* Hover State */
+.web-status-cell[title]:hover {
+    cursor: help;
+}
+
+/* Animation for Status Changes */
+.web-status-cell.animate {
+    transition: all 0.3s ease;
+}
+
+/* Print Styles */
+@media print {
+    .web-status-cell {
+        border: 1px solid #000 !important;
+        color: #000 !important;
+        background: none !important;
+    }
+}
+
+/* High Contrast Mode */
+@media (forced-colors: active) {
+    .web-status-cell {
+        border: 1px solid currentColor;
+    }
+}
