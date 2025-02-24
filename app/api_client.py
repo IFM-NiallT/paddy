@@ -364,7 +364,8 @@ class APIClient:
         code_query: Optional[str] = None,
         description_query: Optional[str] = None, 
         page: int = 1, 
-        items_per_page: int = 30
+        items_per_page: int = 30,
+        **kwargs
     ) -> Dict[str, Any]:
         """
         Search products directly via the API with filtering capabilities.
@@ -377,29 +378,30 @@ class APIClient:
             items_per_page (int): Number of items per page
         """
         try:
-            items_per_page = min(items_per_page, self.MAX_ITEMS_PER_PAGE)
-            params: Dict[str, Any] = {}
+            # Prepare parameters dictionary, preserving exact keys from the request
+            params: Dict[str, Any] = kwargs.copy()
             
-            # Add category filter if provided
+            # Ensure sorting
+            params['sort'] = params.get('sort', 'Code[asc]')
+            
+            # Add additional specific search parameters
             if category:
                 params['Category[eq]'] = category
-                
-            # Add code search if provided
+            
             if code_query:
                 params['Code[cnt]'] = code_query
-                
-            # Add description search if provided
+            
             if description_query:
                 params['Description[cnt]'] = description_query
-                
-            # Add pagination parameters
+            
+            # Add pagination
             params['offset'] = (page - 1) * items_per_page
             params['fetch'] = items_per_page
             
-            # Add default sorting
-            params['sort'] = 'Code[asc]'
-            
-            logger.info("Executing API product search")
+            logger.info(
+                "Executing API product search", 
+                extra={'search_params': params}
+            )
             
             response: Dict[str, Any] = self._make_request(
                 "Products",
@@ -410,7 +412,7 @@ class APIClient:
             total_count: int = response.get('TotalCount', 0)
             total_pages: int = (total_count + items_per_page - 1) // items_per_page
             
-            formatted_response: Dict[str, Any] = {
+            return {
                 "TotalCount": total_count,
                 "CurrentPage": page,
                 "ItemsPerPage": items_per_page,
@@ -418,10 +420,12 @@ class APIClient:
                 "Data": response.get('Data', [])
             }
             
-            return formatted_response
-            
         except Exception as e:
-            logger.error("API search error")
+            logger.error(
+                "API search error", 
+                extra={'error': str(e)},
+                exc_info=True
+            )
             return {
                 "TotalCount": 0,
                 "CurrentPage": page,

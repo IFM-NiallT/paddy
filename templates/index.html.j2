@@ -27,12 +27,29 @@
             .no-js-message { display: block; }
         </style>
     </noscript>
+
+    <!-- Global script error handler -->
+    <script>
+    function handleScriptError(moduleName) {
+        console.error(`Failed to load ${moduleName} module`);
+        
+        const errorNotification = document.createElement('div');
+        errorNotification.className = 'alert alert-warning position-fixed top-0 start-0 w-100 text-center';
+        errorNotification.style.zIndex = '1050';
+        errorNotification.textContent = `Some functionality may be limited. Unable to load ${moduleName} module.`;
+        
+        document.body.appendChild(errorNotification);
+    }
+    </script>
 </head>
 <body>
     <!-- Accessibility Message for No JavaScript -->
     <div class="no-js-message text-center bg-warning p-3" style="display:none;">
         JavaScript is required for full functionality. Please enable JavaScript in your browser.
     </div>
+
+    <!-- Script Error Notification Container -->
+    <div id="scriptErrorContainer" class="position-fixed top-0 start-0 w-100" style="z-index: 1050;"></div>
 
     <!-- Navbar -->
     <header>
@@ -70,166 +87,57 @@
     </header>
 
     <!-- Search Modal -->
-<div 
-  class="modal fade" 
-  id="searchProductsModal" 
-  tabindex="-1" 
-  aria-labelledby="searchProductsModalLabel" 
-  aria-hidden="true"
->
-  <div class="modal-dialog modal-xl">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h5 class="modal-title" id="searchProductsModalLabel">Search Products</h5>
-        <button 
-          type="button" 
-          class="btn-close" 
-          data-bs-dismiss="modal" 
-          aria-label="Close Search Modal"
-        ></button>
-      </div>
-      <div class="modal-body">
-        <div class="search-container mb-4">
-          <div class="search-wrapper">
-            <label for="modalProductSearch" class="visually-hidden">
-              Search products by code or description
-            </label>
-            <input 
-              type="text" 
-              class="search-input" 
-              id="modalProductSearch" 
-              placeholder="Search products by code or description..."
-            >
+    <div 
+      class="modal fade" 
+      id="searchProductsModal" 
+      tabindex="-1" 
+      aria-labelledby="searchProductsModalLabel" 
+      aria-hidden="true"
+    >
+      <div class="modal-dialog modal-xl">
+        <div class="modal-content">
+          <div class="modal-header">
+            <h5 class="modal-title" id="searchProductsModalLabel">Search Products</h5>
+            <button 
+              type="button" 
+              class="btn-close" 
+              data-bs-dismiss="modal" 
+              aria-label="Close Search Modal"
+            ></button>
+          </div>
+          <div class="modal-body">
+            <div class="search-container mb-4">
+              <div class="search-wrapper">
+                <label for="modalProductSearch" class="visually-hidden">
+                  Search products by code
+                </label>
+                <input 
+                  type="text" 
+                  class="search-input" 
+                  id="modalProductSearch" 
+                  placeholder="Search products by code"
+                >
+              </div>
+            </div>
+
+            <div class="table-responsive">
+              <table class="table" id="modalProductsTable">
+                <thead>
+                  <tr>
+                    <th>Code</th>
+                    <th>Description</th>
+                    <th>Category</th>
+                    <th>Actions</th>
+                  </tr>
+                </thead>
+                <tbody id="modalProductResultsBody">
+                  <!-- Results will be populated dynamically -->
+                </tbody>
+              </table>
+            </div>
           </div>
         </div>
-
-        <div class="table-responsive">
-          <table class="table" id="modalProductsTable">
-            <thead>
-              <tr>
-                <th>Code</th>
-                <th>Description</th>
-                <th>Category</th>
-                <th>Actions</th>
-              </tr>
-            </thead>
-            <tbody id="modalProductResultsBody">
-              <!-- Results will be populated dynamically -->
-            </tbody>
-          </table>
-        </div>
       </div>
-    </div>
-  </div>
-</div>
-
-    <!-- Edit Product Popup Form -->
-    <div class="form-popup-overlay" id="editFormOverlay"></div>
-    <div class="form-popup" id="editProductForm" role="dialog" aria-labelledby="editFormTitle" aria-modal="true">
-        <form class="form-container" id="editProductFormContainer">
-            <div class="form-header">
-                <h2 id="editFormTitle">
-                    Edit Product: <span id="popupProductCode"></span>
-                </h2>
-                <button type="button" class="close-button cancel" onclick="closeEditForm()" aria-label="Close edit form">X</button>
-            </div>
-            
-            <input type="hidden" id="popupProductId" name="product_id">
-            
-            <div class="form-content">
-                <div id="errorContainer" class="alert alert-destructive" style="display: none;" role="alert">
-                    <div class="alert-content"></div>
-                </div>
-                <div id="successContainer" class="alert alert-success" style="display: none;" role="alert">
-                    <div class="alert-content"></div>
-                </div>
-                
-                <div class="form-grid" style="display: flex; gap: 20px;">
-                    <!-- Left Column: Static Fields -->
-                    <div class="form-column" style="flex: 1;">
-                        <!-- Product Name (Now a Display Field) -->
-                        <div class="form-group">
-                            <label for="popupProductName">Product Name</label>
-                            <small id="productNameHelp" class="form-text text-muted">Display name (from product description)</small>
-                            <div id="popupProductName" class="form-control readonly-input" aria-describedby="productNameHelp"></div>
-                        </div>
-                        <div class="form-group">
-                            <label for="popupExtendedDescription">Extended Description</label>
-                            <small id="extendedDescriptionHelp" class="form-text text-muted">Additional product details</small>
-                            <textarea
-                                id="popupExtendedDescription"
-                                name="extended_description"
-                                class="form-control"
-                                rows="4"
-                                aria-describedby="extendedDescriptionHelp"
-                            ></textarea>
-                        </div>
-                        <div class="form-group">
-                            <label for="popupImageCount">Image Count</label>
-                            <small id="imageCountHelp" class="form-text text-muted">Total number of images for this product</small>
-                            <input
-                                type="text"
-                                id="popupImageCount"
-                                name="ImageCount"
-                                readonly
-                                class="form-control readonly-input"
-                                aria-describedby="imageCountHelp"
-                            >
-                        </div>
-                        <div class="form-group">
-                            <label for="popupWebCategory">Web Category</label>
-                            <small id="webCategoryHelp" class="form-text text-muted">Category for web display</small>
-                            <input
-                                type="text"
-                                id="popupWebCategory"
-                                name="D_WebCategory"
-                                class="form-control"
-                                aria-describedby="webCategoryHelp"
-                            >
-                        </div>
-                        <div class="form-group">
-                            <label for="popupWebStatus">Web Status <span class="required">*</span></label>
-                            <small id="webStatusHelp" class="form-text text-muted">Determines product visibility on the website</small>
-                            <select
-                                id="popupWebStatus"
-                                name="web_status"
-                                class="form-control"
-                                required
-                                aria-describedby="webStatusHelp"
-                            >
-                                <option value="">Select Status</option>
-                                <option value="Available">Available</option>
-                                <option value="Not Available">Not Available</option>
-                            </select>
-                        </div>
-                    </div>
-                    
-                    <!-- Right Column: Dynamic Fields -->
-                    <div class="form-column" style="flex: 1;">
-                        <div id="popupFirstColumn"></div>
-                        <div id="popupSecondColumn"></div>
-                    </div>
-                </div>
-            </div>
-            
-            <div class="form-actions">
-                <button
-                    type="button"
-                    class="btn-cancel cancel"
-                    onclick="closeEditForm()"
-                    aria-label="Cancel edit"
-                >
-                    Cancel
-                </button>
-                <button
-                    type="submit"
-                    class="btn-submit"
-                    aria-label="Save product changes"
-                >
-                    Save Changes
-                </button>
-            </div>
-        </form>
     </div>
 
     <!-- Search Bar Container -->
@@ -304,9 +212,24 @@
     </div>
 
     <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-    <!-- Important: Load products.js before categories.js -->
-    <script src="{{ url_for('static', filename='js/products.js') }}"></script>
-    <script src="{{ url_for('static', filename='js/categories.js') }}"></script>
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" defer></script>
+    
+    <!-- Core scripts -->
+    <script src="{{ url_for('static', filename='js/core/utils.js') }}" defer onerror="handleScriptError('Core utils')"></script>
+    <script src="{{ url_for('static', filename='js/core/api.js') }}" defer onerror="handleScriptError('Core API')"></script>
+    <script src="{{ url_for('static', filename='js/core/events.js') }}" defer onerror="handleScriptError('Core events')"></script>
+    
+    <!-- Category feature modules -->
+    <script src="{{ url_for('static', filename='js/category/search.js') }}" defer onerror="handleScriptError('Category search')"></script>
+    <script src="{{ url_for('static', filename='js/category/sort.js') }}" defer onerror="handleScriptError('Category sort')"></script>
+    
+    <!-- Product modules (for modal) -->
+    <script src="{{ url_for('static', filename='js/product/edit.js') }}" defer onerror="handleScriptError('Product edit')"></script>
+    
+    <!-- Export module -->
+    <script src="{{ url_for('static', filename='js/export/csv.js') }}" defer onerror="handleScriptError('Export CSV')"></script>
+    
+    <!-- Initialization scripts -->
+    <script src="{{ url_for('static', filename='js/category/init.js') }}" defer onerror="handleScriptError('Category init')"></script>
 </body>
 </html>

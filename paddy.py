@@ -658,29 +658,46 @@ class PaddyApp:
     def _all_products_search_route(self) -> Union[Any, Tuple[Any, int]]:
         """Handle search requests for all products."""
         try:
-            code_query: str = request.args.get('code', '')
-            description_query: str = request.args.get('description', '')
-            page: int = request.args.get('page', 1, type=int)
+            # Get all query parameters
+            params = request.args.to_dict()
             
-            logger.info("Processing all products search request")
+            # Extract specific parameters
+            code_query: str = params.get('code', '')
+            page: int = int(params.get('page', 1))
             
-            # Use the search_products_api method with both code and description
-            results: Dict[str, Any] = self.api_client.search_products_api(
-                code_query=code_query,
-                description_query=description_query,
-                page=page
+            logger.info(
+                "Processing all products search request",
+                extra={
+                    'code_query': code_query,
+                    'page': page
+                }
             )
+            
+            # Prepare search parameters
+            search_params = {
+                'sort': 'Code[asc]',
+                'page': page
+            }
+            
+            # Add code search parameter if not empty
+            if code_query:
+                search_params['Code[cnt]'] = code_query
+            
+            # Use the search_products_api method with original params
+            results: Dict[str, Any] = self.api_client.search_products_api(**search_params)
             
             return jsonify(results)
                 
         except Exception as e:
             logger.error(
                 "Error in all products search route",
-                extra={'error_type': type(e).__name__},
+                extra={
+                    'error_type': type(e).__name__,
+                    'code_query': code_query
+                },
                 exc_info=True
             )
             return jsonify({'error': str(e)}), 500
-
 
 def create_app() -> Flask:
     """
