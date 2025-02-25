@@ -14,45 +14,57 @@
  * - isFieldReadOnly() - Checks if field is read-only
  */
 
+import { utils } from '../core/utils.js';
+import { api } from '../core/api.js';
+import { events } from '../core/events.js';
+
 // Create a namespace for product editing functionality
-const productEdit = (function() {
+export const productEdit = (function() {
     'use strict';
-    
-    // Check for required dependencies
-    if (typeof utils === 'undefined') {
-      console.error('Required dependency missing: utils');
-    }
     
     /**
      * Initialize edit form handlers
      */
     function initEditFormHandlers() {
-      const editFormContainer = document.getElementById('editProductForm');
-      if (!editFormContainer) {
-        console.warn('Edit form container not found');
-        return;
-      }
-  
-      const form = editFormContainer.querySelector('form');
-      if (!form) {
-        console.warn('Form element not found in container');
-        return;
-      }
-  
-      // Remove any existing listeners to prevent duplicates
-      form.removeEventListener('submit', submitProductEdit);
-      form.addEventListener('submit', submitProductEdit);
+      console.log("Initializing edit form handlers");
       
-      // Initialize close button
-      const closeButton = editFormContainer.querySelector('.close-button, .cancel');
-      if (closeButton) {
-        closeButton.removeEventListener('click', closeEditForm);
-        closeButton.addEventListener('click', function(e) {
+      // Check both possible form IDs
+      const form1 = document.getElementById('productEditForm');
+      const form2 = document.getElementById('productEditForm2');
+      
+      console.log("Form elements found:", {
+        form1: form1 ? true : false,
+        form2: form2 ? true : false
+      });
+      
+      // Set up both forms if they exist
+      if (form1) {
+        console.log("Setting up handlers for form1");
+        form1.removeEventListener('submit', submitProductEdit);
+        form1.addEventListener('submit', function(event) {
+          console.log("Form1 submit event triggered");
+          submitProductEdit(event);
+        });
+      }
+      
+      if (form2) {
+        console.log("Setting up handlers for form2");
+        form2.removeEventListener('submit', submitProductEdit);
+        form2.addEventListener('submit', function(event) {
+          console.log("Form2 submit event triggered");
+          submitProductEdit(event);
+        });
+      }
+      
+      // Initialize close buttons
+      document.querySelectorAll('.close-button, .btn-cancel, .cancel').forEach(button => {
+        button.removeEventListener('click', closeEditForm);
+        button.addEventListener('click', function(e) {
           e.preventDefault();
           closeEditForm();
         });
-      }
-    }
+      });
+    }   
   
     /**
      * Initialize edit buttons
@@ -70,6 +82,7 @@ const productEdit = (function() {
      * @param {Event} event - Click event
      */
     function handleEditButtonClick(event) {
+      event.preventDefault();
       event.stopPropagation();
       const productId = event.target.getAttribute('data-product-id');
       // If no product ID on button, try to get from parent row
@@ -93,24 +106,32 @@ const productEdit = (function() {
       const editForm = document.getElementById("editProductForm");
       const overlay = document.getElementById("editFormOverlay");
       
-      if (editForm && overlay) {
-        overlay.style.display = "block";
-        editForm.style.display = "block";
-        
-        // Trigger reflow to enable CSS animations
-        overlay.offsetHeight;
-        editForm.offsetHeight;
-        
-        overlay.classList.add('active');
-        editForm.classList.add('active');
-        
-        document.addEventListener('keydown', handleEditFormKeypress);
-        
-        // Focus the first input field in the form
-        const firstInput = editForm.querySelector('input:not([type="hidden"])');
-        if (firstInput) {
-          firstInput.focus();
-        }
+      if (!editForm) {
+        console.error("Edit form not found");
+        return;
+      }
+      
+      if (!overlay) {
+        console.error("Overlay not found");
+        return;
+      }
+      
+      overlay.style.display = "block";
+      editForm.style.display = "block";
+      
+      // Trigger reflow to enable CSS animations
+      overlay.offsetHeight;
+      editForm.offsetHeight;
+      
+      overlay.classList.add('active');
+      editForm.classList.add('active');
+      
+      document.addEventListener('keydown', handleEditFormKeypress);
+      
+      // Focus the first input field in the form
+      const firstInput = editForm.querySelector('input:not([type="hidden"])');
+      if (firstInput) {
+        firstInput.focus();
       }
     }
   
@@ -121,29 +142,37 @@ const productEdit = (function() {
       const editForm = document.getElementById("editProductForm");
       const overlay = document.getElementById("editFormOverlay");
       
-      if (editForm && overlay) {
-        overlay.classList.remove('active');
-        editForm.classList.remove('active');
+      if (!editForm) {
+        console.error("Edit form not found");
+        return;
+      }
+      
+      if (!overlay) {
+        console.error("Overlay not found");
+        return;
+      }
+      
+      overlay.classList.remove('active');
+      editForm.classList.remove('active');
+      
+      document.removeEventListener('keydown', handleEditFormKeypress);
+      
+      // Wait for CSS animation to complete before hiding
+      setTimeout(() => {
+        overlay.style.display = "none";
+        editForm.style.display = "none";
         
-        document.removeEventListener('keydown', handleEditFormKeypress);
-        
-        // Wait for CSS animation to complete before hiding
-        setTimeout(() => {
-          overlay.style.display = "none";
-          editForm.style.display = "none";
-          
-          // Reset the form fields
-          const form = editForm.querySelector('form');
-          if (form) {
-            form.reset();
-          }
-        }, 300);
-        
-        // Return focus to the main content
-        const mainContent = document.querySelector('main');
-        if (mainContent) {
-          mainContent.focus();
+        // Reset the form fields
+        const form = editForm.querySelector('form');
+        if (form) {
+          form.reset();
         }
+      }, 300);
+      
+      // Return focus to the main content
+      const mainContent = document.querySelector('main');
+      if (mainContent) {
+        mainContent.focus();
       }
     }
   
@@ -164,11 +193,7 @@ const productEdit = (function() {
     function fetchProductDetails(productId) {
       if (!productId) {
         console.error('Invalid product ID');
-        if (typeof utils !== 'undefined' && utils.showErrorMessage) {
-          utils.showErrorMessage('Error: Invalid product ID');
-        } else {
-          alert('Error: Invalid product ID');
-        }
+        utils.showErrorMessage('Error: Invalid product ID');
         return;
       }
       
@@ -188,64 +213,24 @@ const productEdit = (function() {
         editForm.appendChild(loadingIndicator);
       }
   
-      // Use API module if available
-      if (typeof api !== 'undefined' && api.fetchProductDetails) {
-        api.fetchProductDetails(productId)
-          .then(data => {
-            handleProductDetailsResponse(data);
-          })
-          .catch(error => {
-            console.error('Error fetching product details:', error);
-            if (typeof utils !== 'undefined' && utils.showErrorMessage) {
-              utils.showErrorMessage(`Failed to load product details: ${error.message}`);
-            } else {
-              alert(`Failed to load product details: ${error.message}`);
+      // Use API module
+      api.fetchProductDetails(productId)
+        .then(data => {
+          handleProductDetailsResponse(data);
+        })
+        .catch(error => {
+          console.error('Error fetching product details:', error);
+          utils.showErrorMessage(`Failed to load product details: ${error.message}`);
+        })
+        .finally(() => {
+          // Remove loading indicator
+          if (editForm) {
+            const loadingIndicator = editForm.querySelector('.loading-indicator');
+            if (loadingIndicator) {
+              loadingIndicator.remove();
             }
-          })
-          .finally(() => {
-            // Remove loading indicator
-            if (editForm) {
-              const loadingIndicator = editForm.querySelector('.loading-indicator');
-              if (loadingIndicator) {
-                loadingIndicator.remove();
-              }
-            }
-          });
-      } else {
-        // Fallback to direct fetch
-        fetch(`/product/${productId}/edit`)
-          .then(response => {
-            console.log(`Response status: ${response.status}`);
-  
-            if (!response.ok) {
-              return response.text().then(errorText => {
-                console.error('Error response:', errorText);
-                throw new Error(errorText || 'Failed to fetch product details');
-              });
-            }
-            return response.json();
-          })
-          .then(data => {
-            handleProductDetailsResponse(data);
-          })
-          .catch(error => {
-            console.error('Error fetching product details:', error);
-            if (typeof utils !== 'undefined' && utils.showErrorMessage) {
-              utils.showErrorMessage(`Failed to load product details: ${error.message}`);
-            } else {
-              alert(`Failed to load product details: ${error.message}`);
-            }
-          })
-          .finally(() => {
-            // Remove loading indicator
-            if (editForm) {
-              const loadingIndicator = editForm.querySelector('.loading-indicator');
-              if (loadingIndicator) {
-                loadingIndicator.remove();
-              }
-            }
-          });
-      }
+          }
+        });
     }
     
     /**
@@ -291,13 +276,6 @@ const productEdit = (function() {
   
       // Helper function to determine web status
       function getWebStatus(product) {
-        // Use the determineWebStatus function if available
-        if (typeof productTable !== 'undefined' && productTable.determineWebStatus) {
-          const isAvailable = productTable.determineWebStatus(product);
-          return isAvailable ? 'Available' : 'Not Available';
-        }
-        
-        // Fallback implementation
         // Check ECommerceSettings object first
         if (product.ECommerceSettings?.ECommerceStatus) {
           const statusObj = product.ECommerceSettings.ECommerceStatus;
@@ -400,101 +378,222 @@ const productEdit = (function() {
      * @param {Array} dynamicFields - Dynamic field definitions
      */
     function populateEditForm(product, productId, dynamicFields) {
-      // Set read-only fields using textContent
-      document.getElementById('popupProductCode').textContent = product.Code || '';
-      document.getElementById('popupProductId').value = productId;
-     
-      // Handle product name (read-only)
-      const productNameElement = document.getElementById('popupProductName');
-      if (productNameElement) {
-        productNameElement.textContent = product.Description || '';
+      // Prevent immediate page reload to allow error inspection
+      window.onbeforeunload = function() {
+        return "Diagnostic mode: Prevent automatic page reload";
+      };
+
+      // Enhanced error logging function
+      function logError(message, details = {}) {
+        const errorContainer = document.getElementById('form-errors') || 
+                                document.querySelector('#form-errors .alert-message');
+        
+        console.error('Product Edit Form Population Error:', message, details);
+        
+        if (errorContainer) {
+          errorContainer.textContent = `${message}: ${JSON.stringify(details)}`;
+          errorContainer.style.display = 'block';
+        }
+        
+        // Optional: Show error popup
+        if (typeof utils !== 'undefined' && utils.showErrorMessage) {
+          utils.showErrorMessage(message);
+        }
       }
-  
-      const firstColumn = document.getElementById('popupFirstColumn');
-      const secondColumn = document.getElementById('popupSecondColumn');
-  
-      firstColumn.innerHTML = '';
-      secondColumn.innerHTML = '';
-  
-      if (Array.isArray(dynamicFields)) {
-        const filteredDynamicFields = dynamicFields.filter(field =>
-          field.name !== 'web_status' &&
-          field.name !== 'extended_description'
-        );
-        const midpoint = Math.ceil(filteredDynamicFields.length / 2);
-         
-        filteredDynamicFields.forEach((field, index) => {
-          field.value = product[field.name] !== undefined ? product[field.name] : '';
-          field.readonly = isFieldReadOnly(field.name);
-          const fieldGroup = createFieldGroup(field);
-          (index < midpoint ? firstColumn : secondColumn).appendChild(fieldGroup);
-        });
-      }
-  
-      // Handle remaining fields
-      const imageCountInput = document.getElementById('popupImageCount');
-      if (imageCountInput) {
-        imageCountInput.value = product.ImageCount || '';
-        imageCountInput.setAttribute('readonly', 'readonly');
-      }
-  
-      const webCategoryInput = document.getElementById('popupWebCategory');
-      if (webCategoryInput) {
-        webCategoryInput.value = product.D_WebCategory || '';
-      }
-  
-      const extendedDescInput = document.getElementById('popupExtendedDescription');
-      if (extendedDescInput) {
-        extendedDescInput.value = product.extended_description || '';
-      }
-  
-      // Enhanced web status handling logic
-      const webStatusSelect = document.getElementById('popupWebStatus');
-      if (webStatusSelect) {
-        let isAvailable = false;
-  
-        // Use determineWebStatus function if available
-        if (typeof productTable !== 'undefined' && productTable.determineWebStatus) {
-          isAvailable = productTable.determineWebStatus(product);
-        } else {
-          // Fallback implementation
-          // Check for ECommerceStatus object with Value and Name properties
-          if (product.ECommerceSettings && product.ECommerceSettings.ECommerceStatus) {
-            const statusObj = product.ECommerceSettings.ECommerceStatus;
+
+      try {
+        console.group('Populating Edit Form - COMPREHENSIVE DIAGNOSTIC');
+        
+        // Validate input
+        if (!product) {
+          throw new Error('No product data provided');
+        }
+
+        // Log raw input data with enhanced detail
+        console.log('Full Product Data:', JSON.stringify(product, null, 2));
+        console.log('Product ID:', productId);
+        
+        // Comprehensive field mapping with multiple variations
+        const fieldMappings = {
+          'popupProductCode': ['Code', 'code', 'product_code'],
+          'popupProductId': ['ID', 'id', 'product_id'],
+          'popupProductName': ['Description', 'description', 'product_name'],
+          'popupImageCount': ['ImageCount', 'image_count', 'imageCount'],
+          'popupWebCategory': ['D_WebCategory', 'web_category', 'WebCategory'],
+          'popupExtendedDescription': [
+            'ECommerceSettings.ExtendedDescription', 
+            'extended_description', 
+            'ExtendedDescription'
+          ],
+          'popupWebStatus': [
+            'ECommerceSettings.ECommerceStatus.Name',
+            'web_status',
+            'WebStatus'
+          ]
+        };
+
+        // Enhanced value finder with extensive logging
+        function findValue(mappingKeys) {
+          console.log(`Searching for values with keys: ${mappingKeys.join(', ')}`);
+          
+          for (let key of mappingKeys) {
+            // Handle nested key notation
+            if (key.includes('.')) {
+              const keys = key.split('.');
+              let value = product;
+              
+              for (let nestedKey of keys) {
+                value = value?.[nestedKey];
+                if (value === undefined) break;
+              }
+              
+              if (value !== undefined) {
+                console.log(`Found nested value for ${key}:`, value);
+                return value;
+              }
+            }
             
-            // Check if it's the object format
-            if (typeof statusObj === 'object') {
-              isAvailable = statusObj.Value === 0 || statusObj.Name === 'Enabled';
-            } else {
-              // Handle string format
-              isAvailable = statusObj === 'Enabled';
+            // Direct key check
+            if (product[key] !== undefined) {
+              console.log(`Found direct value for ${key}:`, product[key]);
+              return product[key];
             }
           }
           
-          // Fallback checks if needed
-          if (!isAvailable && product.web_status !== undefined) {
-            isAvailable = product.web_status === 'Enabled' || 
-                         product.web_status === '0' || 
-                         product.web_status === 0;
-          }
-  
-          if (!isAvailable && product.WebStatus !== undefined) {
-            isAvailable = product.WebStatus === 'Enabled' || 
-                         product.WebStatus === '0' || 
-                         product.WebStatus === 0;
-          }
+          console.warn(`No value found for keys: ${mappingKeys.join(', ')}`);
+          return '';
         }
-  
-        console.log('Edit Form Web Status:', {
-          ECommerceSettings: product.ECommerceSettings,
-          statusObj: product.ECommerceSettings?.ECommerceStatus,
-          web_status: product.web_status,
-          WebStatus: product.WebStatus,
-          finalIsAvailable: isAvailable
+
+        // Populate known fields with comprehensive logging
+        Object.entries(fieldMappings).forEach(([elementId, keys]) => {
+          const element = document.getElementById(elementId);
+          
+          if (!element) {
+            logError(`Element not found: ${elementId}`, { 
+              expectedKeys: keys 
+            });
+            return;
+          }
+
+          const value = findValue(keys);
+          
+          console.log(`Populating ${elementId}:`, {
+            element: element,
+            keys: keys,
+            foundValue: value,
+            elementType: element.tagName
+          });
+
+          // Population logic with type-specific handling
+          if (element.tagName === 'INPUT' || element.tagName === 'TEXTAREA') {
+            element.value = value || '';
+          } else if (element.tagName === 'DIV' || element.tagName === 'SPAN') {
+            element.textContent = value || '';
+          } else if (element.tagName === 'SELECT') {
+            // Special handling for select elements
+            const optionValue = value?.Name || value || '';
+            element.value = optionValue;
+          }
+
+          // Read-only handling with enhanced logging
+          try {
+            const isReadOnly = isFieldReadOnly(elementId.replace('popup', ''));
+            
+            console.log(`Read-only check for ${elementId}:`, {
+              fieldName: elementId.replace('popup', ''),
+              isReadOnly: isReadOnly
+            });
+
+            if (isReadOnly) {
+              element.setAttribute('readonly', 'readonly');
+              element.classList.add('read-only');
+            }
+          } catch (readOnlyError) {
+            logError(`Error checking read-only status for ${elementId}`, {
+              error: readOnlyError.message
+            });
+          }
         });
-  
-        // Set the select value based on availability
-        webStatusSelect.value = isAvailable ? 'Available' : 'Not Available';
+
+        // Dynamic D_ fields population with improved error handling
+        try {
+          const dynamicFieldNames = Object.keys(product)
+            .filter(key => key.startsWith('D_'))
+            .map(key => ({
+              name: key,
+              value: product[key]
+            }));
+
+          console.log('Dynamic Fields Found:', dynamicFieldNames);
+
+          const firstColumn = document.getElementById('popupFirstColumn');
+          const secondColumn = document.getElementById('popupSecondColumn');
+
+          if (!firstColumn || !secondColumn) {
+            throw new Error('Dynamic field columns not found');
+          }
+
+          firstColumn.innerHTML = '';
+          secondColumn.innerHTML = '';
+
+          dynamicFieldNames.forEach((field, index) => {
+            try {
+              const fieldGroup = createFieldGroup({
+                name: field.name,
+                label: field.name.replace('D_', '').replace(/([A-Z])/g, ' $1').trim(),
+                value: field.value,
+                readonly: isFieldReadOnly(field.name)
+              });
+
+              // Alternate between columns
+              const targetColumn = index % 2 === 0 ? firstColumn : secondColumn;
+              targetColumn.appendChild(fieldGroup);
+            } catch (fieldGroupError) {
+              logError(`Error creating field group for ${field.name}`, {
+                error: fieldGroupError.message
+              });
+            }
+          });
+        } catch (dynamicFieldError) {
+          logError('Error processing dynamic fields', {
+            error: dynamicFieldError.message
+          });
+        }
+
+        // Web status handling with comprehensive error management
+        try {
+          const webStatusSelect = document.getElementById('popupWebStatus');
+          if (webStatusSelect) {
+            const statusObj = product.ECommerceSettings?.ECommerceStatus;
+            const isAvailable = statusObj?.Value === 0 || statusObj?.Name === 'Enabled';
+            
+            console.log('Web Status Detection:', {
+              statusObject: statusObj,
+              isAvailable: isAvailable
+            });
+
+            webStatusSelect.value = isAvailable ? 'Available' : 'Not Available';
+          }
+        } catch (webStatusError) {
+          logError('Error processing web status', {
+            error: webStatusError.message
+          });
+        }
+
+        console.groupEnd();
+
+        // Remove onbeforeunload to allow normal navigation
+        window.onbeforeunload = null;
+      } catch (criticalError) {
+        logError('Critical Error in Edit Form Population', {
+          error: criticalError.message,
+          stack: criticalError.stack
+        });
+
+        // Prevent automatic page reload to allow error inspection
+        window.onbeforeunload = function() {
+          return "Error occurred during form population";
+        };
       }
     }
   
@@ -568,188 +667,133 @@ const productEdit = (function() {
       return group;
     }
   
-    /**
-     * Handle form submission
-     * @param {Event} event - Submit event
-     */
-    async function submitProductEdit(event) {
-      event.preventDefault();
-     
-      const form = event.target;
-      const submitButton = form.querySelector('button[type="submit"]');
-      const cancelButton = form.querySelector('.cancel');
-      const productId = form.querySelector('#popupProductId')?.value;
-      const webStatusSelect = form.querySelector('#popupWebStatus');
-  
-      if (!productId) {
-        console.error('Product ID not found');
-        if (typeof utils !== 'undefined' && utils.showErrorMessage) {
-          utils.showErrorMessage('Error: Product ID not found');
-        } else {
-          alert('Error: Product ID not found');
-        }
-        return;
-      }
-  
-      // Disable buttons during update to prevent multiple submissions
-      submitButton.disabled = true;
-      submitButton.textContent = 'Saving...';
-      if (cancelButton) cancelButton.disabled = true;
-  
-      try {
-        // Create a clean payload object to ensure precise data transmission
-        const updatedFields = {};
-  
-        // Manually add form fields to prevent unexpected transformations
-        const formData = new FormData(form);
-        for (let [key, value] of formData.entries()) {
-          // Skip empty strings and the problematic web_status field
-          if (value !== "" && key !== 'web_status') {
-            updatedFields[key] = String(value).trim();
-          }
-        }
-  
-        // Explicitly add product ID
-        updatedFields.product_id = productId;
-  
-        // Carefully handle web status update:
-        // Map UI value ("Available") to "0" (available on web) and others to "1"
-        if (webStatusSelect) {
-          const rawStatus = webStatusSelect.value;
-          const normalizedStatus = rawStatus === 'Available' ? '0' : '1';
-          
-          // Enhanced payload construction
-          updatedFields.ECommerceSettings = {
-            ECommerceStatus: {
-              Value: parseInt(normalizedStatus),
-              Name: normalizedStatus === '0' ? 'Enabled' : 'Disabled',
-              isAvailable: normalizedStatus === '0'
-            },
-            // Preserve any existing extended description
-            ...(updatedFields.ECommerceSettings || {})
-          };
-  
-          console.log('Detailed Web Status Update', {
-            rawInput: rawStatus,
-            normalizedStatus,
-            fullPayload: JSON.stringify(updatedFields, null, 2)
-          });
-        }
-  
-        // Use API module if available
-        if (typeof api !== 'undefined' && api.submitProductEdit) {
-          const result = await api.submitProductEdit(updatedFields);
-          
-          // Update the UI with the updated product
-          if (result.success && result.product) {
-            if (typeof productTable !== 'undefined' && productTable.updateTableRow) {
-              await productTable.updateTableRow(productId, result.product);
-            } else if (window.updateTableRow) {
-              await window.updateTableRow(productId, result.product);
-            }
-            
-            if (typeof utils !== 'undefined' && utils.showSuccessPopup) {
-              utils.showSuccessPopup('Product updated successfully');
-            } else {
-              window.showSuccessPopup && window.showSuccessPopup('Product updated successfully');
-            }
-            
-            closeEditForm();
-          } else {
-            throw new Error(result.message || 'Unknown error occurred');
-          }
-        } else {
-          // Fallback to direct fetch
-          console.log('Sending update request with payload:', {
-            payloadKeys: Object.keys(updatedFields),
-            fullPayload: JSON.stringify(updatedFields, null, 2),
-            payloadTypes: Object.keys(updatedFields).reduce((acc, key) => {
-              acc[key] = typeof updatedFields[key];
-              return acc;
-            }, {})
-          });
-          
-          const updateResponse = await fetch(`/product/${productId}/update`, {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-              'Accept': 'application/json'
-            },
-            body: JSON.stringify(updatedFields)
-          });
-  
-          const responseText = await updateResponse.text();
-          
-          let responseData;
-          try {
-            responseData = JSON.parse(responseText);
-          } catch (parseError) {
-            console.error('Response parsing error:', { 
-              error: parseError, 
-              rawText: responseText 
-            });
-            throw new Error('Invalid response format from server');
-          }
-  
-          if (!updateResponse.ok) {
-            const errorDetails = responseData?.error || responseText || 'Unspecified server error';
-            throw new Error(errorDetails);
-          }
-  
-          // Check for successful update message
-          const successMessages = [
-            "Product updated successfully", 
-            "Ok", 
-            "Success"
-          ];
-  
-          if (successMessages.some(msg => responseData.message?.includes(msg))) {
-            // Fetch updated product data
-            const detailsResponse = await fetch(`/product/${productId}/edit`);
-            
-            if (!detailsResponse.ok) {
-              throw new Error(`Failed to fetch updated details: ${detailsResponse.statusText}`);
-            }
-  
-            const data = await detailsResponse.json();
-  
-            if (!data?.product) {
-              throw new Error('Invalid or missing product data in response');
-            }
-  
-            // Update the table row
-            if (typeof productTable !== 'undefined' && productTable.updateTableRow) {
-              await productTable.updateTableRow(productId, data.product);
-            } else if (window.updateTableRow) {
-              await window.updateTableRow(productId, data.product);
-            }
-            
-            if (typeof utils !== 'undefined' && utils.showSuccessPopup) {
-              utils.showSuccessPopup('Product updated successfully');
-            } else {
-              window.showSuccessPopup && window.showSuccessPopup('Product updated successfully');
-            }
-            
-            closeEditForm();
-          } else {
-            throw new Error('Unexpected server response');
-          }
-        }
-      } catch (error) {
-        console.error('Product Update Error:', error);
+/**
+ * Handle form submission
+ * @param {Event} event - Submit event
+ */
+async function submitProductEdit(event) {
+  event.preventDefault();
+  console.log("Submit product edit called");
+ 
+  const form = event.target;
+  const submitButton = form.querySelector('button[type="submit"]');
+  const cancelButton = form.querySelector('.btn-cancel, .cancel');
+  const productId = form.querySelector('#popupProductId')?.value || 
+                   form.querySelector('#editProductId')?.value;
+                    
+  const webStatusSelect = form.querySelector('#popupWebStatus') || 
+                          form.querySelector('#webStatus');
+                          
+  const extendedDescInput = form.querySelector('#popupExtendedDescription') || 
+                            form.querySelector('#extendedDescription');
+
+  console.log("Form elements:", {
+    form: form.id,
+    productId,
+    webStatusSelect: webStatusSelect ? webStatusSelect.value : 'not found',
+    extendedDesc: extendedDescInput ? 'found' : 'not found'
+  });
+
+  if (!productId) {
+    console.error('Product ID not found');
+    utils.showErrorMessage('Error: Product ID not found');
+    return;
+  }
+
+  // Disable buttons during update to prevent multiple submissions
+  if (submitButton) submitButton.disabled = true;
+  if (submitButton) submitButton.textContent = 'Saving...';
+  if (cancelButton) cancelButton.disabled = true;
+
+  try {
+    // Create a clean payload object to ensure precise data transmission
+    const updatedFields = {
+      product_id: productId,
+      // Initialize the ECommerceSettings structure
+      ECommerceSettings: {}
+    };
+
+    // Handle web status update - use the string enum value, not a number
+    if (webStatusSelect) {
+      const rawStatus = webStatusSelect.value;
+      // Convert UI value to the enum string expected by the API
+      const statusEnumValue = rawStatus === 'Available' ? "Enabled" : "Disabled";
+      
+      console.log(`Web status selected: ${rawStatus} (will be converted to: ${statusEnumValue})`);
+      
+      // Use string enum value for ECommerceStatus
+      updatedFields.ECommerceSettings.ECommerceStatus = statusEnumValue;
+    }
+
+    // Handle extended description
+    if (extendedDescInput) {
+      console.log(`Extended description: ${extendedDescInput.value.substring(0, 50)}${extendedDescInput.value.length > 50 ? '...' : ''}`);
+      updatedFields.ECommerceSettings.ExtendedDescription = extendedDescInput.value;
+    }
+
+    // Process other fields from the form
+    const formData = new FormData(form);
+    for (let [key, value] of formData.entries()) {
+      // Skip fields we handled specially and empty strings
+      if (value !== "" && 
+          key !== 'web_status' && 
+          key !== 'extended_description' &&
+          key !== 'product_id' &&
+          !key.startsWith('ECommerceSettings.')) {
         
-        if (typeof utils !== 'undefined' && utils.showErrorMessage) {
-          utils.showErrorMessage(`Update failed: ${error.message}`);
-        } else {
-          alert(`Update failed: ${error.message}`);
+        // Check if this is a "D_" field (product attribute)
+        if (key.startsWith('D_')) {
+          console.log(`Adding field ${key}: ${value}`);
+          updatedFields[key] = String(value).trim();
         }
-      } finally {
-        // Re-enable buttons
-        submitButton.disabled = false;
-        submitButton.textContent = 'Save Changes';
-        if (cancelButton) cancelButton.disabled = false;
       }
     }
+
+    console.log("Final API payload:", JSON.stringify(updatedFields, null, 2));
+
+    // Make a direct fetch call to ensure the request is made
+    const response = await fetch(`/product/${productId}/update`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: JSON.stringify(updatedFields)
+    });
+
+    console.log("API response status:", response.status);
+    
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error("API error response:", errorData);
+      throw new Error(errorData.error || `Server returned ${response.status}`);
+    }
+    
+    const result = await response.json();
+    console.log("API response data:", result);
+    
+    if (result.error) {
+      throw new Error(result.error);
+    }
+    
+    utils.showSuccessPopup('Product updated successfully');
+    closeEditForm();
+    
+    // Optionally refresh the page to show changes
+    setTimeout(() => {
+      window.location.reload();
+    }, 1000);
+    
+  } catch (error) {
+    console.error('Product Update Error:', error);
+    utils.showErrorMessage(`Update failed: ${error.message}`);
+  } finally {
+    // Re-enable buttons
+    if (submitButton) submitButton.disabled = false;
+    if (submitButton) submitButton.textContent = 'Save Changes';
+    if (cancelButton) cancelButton.disabled = false;
+  }
+}
     
     /**
      * Initialize module
@@ -768,11 +812,24 @@ const productEdit = (function() {
       openEditForm,
       closeEditForm,
       fetchProductDetails,
-      submitProductEdit
+      submitProductEdit,
+      handleEditButtonClick
     };
   })();
   
-  // Export the productEdit module (if module system is available)
-  if (typeof module !== 'undefined' && module.exports) {
-    module.exports = productEdit;
-  }
+// Make all key functions available globally for backward compatibility
+window.submitProductEdit = productEdit.submitProductEdit;
+window.closeEditForm = productEdit.closeEditForm;
+window.openEditForm = productEdit.openEditForm;
+window.fetchProductDetails = productEdit.fetchProductDetails;
+window.handleEditButtonClick = productEdit.handleEditButtonClick;
+
+// Initialize on DOM content loaded
+document.addEventListener('DOMContentLoaded', () => {
+  productEdit.init();
+});
+
+// Export the productEdit module (if CommonJS module system is available)
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { productEdit };
+}

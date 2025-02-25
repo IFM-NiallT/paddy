@@ -7,14 +7,12 @@
  * - renderPagination() - Renders pagination controls
  */
 
+import { utils } from '../core/utils.js';
+import { api } from '../core/api.js';
+
 // Create a namespace for pagination functionality
-const productPagination = (function() {
+export const productPagination = (function() {
     'use strict';
-    
-    // Check for required dependencies
-    if (typeof utils === 'undefined') {
-      console.error('Required dependency missing: utils');
-    }
     
     /**
      * Update pagination information and controls
@@ -73,47 +71,19 @@ const productPagination = (function() {
         urlParams.set('page', page);
         const newUrl = `${window.location.pathname}?${urlParams.toString()}`;
         
-        // Use API module if available
-        let data;
-        if (typeof api !== 'undefined' && api.fetchSortedData) {
-          data = await api.fetchSortedData(newUrl);
-        } else {
-          // Fallback to direct fetch
-          const response = await fetch(newUrl, {
-            headers: {
-              'Accept': 'application/json',
-              'X-Requested-With': 'XMLHttpRequest'
-            }
-          });
-          
-          // Check response type before parsing
-          const contentType = response.headers.get('content-type');
-          if (!contentType || !contentType.includes('application/json')) {
-            const text = await response.text();
-            console.error('Non-JSON response:', text);
-            throw new Error('Received non-JSON response');
-          }
-          
-          data = await response.json();
-        }
+        // Use API module
+        let data = await api.fetchSortedData(newUrl);
         
         // Update browser history
         window.history.pushState({}, '', newUrl);
         
         // Update table with new data
-        if (typeof productTable !== 'undefined' && productTable.updateTableWithResults) {
-          productTable.updateTableWithResults(data);
-        } else if (window.updateTableWithResults) {
+        if (typeof window.updateTableWithResults === 'function') {
           window.updateTableWithResults(data);
         }
       } catch (error) {
         console.error('Error changing page:', error);
-        
-        if (typeof utils !== 'undefined' && utils.showErrorMessage) {
-          utils.showErrorMessage(`Failed to change page: ${error.message}`);
-        } else {
-          alert(`Failed to change page: ${error.message}`);
-        }
+        utils.showErrorMessage(`Failed to change page: ${error.message}`);
       } finally {
         // Remove loading indicator
         if (tableBody) {
@@ -195,6 +165,21 @@ const productPagination = (function() {
     }
     
     /**
+     * Get current category ID from URL
+     * @returns {string} - Category ID
+     */
+    function getCategoryId() {
+      const pathParts = window.location.pathname.split('/');
+      const categoryIndex = pathParts.indexOf('products') + 1;
+      
+      if (categoryIndex > 0 && categoryIndex < pathParts.length) {
+        return pathParts[categoryIndex];
+      }
+      
+      return 'default';
+    }
+    
+    /**
      * Initialize pagination
      */
     function init() {
@@ -203,6 +188,8 @@ const productPagination = (function() {
       if (paginationData) {
         updatePaginationInfo(paginationData);
       }
+      
+      console.log('Product pagination initialized');
     }
     
     // Return public methods
@@ -210,11 +197,20 @@ const productPagination = (function() {
       init,
       updatePaginationInfo,
       handlePageChange,
-      renderPagination
+      renderPagination,
+      getCategoryId
     };
   })();
   
-  // Export the productPagination module (if module system is available)
-  if (typeof module !== 'undefined' && module.exports) {
-    module.exports = productPagination;
-  }
+// Expose functions globally for backward compatibility
+window.updatePaginationInfo = productPagination.updatePaginationInfo;
+window.handlePageChange = productPagination.handlePageChange;
+window.renderPagination = productPagination.renderPagination;
+
+// Initialize on DOM content loaded
+document.addEventListener('DOMContentLoaded', productPagination.init);
+
+// Export the module if CommonJS module system is available
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { productPagination };
+}

@@ -10,14 +10,15 @@
  * - determineWebStatus() - Determines product web status
  */
 
+import { utils } from '../core/utils.js';
+import { api } from '../core/api.js';
+import { productEdit } from './edit.js';
+import { productPagination } from './pagination.js';
+import { productInit } from './init.js';
+
 // Create a namespace for table functionality
-const productTable = (function() {
+export const productTable = (function() {
     'use strict';
-    
-    // Check for required dependencies
-    if (typeof utils === 'undefined') {
-      console.error('Required dependency missing: utils');
-    }
     
     /**
      * Get the number of columns in the products table
@@ -229,10 +230,14 @@ const productTable = (function() {
      
       // Add event listener directly here to ensure it's always attached
       const editBtn = row.querySelector('.edit-product-btn');
-      if (editBtn && typeof productEdit !== 'undefined') {
+      if (editBtn) {
         editBtn.addEventListener('click', (event) => {
           event.stopPropagation();
-          productEdit.fetchProductDetails(product.ID);
+          if (productEdit) {
+            productEdit.fetchProductDetails(product.ID);
+          } else if (window.fetchProductDetails) {
+            window.fetchProductDetails(product.ID);
+          }
         });
       }
      
@@ -287,13 +292,17 @@ const productTable = (function() {
       });
      
       // Update pagination
-      if (typeof productPagination !== 'undefined') {
+      if (productPagination) {
         productPagination.updatePaginationInfo(data);
+      } else if (window.updatePaginationInfo) {
+        window.updatePaginationInfo(data);
       }
       
       // Re-initialize edit buttons
-      if (typeof productEdit !== 'undefined') {
+      if (productEdit) {
         productEdit.initEditButtons();
+      } else if (window.initEditButtons) {
+        window.initEditButtons();
       }
     }
     
@@ -451,7 +460,7 @@ const productTable = (function() {
       });
   
       // Try to reinitialize table handlers
-      if (typeof productInit !== 'undefined' && productInit.reinitializeTableHandlers) {
+      if (productInit && productInit.reinitializeTableHandlers) {
         productInit.reinitializeTableHandlers();
       } else if (window.reinitializeTableHandlers) {
         window.reinitializeTableHandlers();
@@ -460,8 +469,17 @@ const productTable = (function() {
       console.log('Row update completed for product:', productId);
     }
     
+    /**
+     * Initialize the module
+     */
+    function init() {
+      console.log('Product table functionality initialized');
+      // Nothing to initialize at this point
+    }
+    
     // Return public methods
     return {
+      init,
       getColumnCount,
       createProductRow,
       updateTableWithResults,
@@ -470,8 +488,17 @@ const productTable = (function() {
       determineWebStatus
     };
   })();
+
+// Expose functions globally for backward compatibility
+window.updateTableWithResults = productTable.updateTableWithResults;
+window.updateTableRow = productTable.updateTableRow;
+window.determineWebStatus = productTable.determineWebStatus;
+window.getColumnCount = productTable.getColumnCount;
+
+// Initialize on DOM content loaded
+document.addEventListener('DOMContentLoaded', productTable.init);
   
-  // Export the productTable module (if module system is available)
-  if (typeof module !== 'undefined' && module.exports) {
-    module.exports = productTable;
-  }
+// Export the productTable module (if CommonJS module system is available)
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { productTable };
+}

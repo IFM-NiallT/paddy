@@ -7,31 +7,15 @@
  * - loadColumnWidths() - Loads column widths from localStorage
  */
 
+import { utils } from '../core/utils.js';
+
 // Create a namespace for column functionality
-const productColumns = (function() {
+export const productColumns = (function() {
     'use strict';
     
     // Private variables
     const STORAGE_KEY = 'paddyTableColumnWidths';
     let isResizing = false;
-    
-    /**
-     * Debounce function (simplistic version if utils not available)
-     * @param {Function} func - Function to debounce
-     * @param {number} wait - Milliseconds to wait
-     * @returns {Function} - Debounced function
-     */
-    function debounce(func, wait = 300) {
-      if (typeof utils !== 'undefined' && utils.debounce) {
-        return utils.debounce(func, wait);
-      }
-      
-      let timeout;
-      return function(...args) {
-        clearTimeout(timeout);
-        timeout = setTimeout(() => func.apply(this, args), wait);
-      };
-    }
     
     /**
      * Initialize column resizers
@@ -118,7 +102,7 @@ const productColumns = (function() {
       setupResizers();
       
       // Handle window resize event
-      window.addEventListener('resize', debounce(setupResizers, 250));
+      window.addEventListener('resize', utils.debounce(setupResizers, 250));
       
       // Ensure resizers don't trigger table header sorting
       const resizers = table.querySelectorAll('.resizer');
@@ -306,7 +290,17 @@ const productColumns = (function() {
     };
   })();
   
-  // Export the productColumns module (if module system is available)
-  if (typeof module !== 'undefined' && module.exports) {
-    module.exports = productColumns;
-  }
+// Expose productColumns globally for backward compatibility  
+window.productColumns = productColumns;
+window.initColumnResizers = productColumns.initColumnResizers;
+window.saveColumnWidths = productColumns.saveColumnWidths;
+window.loadColumnWidths = productColumns.loadColumnWidths;
+window.resetColumnWidths = productColumns.resetColumnWidths;
+
+// Initialize on DOM content loaded
+document.addEventListener('DOMContentLoaded', productColumns.init);
+
+// Export the module if CommonJS module system is available
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { productColumns };
+}

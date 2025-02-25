@@ -23,10 +23,8 @@ providing a clean, user-friendly interface for product management.
 Author: Luke Doyle - 2025 Intern
 """
 
-import platform
 from flask import Flask, render_template, request, jsonify
 import re
-from datetime import datetime
 from typing import Dict, List, Tuple, Union, Any, Optional
 from app.config import Config
 from app.api_client import APIClient
@@ -464,44 +462,80 @@ class PaddyApp:
             
             logger.info(
                 "Processing product update request",
-                extra={'product_id': product_id}
+                extra={'product_id': product_id, 'request_data': str(update_data)}
             )
 
             if not update_data:
                 logger.warning("Empty update request received")
                 return jsonify({'error': 'No update data provided'}), 400
 
-            # Prepare update payload
+            # Prepare update payload - start with a clean object
             update_payload = {}
             
-            # Get current product data for proper nested field handling
-            current_product = self.api_client._make_request(f"Products/{product_id}")
-            ecommerce_settings_update = current_product.get('ECommerceSettings', {}).copy()
-            
-            # Handle web status field explicitly
-            ecommerce_status_key = 'ECommerceSettings.ECommerceStatus'
-            if ecommerce_status_key in update_data:
-                web_status_value = update_data[ecommerce_status_key]
-                status_value = self._normalize_ecommerce_status(web_status_value)
+            # Copy ECommerceSettings if provided
+            if 'ECommerceSettings' in update_data:
+                ecommerce_settings = update_data['ECommerceSettings']
+                # Make a deep copy to avoid reference issues
+                update_payload['ECommerceSettings'] = {}
                 
-                # Update the ECommerceSettings while preserving other fields
-                ecommerce_settings_update['ECommerceStatus'] = status_value
-                update_payload['ECommerceSettings'] = ecommerce_settings_update
-            
-            # Handle previous web status field for backward compatibility
-            elif 'web_status' in update_data:
-                web_status = update_data['web_status']
-                status_value = self._normalize_ecommerce_status(web_status)
+                # Handle ECommerceStatus as enum string (not numeric)
+                if 'ECommerceStatus' in ecommerce_settings:
+                    status_data = ecommerce_settings['ECommerceStatus']
+                    
+                    # Convert to the enum string format expected by the API
+                    if isinstance(status_data, (int, float)):
+                        # Convert numeric values to string enum
+                        status_value = int(float(status_data))
+                        update_payload['ECommerceSettings']['ECommerceStatus'] = 'Enabled' if status_value == 0 else 'Disabled'
+                    elif isinstance(status_data, str):
+                        # Map UI strings to API enum strings
+                        if status_data.lower() == 'available':
+                            update_payload['ECommerceSettings']['ECommerceStatus'] = 'Enabled'
+                        elif status_data.lower() == 'not available':
+                            update_payload['ECommerceSettings']['ECommerceStatus'] = 'Disabled'
+                        else:
+                            # May already be in correct format
+                            update_payload['ECommerceSettings']['ECommerceStatus'] = status_data
+                    else:
+                        # Use the _normalize_ecommerce_status method but convert to string
+                        status_value = self._normalize_ecommerce_status(status_data)
+                        update_payload['ECommerceSettings']['ECommerceStatus'] = 'Enabled' if status_value == 0 else 'Disabled'
                 
-                ecommerce_settings_update['ECommerceStatus'] = status_value
-                update_payload['ECommerceSettings'] = ecommerce_settings_update
+                # Handle ExtendedDescription
+                if 'ExtendedDescription' in ecommerce_settings:
+                    update_payload['ECommerceSettings']['ExtendedDescription'] = ecommerce_settings['ExtendedDescription']
+            else:
+                # If ECommerceSettings is not provided directly, we need to build it
+                ecommerce_settings = {}
+                
+                # Handle web status through various possible field names
+                for status_key in ['web_status', 'ECommerceSettings.ECommerceStatus']:
+                    if status_key in update_data:
+                        web_status_value = update_data[status_key]
+                        
+                        # Convert to string enum value
+                        if isinstance(web_status_value, str):
+                            if web_status_value.lower() == 'available':
+                                ecommerce_settings['ECommerceStatus'] = 'Enabled'
+                            elif web_status_value.lower() == 'not available':
+                                ecommerce_settings['ECommerceStatus'] = 'Disabled'
+                            else:
+                                # Try to normalize if it's not in the expected format
+                                status_value = self._normalize_ecommerce_status(web_status_value)
+                                ecommerce_settings['ECommerceStatus'] = 'Enabled' if status_value == 0 else 'Disabled'
+                        else:
+                            # Use the normalize method but convert to string
+                            status_value = self._normalize_ecommerce_status(web_status_value)
+                            ecommerce_settings['ECommerceStatus'] = 'Enabled' if status_value == 0 else 'Disabled'
+                
+                # Handle extended description
+                if 'extended_description' in update_data:
+                    ecommerce_settings['ExtendedDescription'] = update_data['extended_description']
+                    
+                # Only add ECommerceSettings if we have values to update
+                if ecommerce_settings:
+                    update_payload['ECommerceSettings'] = ecommerce_settings
             
-            # Handle extended description field
-            if 'extended_description' in update_data:
-                if 'ECommerceSettings' not in update_payload:
-                    update_payload['ECommerceSettings'] = ecommerce_settings_update
-                update_payload['ECommerceSettings']['ExtendedDescription'] = update_data['extended_description']
-
             # Handle dynamic fields
             allowed_fields = [
                 "D_Classification", "D_ThreadGender", "D_SizeA", "D_SizeB",
@@ -514,39 +548,38 @@ class PaddyApp:
                 if key in allowed_fields:
                     update_payload[key] = value
 
+            # Log the final payload
+            logger.info(
+                "Final update payload",
+                extra={'product_id': product_id, 'payload': str(update_payload)}
+            )
+
             # Use the API client to update the product
             response = self.api_client.update_product(product_id, update_payload)
+            
+            logger.info(
+                "API client update response",
+                extra={'product_id': product_id, 'response': response}
+            )
             
             if response == "Product updated successfully":
                 # Fetch the updated product to verify changes
                 updated_product = self.api_client._make_request(f"Products/{product_id}")
-                current_status = self._normalize_ecommerce_status(
-                    updated_product.get('ECommerceSettings', {}).get('ECommerceStatus')
+                current_status = self._extract_ecommerce_status(updated_product)
+                
+                logger.info(
+                    "Product updated successfully",
+                    extra={
+                        'product_id': product_id, 
+                        'ecommerce_status': current_status
+                    }
                 )
-                
-                # Verify the status was updated correctly
-                expected_status = status_value if 'status_value' in locals() else None
-                if expected_status is not None and expected_status != current_status:
-                    logger.warning(
-                        "Status update verification failed",
-                        extra={
-                            'expected_status': expected_status,
-                            'current_status': current_status,
-                            'product_id': product_id
-                        }
-                    )
-                    return jsonify({
-                        'error': 'Status update verification failed',
-                        'current_status': current_status,
-                        'is_available': current_status == 0
-                    }), 500
-                
-                logger.info("Product updated successfully")
                 
                 return jsonify({
                     'message': response,
                     'current_status': current_status,
-                    'is_available': current_status == 0
+                    'is_available': current_status == 0,
+                    'product': updated_product
                 }), 200
             else:
                 logger.error(
@@ -558,10 +591,35 @@ class PaddyApp:
         except Exception as e:
             logger.error(
                 "Error in update product route",
-                extra={'product_id': product_id, 'error_type': type(e).__name__},
+                extra={'product_id': product_id, 'error_type': type(e).__name__, 'error_message': str(e)},
                 exc_info=True
             )
             return jsonify({'error': f"Error updating product: {str(e)}"}), 500
+
+    def _extract_ecommerce_status(self, product: Dict[str, Any]) -> int:
+        """
+        Extract the normalized ECommerceStatus value from a product object.
+        
+        Args:
+            product (Dict[str, Any]): Product data
+            
+        Returns:
+            int: Normalized status (0 for Available, 1 for Not Available)
+        """
+        try:
+            if product and 'ECommerceSettings' in product:
+                settings = product['ECommerceSettings']
+                if 'ECommerceStatus' in settings:
+                    status = settings['ECommerceStatus']
+                    if isinstance(status, dict) and 'Value' in status:
+                        return int(status['Value'])
+                    elif isinstance(status, (str, int)):
+                        return self._normalize_ecommerce_status(status)
+        except Exception:
+            pass
+        
+        # Default to Not Available (1) if we can't determine status
+        return 1
 
     def _normalize_ecommerce_status(self, status) -> int:
         """

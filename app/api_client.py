@@ -318,24 +318,85 @@ class APIClient:
             # Create a copy of the update payload
             final_payload = update_payload.copy()
             
-            # Transform ECommerceStatus to the expected format
+            # Log the incoming payload for debugging
+            logger.info(
+                "Processing product update",
+                extra={'product_id': product_id, 'payload': str(final_payload)}
+            )
+            
+            # Handle ECommerceSettings properly
             if 'ECommerceSettings' in final_payload:
                 settings = final_payload['ECommerceSettings']
+                
+                # Handle ECommerceStatus 
                 if 'ECommerceStatus' in settings:
-                    status_value = int(settings['ECommerceStatus'])
-                    final_payload['ECommerceSettings']['ECommerceStatus'] = {
-                        'Value': status_value,
-                        'Name': 'Disabled' if status_value == 1 else 'Enabled',
-                        'isAvailable': status_value == 0
-                    }
+                    status_data = settings['ECommerceStatus']
+                    
+                    # Log detailed info about the status data
+                    logger.info(
+                        "Processing ECommerceStatus",
+                        extra={
+                            'status_data': str(status_data),
+                            'status_type': type(status_data).__name__
+                        }
+                    )
+                    
+                    # If it's an object with Value, convert to string enum
+                    if isinstance(status_data, dict) and 'Value' in status_data:
+                        status_value = int(status_data['Value'])
+                        # Convert to string enum value expected by the API
+                        final_payload['ECommerceSettings']['ECommerceStatus'] = "Enabled" if status_value == 0 else "Disabled"
+                        logger.info(
+                            "Converted ECommerceStatus from object to enum string",
+                            extra={'final_status': final_payload['ECommerceSettings']['ECommerceStatus']}
+                        )
+                    elif isinstance(status_data, (int, float)):
+                        # Convert numeric to string enum value
+                        status_value = int(float(status_data))
+                        final_payload['ECommerceSettings']['ECommerceStatus'] = "Enabled" if status_value == 0 else "Disabled"
+                        logger.info(
+                            "Converted numeric ECommerceStatus to enum string",
+                            extra={'original': status_data, 'final': final_payload['ECommerceSettings']['ECommerceStatus']}
+                        )
+                    elif isinstance(status_data, str):
+                        # If it's already a string, normalize to expected values
+                        if status_data.lower() in ['0', 'enabled', 'available', 'true']:
+                            final_payload['ECommerceSettings']['ECommerceStatus'] = "Enabled"
+                        elif status_data.lower() in ['1', 'disabled', 'not available', 'false']:
+                            final_payload['ECommerceSettings']['ECommerceStatus'] = "Disabled"
+                        else:
+                            # If it doesn't match expected values, use as is (might already be correct)
+                            final_payload['ECommerceSettings']['ECommerceStatus'] = status_data
+                        
+                        logger.info(
+                            "Normalized string ECommerceStatus",
+                            extra={'original': status_data, 'final': final_payload['ECommerceSettings']['ECommerceStatus']}
+                        )
 
-            logger.info("Updating product")
+            # Log the final payload being sent to API
+            logger.info(
+                "Sending product update to API",
+                extra={
+                    'product_id': product_id, 
+                    'final_payload': str(final_payload)
+                }
+            )
 
             # Make the update request
             response = self._make_request(
                 endpoint,
                 method='PUT',
                 data=final_payload
+            )
+            
+            # Log the API response
+            logger.info(
+                "API response received",
+                extra={
+                    'product_id': product_id,
+                    'response_type': type(response).__name__,
+                    'response': str(response)
+                }
             )
 
             if isinstance(response, dict):
@@ -345,17 +406,41 @@ class APIClient:
                 if api_status == 'Processed':
                     # Get updated product to verify changes
                     updated_product = self._make_request(endpoint)
-                    logger.info("Product update processed")
+                    
+                    # Log the updated product for verification
+                    if 'ECommerceSettings' in updated_product:
+                        logger.info(
+                            "Updated product ECommerceSettings",
+                            extra={
+                                'product_id': product_id,
+                                'ecommerce_settings': str(updated_product.get('ECommerceSettings', {}))
+                            }
+                        )
+                    
+                    logger.info(
+                        "Product update processed successfully",
+                        extra={'product_id': product_id}
+                    )
                     return "Product updated successfully"
                 else:
-                    logger.warning("Product update failed")
+                    logger.warning(
+                        "Product update failed",
+                        extra={'product_id': product_id, 'api_message': api_message}
+                    )
                     return f"Failed to update product: {api_message}"
             else:
-                logger.warning("Unexpected API response format")
+                logger.warning(
+                    "Unexpected API response format",
+                    extra={'product_id': product_id, 'response_type': type(response).__name__}
+                )
                 return "Unexpected response format from API"
 
         except Exception as e:
-            logger.error("Product update error")
+            logger.error(
+                "Product update error",
+                extra={'product_id': product_id, 'error': str(e)},
+                exc_info=True
+            )
             return f"Error updating product: {str(e)}"
         
     def search_products_api(

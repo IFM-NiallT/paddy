@@ -3,57 +3,69 @@
  * Initializes all category page functionality
  */
 
-document.addEventListener("DOMContentLoaded", function () {
-    // Initialize Bootstrap modal
-    searchModal = new bootstrap.Modal(document.getElementById("searchProductsModal"));
+import { utils } from '../core/utils.js';
+import { events } from '../core/events.js';
+import { categorySearch } from './search.js';
+import { categorySort } from './sort.js';
 
-    // Initialize edit form handlers if products.js functions are available
-    if (typeof initEditFormHandlers === 'function') {
-        initEditFormHandlers();
+// Create a namespace for category initialization
+export const categoryInit = (function() {
+    'use strict';
+    
+    /**
+     * Initialize all category page functionality
+     */
+    function init() {
+        console.log('Initializing category page...');
+        
+        // Initialize Bootstrap modal
+        const searchModalElement = document.getElementById("searchProductsModal");
+        if (searchModalElement && window.bootstrap) {
+            window.searchModal = new bootstrap.Modal(searchModalElement);
+        }
+        
+        // Initialize search functionality
+        if (typeof categorySearch !== 'undefined') {
+            categorySearch.init();
+        }
+        
+        // Initialize sort functionality
+        if (typeof categorySort !== 'undefined') {
+            categorySort.init();
+        }
+        
+        // Initialize "Search All Products" button
+        const searchAllButton = document.getElementById("searchAllProducts");
+        if (searchAllButton && window.searchModal) {
+            searchAllButton.addEventListener("click", function() {
+                window.searchModal.show();
+                const modalSearchInput = document.getElementById("modalProductSearch");
+                if (modalSearchInput) {
+                    modalSearchInput.focus();
+                }
+            });
+        }
+        
+        // Initialize overlay handler if available
+        if (typeof events !== 'undefined' && events.initOverlayHandler) {
+            events.initOverlayHandler();
+        } else if (typeof window.initOverlayHandler === 'function') {
+            window.initOverlayHandler();
+        }
+        
+        console.log('Category page initialization complete');
     }
+    
+    // Return public methods
+    return {
+        init
+    };
+})();
 
-    const categorySearchInput = document.getElementById("categorySearch");
-    const modalSearchInput = document.getElementById("modalProductSearch");
-    const searchAllButton = document.getElementById("searchAllProducts");
-    const sortSelect = document.getElementById("sortSelect");
+// Initialize when DOM is ready
+document.addEventListener("DOMContentLoaded", categoryInit.init);
 
-    // Category search
-    if (categorySearchInput) {
-        categorySearchInput.addEventListener("input", debounce(searchCategories, 300));
-        categorySearchInput.addEventListener("keypress", function (e) {
-            if (e.key === "Enter") {
-                searchCategories();
-            }
-        });
-    }
-
-    // Modal product search
-    if (modalSearchInput) {
-        modalSearchInput.addEventListener("input", debounce(searchProductsModal, 300));
-        modalSearchInput.addEventListener("keypress", function (e) {
-            if (e.key === "Enter") {
-                searchProductsModal();
-            }
-        });
-    }
-
-    // Sort dropdown
-    if (sortSelect) {
-        sortSelect.addEventListener("change", function () {
-            sortCategories(this.value);
-        });
-    }
-
-    // Search all products button
-    if (searchAllButton) {
-        searchAllButton.addEventListener("click", function () {
-            searchModal.show();
-            modalSearchInput.focus();
-        });
-    }
-
-    // Initialize overlay handler if products.js function is available
-    if (typeof initOverlayHandler === 'function') {
-        initOverlayHandler();
-    }
-});
+// Export the module if CommonJS module system is available
+if (typeof module !== 'undefined' && module.exports) {
+    module.exports = { categoryInit };
+}

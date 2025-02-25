@@ -30,11 +30,13 @@
       </style>
     </noscript>
   </head>
+
 <body>
   <!-- Accessibility Message for No JavaScript -->
   <div class="no-js-message message-accessibility" style="display:none;">
     <p class="message-text">JavaScript is required for full functionality. Please enable JavaScript in your browser.</p>
   </div>
+  
   <header>
     <nav class="navbar navbar-expand-lg" aria-label="Main Navigation">
         <div class="container-fluid px-4">
@@ -58,7 +60,7 @@
             <div class="d-flex gap-2">
                 <button
                     class="btn-uni"
-                    onclick="exportTableToCSV()"
+                    id="exportCsvBtn"
                     aria-label="Export current table to CSV"
                 >
                     Export to CSV
@@ -74,23 +76,24 @@
         </div>
     </nav>
 </header>
+
 <main class="content-wrapper" id="main-content" role="main" tabindex="-1">
   <!-- Search Container -->
-<section class="search-container">
-  <div class="search-wrapper">
-    <label for="productSearch" class="visually-hidden">
-      Search products by code or description
-    </label>
-    <input 
-      type="search" 
-      class="search-input" 
-      id="productSearch" 
-      placeholder="Search products..."
-      aria-describedby="productSearchHelp"
-      autocomplete="off"
-    >
-  </div>
-</section>
+  <section class="search-container">
+    <div class="search-wrapper">
+      <label for="productSearch" class="visually-hidden">
+        Search products by code or description
+      </label>
+      <input 
+        type="search" 
+        class="search-input" 
+        id="productSearch" 
+        placeholder="Search products..."
+        aria-describedby="productSearchHelp"
+        autocomplete="off"
+      >
+    </div>
+  </section>
   
   <!-- Products Container -->
   <section class="table-container">
@@ -119,7 +122,7 @@
       </header>
 
       <!-- Table Content -->
-      <table class="table products-table">
+      <table class="table products-table" id="productsTable">
         <thead>
           <tr>
             <th class="{{ 'sort-column ' + ('asc' if current_sort == 'Code[asc]' else 'dsc' if current_sort == 'Code[dsc]' else '') }}">
@@ -171,8 +174,14 @@
             </td>
             <td>
               <button 
-                class="btn-uni" 
-                data-product-id="{{ product.ID }}" 
+                class="btn-uni edit-product-btn" 
+                data-product-id="{{ product.ID }}"
+                data-product-code="{{ product.Code }}"
+                data-product-name="{{ product.Description }}"
+                data-extended-description="{{ product.ExtendedDescription or '' }}"
+                data-image-count="{{ product.ImageCount|round|int if product.ImageCount is number else '' }}"
+                data-web-category="{{ product.WebCategory or '' }}"
+                data-web-status="{{ 'Available' if is_available else 'Not Available' }}"
                 aria-label="Edit product {{ product.Code }}"
               >
                 Edit
@@ -191,7 +200,68 @@
     </div>
   </section>
 
-  <!-- Edit Product Popup -->
+  <!-- Edit Product Modal -->
+  <div class="modal fade" id="editProductModal" tabindex="-1" role="dialog" aria-labelledby="editProductModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-lg" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="editProductModalLabel">Edit Product: <span id="editProductCode"></span></h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <form id="productEditForm">
+          <div class="modal-body">
+            <!-- Hidden input for product ID -->
+            <input type="hidden" name="product_id" id="editProductId">
+            
+            <!-- Error and Success Message Containers -->
+            <div id="form-errors" class="alert alert-danger" style="display:none;"></div>
+            <div id="form-success" class="alert alert-success" style="display:none;"></div>
+            
+            <!-- Dynamic Fields Container -->
+            <div class="row">
+              <div class="col-md-6">
+                <!-- Standard Fields -->
+                <div class="form-group">
+                  <label for="productName">Product Name</label>
+                  <input type="text" class="form-control" id="productName" name="name" readonly>
+                </div>
+                
+                <div class="form-group">
+                  <label for="extendedDescription">Extended Description</label>
+                  <textarea class="form-control" id="extendedDescription" name="extended_description" rows="3"></textarea>
+                </div>
+
+                <div class="form-group">
+                  <label for="webCategory">Web Category</label>
+                  <input type="text" class="form-control" id="webCategory" name="web_category">
+                </div>
+
+                <div class="form-group">
+                  <label for="webStatus">Web Status</label>
+                  <select class="form-control" id="webStatus" name="web_status">
+                    <option value="Available">Available</option>
+                    <option value="Not Available">Not Available</option>
+                  </select>
+                </div>
+              </div>
+              
+              <div class="col-md-6" id="dynamicFieldsContainer">
+                <!-- Dynamic fields will be populated here -->
+              </div>
+            </div>
+          </div>
+          <div class="modal-footer">
+            <button type="button" class="btn btn-secondary cancel" data-dismiss="modal">Cancel</button>
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <!-- Edit Product Popup (Alternative Version) -->
   <div class="modal-overlay" id="editFormOverlay"></div>
   <div class="modal" id="editProductForm" role="dialog" aria-labelledby="editFormTitle" aria-modal="true">
     <div class="modal-content">
@@ -199,17 +269,17 @@
         <h2 id="editFormTitle" class="modal-title">
           Edit Product: <span id="popupProductCode"></span>
         </h2>
-        <button type="button" class="close-button" onclick="closeEditForm()" aria-label="Close edit form">X</button>
+        <button type="button" class="close-button" aria-label="Close edit form">X</button>
       </div>
       
       <div class="modal-body">
-        <form id="editProductFormContainer">
+        <form id="productEditForm2">
           <input type="hidden" id="popupProductId" name="product_id">
           
-          <div id="errorContainer" class="alert alert-destructive" style="display: none;" role="alert">
+          <div id="form-errors" class="alert alert-destructive" style="display: none;" role="alert">
             <div class="alert-message"></div>
           </div>
-          <div id="successContainer" class="alert alert-success" style="display: none;" role="alert">
+          <div id="form-success" class="alert alert-success" style="display: none;" role="alert">
             <div class="alert-message"></div>
           </div>
           
@@ -220,7 +290,14 @@
               <div class="form-group">
                 <label for="popupProductName">Product Name</label>
                 <small id="productNameHelp" class="form-text">Display name (from product description)</small>
-                <div id="popupProductName" class="form-control readonly-input" aria-describedby="productNameHelp"></div>
+                <input 
+                  type="text" 
+                  id="popupProductName" 
+                  name="name" 
+                  class="form-control readonly-input" 
+                  readonly 
+                  aria-describedby="productNameHelp"
+                >
               </div>
               
               <!-- Extended Description -->
@@ -243,7 +320,7 @@
                 <input
                   type="text"
                   id="popupImageCount"
-                  name="ImageCount"
+                  name="image_count"
                   readonly
                   class="form-control readonly-input"
                   aria-describedby="imageCountHelp"
@@ -257,7 +334,7 @@
                 <input
                   type="text"
                   id="popupWebCategory"
-                  name="D_WebCategory"
+                  name="web_category"
                   class="form-control"
                   aria-describedby="webCategoryHelp"
                 >
@@ -294,7 +371,6 @@
         <button
           type="button"
           class="btn-cancel"
-          onclick="closeEditForm()"
           aria-label="Cancel edit"
         >
           Cancel
@@ -302,7 +378,7 @@
         <button
           type="submit"
           class="btn-submit"
-          form="editProductFormContainer"
+          form="productEditForm2"
           aria-label="Save product changes"
         >
           Save Changes
@@ -312,47 +388,103 @@
   </div>
 </main>
 
-  <!-- Footer -->
-  <footer class="site-footer" role="contentinfo">
-    <div class="footer-container">
-      <p class="footer-copyright">
-        PADDY &copy; 2025 - IFM
-      </p>
-      <p class="footer-tagline">
-        "Product Attribute Designer Deployment (for) You"
-      </p>
-      <p class="footer-version">
-        "v0.4"
-      </p>
-    </div>
-  </footer>
-
-  <!-- Success Popup -->
-  <div
-    id="successPopup"
-    class="popup popup-success"
-    role="alert"
-    aria-live="assertive"
-  >
-    <span
-      class="popup-icon"
-      aria-hidden="true"
-    >
-      ✓
-    </span>
-    <span class="popup-message">
-      Success!
-    </span>
+<!-- Footer -->
+<footer class="site-footer" role="contentinfo">
+  <div class="footer-container">
+    <p class="footer-copyright">
+      PADDY &copy; 2025 - IFM
+    </p>
+    <p class="footer-tagline">
+      "Product Attribute Designer Deployment (for) You"
+    </p>
+    <p class="footer-version">
+      "v0.4.1"
+    </p>
   </div>
+</footer>
 
-  <!-- Scripts -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="{{ url_for('static', filename='js/products.js') }}"></script>
+<!-- Success Popup -->
+<div
+  id="successPopup"
+  class="popup popup-success"
+  role="alert"
+  aria-live="assertive"
+>
+  <span
+    class="popup-icon"
+    aria-hidden="true"
+  >
+    ✓
+  </span>
+  <span class="popup-message">
+    Success!
+  </span>
+</div>
 
-  <!-- Inline Script to Remove No-JS Message -->
-  <script>
+<!-- Initial data for JavaScript -->
+<script>
+  // Initial pagination data for the JavaScript modules
+  window.paginationData = {
+    CurrentPage: {{ products.CurrentPage }},
+    TotalPages: {{ products.TotalPages }},
+    ItemsPerPage: {{ products.ItemsPerPage }},
+    TotalCount: {{ products.TotalCount }}
+  };
+  
+  // Initial sort settings
+  window.currentSort = "{{ current_sort }}";
+  
+  // Set up field configuration for the category
+  window.categoryFieldConfig = {{ field_config|tojson if field_config else '{}' }};
+</script>
+
+<!-- Scripts -->
+<script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+
+<!-- Modular JavaScript Imports -->
+<script type="module">
+  import { utils } from "{{ url_for('static', filename='js/core/utils.js') }}";
+  import { api } from "{{ url_for('static', filename='js/core/api.js') }}";
+  import { events } from "{{ url_for('static', filename='js/core/events.js') }}";
+  import { productColumns } from "{{ url_for('static', filename='js/product/columns.js') }}";
+  import { productEdit } from "{{ url_for('static', filename='js/product/edit.js') }}";
+  import { productInit } from "{{ url_for('static', filename='js/product/init.js') }}";
+  import { productSearch } from "{{ url_for('static', filename='js/product/search.js') }}";
+  import { productSort } from "{{ url_for('static', filename='js/product/sort.js') }}";
+  import { productTable } from "{{ url_for('static', filename='js/product/table.js') }}";
+  import { csvExport } from "{{ url_for('static', filename='js/export/csv.js') }}";
+
+  document.addEventListener('DOMContentLoaded', function() {
+    // Remove no-js classes
     document.documentElement.classList.remove('no-js');
     document.documentElement.classList.add('js');
-  </script>
+
+    // Make modules globally available (for backward compatibility)
+    window.utils = utils;
+    window.api = api;
+    window.events = events;
+    window.productColumns = productColumns;
+    window.productEdit = productEdit;
+    window.productInit = productInit;
+    window.productSearch = productSearch;
+    window.productSort = productSort;
+    window.productTable = productTable;
+    window.csvExport = csvExport;
+
+    // Initialize product page
+    productInit.handleDOMContentLoaded();
+    
+    // Add event handlers for close buttons
+    document.querySelectorAll('.close-button, .btn-cancel, .cancel').forEach(button => {
+      button.addEventListener('click', function(e) {
+        e.preventDefault();
+        if (typeof window.closeEditForm === 'function') {
+          window.closeEditForm();
+        }
+      });
+    });
+  });
+</script>
+
 </body>
 </html>

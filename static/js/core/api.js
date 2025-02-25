@@ -8,14 +8,11 @@
  * - fetchFieldConfig() - Fetches field configuration for a category
  */
 
+import { utils } from './utils.js';
+
 // Create a namespace for API functions
-const api = (function() {
+export const api = (function() {
     'use strict';
-    
-    // Check for required dependencies
-    if (typeof utils === 'undefined') {
-      console.error('utils module is required for api.js');
-    }
     
     /**
      * Fetch sorted data from API
@@ -62,6 +59,7 @@ const api = (function() {
   
       try {
         const response = await fetch(`/product/${productId}/edit`);
+        console.log(`Response status: ${response.status}`);
         
         if (!response.ok) {
           const errorText = await response.text();
@@ -84,71 +82,65 @@ const api = (function() {
     }
     
     /**
-     * Submit product edit data
-     * @param {Object} productData - Updated product data
-     * @returns {Promise<Object>} - Promise with update result
-     */
-    async function submitProductEdit(productData) {
-      if (!productData || !productData.product_id) {
-        throw new Error('Invalid product data or missing product ID');
-      }
-      
-      const productId = productData.product_id;
-      
-      try {
-        const updateResponse = await fetch(`/product/${productId}/update`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-            'Accept': 'application/json'
-          },
-          body: JSON.stringify(productData)
-        });
-        
-        const responseText = await updateResponse.text();
-        
-        let responseData;
-        try {
-          responseData = JSON.parse(responseText);
-        } catch (parseError) {
-          console.error('Response parsing error:', { 
-            error: parseError, 
-            rawText: responseText 
-          });
-          throw new Error('Invalid response format from server');
-        }
-        
-        if (!updateResponse.ok) {
-          const errorDetails = responseData?.error || responseText || 'Unspecified server error';
-          throw new Error(errorDetails);
-        }
-        
-        // Wait for API sync
-        await new Promise(resolve => setTimeout(resolve, 750));
-        
-        // Fetch updated product data
-        const detailsResponse = await fetch(`/product/${productId}/edit`);
-        
-        if (!detailsResponse.ok) {
-          throw new Error(`Failed to fetch updated details: ${detailsResponse.statusText}`);
-        }
-        
-        const updatedData = await detailsResponse.json();
-        
-        if (!updatedData?.product) {
-          throw new Error('Invalid or missing product data in response');
-        }
-        
-        return {
-          success: true,
-          product: updatedData.product,
-          message: responseData.message || 'Product updated successfully'
-        };
-      } catch (error) {
-        console.error('Product update error:', error);
-        throw error;
-      }
+ * Submits product update to the API
+ * @param {Object} productData - Updated product data
+ * @returns {Promise<Object>} - API response
+ */
+async function submitProductEdit(productData) {
+  if (!productData || !productData.product_id) {
+    console.error('Invalid product data provided');
+    return { success: false, message: 'Invalid product data' };
+  }
+
+  const productId = productData.product_id;
+  delete productData.product_id; // Remove from payload as it's in the URL
+
+  try {
+    // Create a clean copy of the data to avoid modifying the original
+    const payload = JSON.parse(JSON.stringify(productData));
+    
+    // Log the payload being sent (for debugging)
+    console.log('Submitting product edit:', {
+      productId,
+      payload: JSON.stringify(payload, null, 2)
+    });
+
+    const response = await fetch(`/product/${productId}/update`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'X-Requested-With': 'XMLHttpRequest'
+      },
+      body: JSON.stringify(payload)
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      console.error('Product update API error:', errorData);
+      return {
+        success: false,
+        message: errorData.error || `Server error: ${response.status}`
+      };
     }
+
+    const result = await response.json();
+    
+    if (result.error) {
+      return { success: false, message: result.error };
+    }
+    
+    return { 
+      success: true, 
+      message: result.message || 'Product updated successfully',
+      product: result.product || null,
+      current_status: result.current_status,
+      is_available: result.is_available
+    };
+  } catch (error) {
+    console.error('Error submitting product edit:', error);
+    return { success: false, message: error.message };
+  }
+}
     
     /**
      * Fetch field configuration for a category
@@ -237,7 +229,15 @@ const api = (function() {
     };
   })();
   
-  // Export the api module (if module system is available)
-  if (typeof module !== 'undefined' && module.exports) {
-    module.exports = api;
-  }
+// Expose API functions globally for backward compatibility
+window.fetchSortedData = api.fetchSortedData;
+window.fetchProductDetails = api.fetchProductDetails;
+window.submitProductEdit = api.submitProductEdit;
+window.fetchFieldConfig = api.fetchFieldConfig;
+window.searchProducts = api.searchProducts;
+window.api = api;
+
+// Export the api module (if CommonJS module system is available)
+if (typeof module !== 'undefined' && module.exports) {
+  module.exports = { api };
+}
