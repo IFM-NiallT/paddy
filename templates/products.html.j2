@@ -200,82 +200,24 @@
     </div>
   </section>
 
-  <!-- Edit Product Modal -->
-  <div class="modal fade" id="editProductModal" tabindex="-1" role="dialog" aria-labelledby="editProductModalLabel" aria-hidden="true">
-    <div class="modal-dialog modal-lg" role="document">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="editProductModalLabel">Edit Product: <span id="editProductCode"></span></h5>
-          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-            <span aria-hidden="true">&times;</span>
-          </button>
-        </div>
-        <form id="productEditForm">
-          <div class="modal-body">
-            <!-- Hidden input for product ID -->
-            <input type="hidden" name="product_id" id="editProductId">
-            
-            <!-- Error and Success Message Containers -->
-            <div id="form-errors" class="alert alert-danger" style="display:none;"></div>
-            <div id="form-success" class="alert alert-success" style="display:none;"></div>
-            
-            <!-- Dynamic Fields Container -->
-            <div class="row">
-              <div class="col-md-6">
-                <!-- Standard Fields -->
-                <div class="form-group">
-                  <label for="productName">Product Name</label>
-                  <input type="text" class="form-control" id="productName" name="name" readonly>
-                </div>
-                
-                <div class="form-group">
-                  <label for="extendedDescription">Extended Description</label>
-                  <textarea class="form-control" id="extendedDescription" name="extended_description" rows="3"></textarea>
-                </div>
-
-                <div class="form-group">
-                  <label for="webCategory">Web Category</label>
-                  <input type="text" class="form-control" id="webCategory" name="web_category">
-                </div>
-
-                <div class="form-group">
-                  <label for="webStatus">Web Status</label>
-                  <select class="form-control" id="webStatus" name="web_status">
-                    <option value="Available">Available</option>
-                    <option value="Not Available">Not Available</option>
-                  </select>
-                </div>
-              </div>
-              
-              <div class="col-md-6" id="dynamicFieldsContainer">
-                <!-- Dynamic fields will be populated here -->
-              </div>
-            </div>
-          </div>
-          <div class="modal-footer">
-            <button type="button" class="btn btn-secondary cancel" data-dismiss="modal">Cancel</button>
-            <button type="submit" class="btn btn-primary">Save Changes</button>
-          </div>
-        </form>
-      </div>
-    </div>
-  </div>
-
-  <!-- Edit Product Popup (Alternative Version) -->
+  <!-- Edit Product Popup -->
   <div class="modal-overlay" id="editFormOverlay"></div>
   <div class="modal" id="editProductForm" role="dialog" aria-labelledby="editFormTitle" aria-modal="true">
     <div class="modal-content">
-      <div class="modal-header">
+      <!-- Modal Header -->
+      <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center;">
         <h2 id="editFormTitle" class="modal-title">
-          Edit Product: <span id="popupProductCode"></span>
+          Edit: <span id="popupProductCode"></span>
         </h2>
         <button type="button" class="close-button" aria-label="Close edit form">X</button>
       </div>
       
+      <!-- Modal Body -->
       <div class="modal-body">
         <form id="productEditForm2">
           <input type="hidden" id="popupProductId" name="product_id">
           
+          <!-- Alert Containers -->
           <div id="form-errors" class="alert alert-destructive" style="display: none;" role="alert">
             <div class="alert-message"></div>
           </div>
@@ -283,9 +225,10 @@
             <div class="alert-message"></div>
           </div>
           
-          <div class="form-layout form-grid">
-            <!-- Left Column: Static Fields -->
-            <div class="form-column form-column-static">
+          <!-- Three Column Layout -->
+          <div class="form-layout form-grid" style="display: flex; gap: 20px;">
+            <!-- Column 1: Static Fields -->
+            <div class="form-column static" style="flex: 1;">
               <!-- Product Name -->
               <div class="form-group">
                 <label for="popupProductName">Product Name</label>
@@ -298,19 +241,6 @@
                   readonly 
                   aria-describedby="productNameHelp"
                 >
-              </div>
-              
-              <!-- Extended Description -->
-              <div class="form-group">
-                <label for="popupExtendedDescription">Extended Description</label>
-                <small id="extendedDescriptionHelp" class="form-text">Additional product details</small>
-                <textarea
-                  id="popupExtendedDescription"
-                  name="extended_description"
-                  class="form-control"
-                  rows="4"
-                  aria-describedby="extendedDescriptionHelp"
-                ></textarea>
               </div>
               
               <!-- Image Count -->
@@ -358,35 +288,45 @@
               </div>
             </div>
             
-            <!-- Right Column: Dynamic Fields -->
-            <div class="form-column form-column-dynamic">
-              <div id="popupFirstColumn"></div>
-              <div id="popupSecondColumn"></div>
+            <!-- Column 2: Dynamic Fields (Left) -->
+            <div class="form-column dynamic" style="flex: 1;">
+              <div id="popupFirstColumn">
+                <!-- Populate dynamic fields here.
+                     For 6 or fewer dynamic fields, populate them here. -->
+              </div>
             </div>
+            
+            <!-- Column 3: Dynamic Fields (Right) -->
+            <div class="form-column dynamic" style="flex: 1;">
+              <div id="popupSecondColumn">
+                <!-- If there are more than 6 dynamic fields, populate the remainder here. -->
+              </div>
+            </div>
+          </div>
+          
+          <!-- Extended Description Spanning Full Width -->
+          <div class="form-group" style="margin-top: 20px;">
+            <label for="popupExtendedDescription">Extended Description</label>
+            <small id="extendedDescriptionHelp" class="form-text">Additional product details</small>
+            <textarea
+              id="popupExtendedDescription"
+              name="extended_description"
+              class="form-control"
+              rows="4"
+              aria-describedby="extendedDescriptionHelp"
+            ></textarea>
           </div>
         </form>
       </div>
       
+      <!-- Modal Footer -->
       <div class="modal-footer">
-        <button
-          type="button"
-          class="btn-cancel"
-          aria-label="Cancel edit"
-        >
-          Cancel
-        </button>
-        <button
-          type="submit"
-          class="btn-submit"
-          form="productEditForm2"
-          aria-label="Save product changes"
-        >
-          Save Changes
-        </button>
+        <button type="button" class="btn-cancel" aria-label="Cancel edit">Cancel</button>
+        <button type="submit" class="btn-submit" form="productEditForm2" aria-label="Save product changes">Save Changes</button>
       </div>
     </div>
   </div>
-</main>
+  </main>
 
 <!-- Footer -->
 <footer class="site-footer" role="contentinfo">
