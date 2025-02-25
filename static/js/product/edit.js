@@ -22,6 +22,9 @@ import { events } from "../core/events.js";
 export const productEdit = (function () {
   "use strict";
 
+  // Store loaded product attributes configuration
+  let productAttributes = null;
+
   /**
    * Initialize edit form handlers
    */
@@ -216,27 +219,31 @@ export const productEdit = (function () {
       editForm.appendChild(loadingIndicator);
     }
 
-    // Use API module
-    api
-      .fetchProductDetails(productId)
-      .then((data) => {
-        handleProductDetailsResponse(data);
-      })
-      .catch((error) => {
-        console.error("Error fetching product details:", error);
-        utils.showErrorMessage(
-          `Failed to load product details: ${error.message}`
-        );
-      })
-      .finally(() => {
-        // Remove loading indicator
-        if (editForm) {
-          const loadingIndicator = editForm.querySelector(".loading-indicator");
-          if (loadingIndicator) {
-            loadingIndicator.remove();
+    // Ensure product attributes are loaded
+    loadProductAttributes().then(() => {
+      // Use API module
+      api
+        .fetchProductDetails(productId)
+        .then((data) => {
+          handleProductDetailsResponse(data);
+        })
+        .catch((error) => {
+          console.error("Error fetching product details:", error);
+          utils.showErrorMessage(
+            `Failed to load product details: ${error.message}`
+          );
+        })
+        .finally(() => {
+          // Remove loading indicator
+          if (editForm) {
+            const loadingIndicator =
+              editForm.querySelector(".loading-indicator");
+            if (loadingIndicator) {
+              loadingIndicator.remove();
+            }
           }
-        }
-      });
+        });
+    });
   }
 
   /**
@@ -272,13 +279,64 @@ export const productEdit = (function () {
   }
 
   /**
-   * Populate current product details section
-   * @param {Object} product - Product data
-   * @param {Array} dynamicFields - Dynamic field definitions
+   * Load product attributes from JSON file
+   * @returns {Promise} - Promise that resolves when attributes are loaded
    */
-  function populateCurrentDetails(product, dynamicFields) {
+  function loadProductAttributes() {
+    // If already loaded, return resolved promise
+    if (productAttributes) {
+      return Promise.resolve(productAttributes);
+    }
+
+    return fetch("/static/json/product_attributes.json")
+      .then((response) => {
+        if (!response.ok) {
+          throw new Error(
+            `Failed to load product attributes: ${response.status}`
+          );
+        }
+        return response.json();
+      })
+      .then((data) => {
+        console.log("Product attributes loaded successfully");
+        productAttributes = data;
+        window.productAttributes = data; // Also store globally for compatibility
+        return data;
+      })
+      .catch((error) => {
+        console.error("Error loading product attributes:", error);
+        return null;
+      });
+  }
+
+  /**
+   * Get field configuration for a category
+   * @param {string} categoryId - Category ID
+   * @returns {Object|null} - Field configuration or null if not found
+   */
+  function getFieldConfig(categoryId) {
+    if (!productAttributes || !categoryId) {
+      return null;
+    }
+
+    return productAttributes[categoryId]?.fields || null;
+  }
+
+  /**
+   * Populate current product details section with appropriate field labels
+   * @param {Object} product - Product data
+   * @param {Array} legacyFields - Legacy dynamic field definitions (unused parameter)
+   */
+  function populateCurrentDetails(product, legacyFields) {
     const container = document.getElementById("currentProductDetails");
     if (!container) return;
+
+    // Get category-specific field configuration
+    const categoryId = product.Category?.ID;
+    const fieldConfig = categoryId ? getFieldConfig(categoryId) : null;
+
+    console.log("Current Product Category:", categoryId);
+    console.log("Field Configuration:", fieldConfig);
 
     // Helper function to determine web status
     function getWebStatus(product) {
@@ -321,20 +379,10 @@ export const productEdit = (function () {
       return "Not Available";
     }
 
-    const allFields = [
+    // Create basic static fields
+    const staticFields = [
       { field: "Code", label: "Product Code" },
       { field: "Description", label: "Description" },
-      { field: "D_Classification", label: "Classification" },
-      { field: "D_ThreadGender", label: "Thread Gender" },
-      { field: "D_SizeA", label: "Size A" },
-      { field: "D_SizeB", label: "Size B" },
-      { field: "D_SizeC", label: "Size C" },
-      { field: "D_SizeD", label: "Size D" },
-      { field: "D_Orientation", label: "Orientation" },
-      { field: "D_Configuration", label: "Configuration" },
-      { field: "D_Grade", label: "Grade" },
-      { field: "D_ManufacturerName", label: "Manufacturer Name" },
-      { field: "D_Application", label: "Application" },
       { field: "D_WebCategory", label: "Web Category" },
       {
         field: "ECommerceStatus",
@@ -343,49 +391,83 @@ export const productEdit = (function () {
       },
     ];
 
+    // Add dynamic fields based on field configuration
+    const dynamicFields = [];
+
+    if (fieldConfig) {
+      // Add configured fields with proper display names
+      Object.entries(fieldConfig).forEach(([key, config]) => {
+        if (key.startsWith("D_") && key !== "D_WebCategory" && config.used) {
+          dynamicFields.push({
+            field: key,
+            label: config.display || key.replace("D_", ""),
+            value: product[key] || "",
+          });
+        }
+      });
+    } else {
+      // Fallback to default field list
+      const defaultFields = [
+        { field: "D_Classification", label: "Classification" },
+        { field: "D_ThreadGender", label: "Thread Gender" },
+        { field: "D_SizeA", label: "Size A" },
+        { field: "D_SizeB", label: "Size B" },
+        { field: "D_SizeC", label: "Size C" },
+        { field: "D_SizeD", label: "Size D" },
+        { field: "D_Orientation", label: "Orientation" },
+        { field: "D_Configuration", label: "Configuration" },
+        { field: "D_Grade", label: "Grade" },
+        { field: "D_ManufacturerName", label: "Manufacturer Name" },
+        { field: "D_Application", label: "Application" },
+      ];
+
+      dynamicFields.push(...defaultFields);
+    }
+
+    const allFields = [...staticFields, ...dynamicFields];
+
     console.log("Current Product Details:", {
       productId: product.ID,
       ecommerceSettings: product.ECommerceSettings,
       ecommerceStatus: product.ECommerceSettings?.ECommerceStatus,
       webStatus: getWebStatus(product),
+      fields: allFields.map((f) => f.field),
     });
 
     container.innerHTML = `
-        <table class="table table-bordered">
-          ${allFields
-            .map((field) => {
-              let displayValue = field.getValue
-                ? field.getValue()
-                : product[field.field] || "";
+      <table class="table table-bordered">
+        ${allFields
+          .map((field) => {
+            let displayValue = field.getValue
+              ? field.getValue()
+              : product[field.field] || "";
 
-              // Special handling for web status display
-              if (field.field === "ECommerceStatus") {
-                return `
-                <tr>
-                  <th>${field.label}</th>
-                  <td>
-                    <span class="web-status-cell ${
-                      displayValue === "Available"
-                        ? "available"
-                        : "not-available"
-                    }">
-                      ${displayValue}
-                    </span>
-                  </td>
-                </tr>
-              `;
-              }
-
+            // Special handling for web status display
+            if (field.field === "ECommerceStatus") {
               return `
               <tr>
                 <th>${field.label}</th>
-                <td>${displayValue}</td>
+                <td>
+                  <span class="web-status-cell ${
+                    displayValue === "Available" ? "available" : "not-available"
+                  }">
+                    ${displayValue}
+                  </span>
+                </td>
               </tr>
             `;
-            })
-            .join("")}
-        </table>
-      `;
+            }
+
+            return `
+            <tr>
+              <th>${field.label}</th>
+              <td>${displayValue}</td>
+            </tr>
+          `;
+          })
+          .join("")}
+      </table>
+    `;
   }
 
   /**
@@ -395,229 +477,202 @@ export const productEdit = (function () {
    * @param {Array} dynamicFields - Dynamic field definitions
    */
   function populateEditForm(product, productId, dynamicFields) {
-    // Prevent immediate page reload to allow error inspection
-    window.onbeforeunload = function () {
-      return "Diagnostic mode: Prevent automatic page reload";
-    };
-
-    // Enhanced error logging function
-    function logError(message, details = {}) {
-      const errorContainer =
-        document.getElementById("form-errors") ||
-        document.querySelector("#form-errors .alert-message");
-
-      console.error("Product Edit Form Population Error:", message, details);
-
-      if (errorContainer) {
-        errorContainer.textContent = `${message}: ${JSON.stringify(details)}`;
-        errorContainer.style.display = "block";
-      }
-
-      // Optional: Show error popup
-      if (typeof utils !== "undefined" && utils.showErrorMessage) {
-        utils.showErrorMessage(message);
-      }
-    }
-
     try {
-      console.group("Populating Edit Form - COMPREHENSIVE DIAGNOSTIC");
+      console.group("Populating Edit Form with Product Attributes");
 
       // Validate input
       if (!product) {
         throw new Error("No product data provided");
       }
 
-      // Log raw input data with enhanced detail
-      console.log("Full Product Data:", JSON.stringify(product, null, 2));
-      console.log("Product ID:", productId);
+      // Get category ID and field configuration
+      const categoryId = product.Category?.ID;
+      const fieldConfig = categoryId ? getFieldConfig(categoryId) : null;
 
-      // Comprehensive field mapping with multiple variations
-      const fieldMappings = {
-        popupProductCode: ["Code", "code", "product_code"],
-        popupProductId: ["ID", "id", "product_id"],
-        popupProductName: ["Description", "description", "product_name"],
-        popupImageCount: ["ImageCount", "image_count", "imageCount"],
-        popupWebCategory: ["D_WebCategory", "web_category", "WebCategory"],
-        popupExtendedDescription: [
-          "ECommerceSettings.ExtendedDescription",
-          "extended_description",
-          "ExtendedDescription",
-        ],
-        popupWebStatus: [
-          "ECommerceSettings.ECommerceStatus.Name",
-          "web_status",
-          "WebStatus",
-        ],
-      };
+      console.log("Product category:", categoryId);
+      console.log("Field configuration:", fieldConfig);
 
-      // Enhanced value finder with extensive logging
-      function findValue(mappingKeys) {
-        console.log(
-          `Searching for values with keys: ${mappingKeys.join(", ")}`
-        );
+      // Populate basic fields
+      populateBasicFields(product);
 
-        for (let key of mappingKeys) {
-          // Handle nested key notation
-          if (key.includes(".")) {
-            const keys = key.split(".");
-            let value = product;
-
-            for (let nestedKey of keys) {
-              value = value?.[nestedKey];
-              if (value === undefined) break;
-            }
-
-            if (value !== undefined) {
-              console.log(`Found nested value for ${key}:`, value);
-              return value;
-            }
-          }
-
-          // Direct key check
-          if (product[key] !== undefined) {
-            console.log(`Found direct value for ${key}:`, product[key]);
-            return product[key];
-          }
-        }
-
-        console.warn(`No value found for keys: ${mappingKeys.join(", ")}`);
-        return "";
+      // Populate dynamic fields based on field configuration
+      if (fieldConfig) {
+        populateDynamicFieldsFromConfig(product, fieldConfig);
+      } else {
+        // Fallback to old method
+        populateLegacyDynamicFields(product);
       }
 
-      // Populate known fields with comprehensive logging
-      Object.entries(fieldMappings).forEach(([elementId, keys]) => {
-        const element = document.getElementById(elementId);
-
-        if (!element) {
-          logError(`Element not found: ${elementId}`, {
-            expectedKeys: keys,
-          });
-          return;
-        }
-
-        const value = findValue(keys);
-
-        console.log(`Populating ${elementId}:`, {
-          element: element,
-          keys: keys,
-          foundValue: value,
-          elementType: element.tagName,
-        });
-
-        // Population logic with type-specific handling
-        if (element.tagName === "INPUT" || element.tagName === "TEXTAREA") {
-          element.value = value || "";
-        } else if (element.tagName === "DIV" || element.tagName === "SPAN") {
-          element.textContent = value || "";
-        } else if (element.tagName === "SELECT") {
-          // Special handling for select elements
-          const optionValue = value?.Name || value || "";
-          element.value = optionValue;
-        }
-
-        // Read-only handling with enhanced logging
-        try {
-          const isReadOnly = isFieldReadOnly(elementId.replace("popup", ""));
-
-          console.log(`Read-only check for ${elementId}:`, {
-            fieldName: elementId.replace("popup", ""),
-            isReadOnly: isReadOnly,
-          });
-
-          if (isReadOnly) {
-            element.setAttribute("readonly", "readonly");
-            element.classList.add("read-only");
-          }
-        } catch (readOnlyError) {
-          logError(`Error checking read-only status for ${elementId}`, {
-            error: readOnlyError.message,
-          });
-        }
-      });
-
-      // Dynamic D_ fields population with improved error handling
-      try {
-        const dynamicFieldNames = Object.keys(product)
-          .filter((key) => key.startsWith("D_") && key !== "D_WebCategory")
-          .map((key) => ({
-            name: key,
-            value: product[key],
-          }));
-
-        console.log("Dynamic Fields Found:", dynamicFieldNames);
-
-        const firstColumn = document.getElementById("popupFirstColumn");
-        const secondColumn = document.getElementById("popupSecondColumn");
-
-        if (!firstColumn || !secondColumn) {
-          throw new Error("Dynamic field columns not found");
-        }
-
-        firstColumn.innerHTML = "";
-        secondColumn.innerHTML = "";
-
-        dynamicFieldNames.forEach((field, index) => {
-          try {
-            const fieldGroup = createFieldGroup({
-              name: field.name,
-              label: field.name
-                .replace("D_", "")
-                .replace(/([A-Z])/g, " $1")
-                .trim(),
-              value: field.value,
-              readonly: isFieldReadOnly(field.name),
-            });
-
-            // Alternate between columns
-            const targetColumn = index % 2 === 0 ? firstColumn : secondColumn;
-            targetColumn.appendChild(fieldGroup);
-          } catch (fieldGroupError) {
-            logError(`Error creating field group for ${field.name}`, {
-              error: fieldGroupError.message,
-            });
-          }
-        });
-      } catch (dynamicFieldError) {
-        logError("Error processing dynamic fields", {
-          error: dynamicFieldError.message,
-        });
-      }
-
-      // Web status handling with comprehensive error management
-      try {
-        const webStatusSelect = document.getElementById("popupWebStatus");
-        if (webStatusSelect) {
-          const statusObj = product.ECommerceSettings?.ECommerceStatus;
-          const isAvailable =
-            statusObj?.Value === 0 || statusObj?.Name === "Enabled";
-
-          console.log("Web Status Detection:", {
-            statusObject: statusObj,
-            isAvailable: isAvailable,
-          });
-
-          webStatusSelect.value = isAvailable ? "Available" : "Not Available";
-        }
-      } catch (webStatusError) {
-        logError("Error processing web status", {
-          error: webStatusError.message,
-        });
-      }
+      // Set up web status
+      setupWebStatus(product);
 
       console.groupEnd();
-
-      // Remove onbeforeunload to allow normal navigation
-      window.onbeforeunload = null;
     } catch (criticalError) {
-      logError("Critical Error in Edit Form Population", {
-        error: criticalError.message,
-        stack: criticalError.stack,
+      console.error("Critical Error in Edit Form Population:", criticalError);
+      utils.showErrorMessage(`Error loading form: ${criticalError.message}`);
+    }
+  }
+
+  /**
+   * Populate basic static fields
+   * @param {Object} product - Product data
+   */
+  function populateBasicFields(product) {
+    // Static field mapping
+    const staticFields = {
+      popupProductCode: product.Code,
+      popupProductId: product.ID,
+      popupProductName: product.Description,
+      popupImageCount: product.ImageCount,
+      popupWebCategory: product.D_WebCategory,
+      popupExtendedDescription: product.ECommerceSettings?.ExtendedDescription,
+    };
+
+    // Set field values
+    Object.entries(staticFields).forEach(([elementId, value]) => {
+      const element = document.getElementById(elementId);
+      if (element) {
+        if (element.tagName === "INPUT" || element.tagName === "TEXTAREA") {
+          element.value = value !== undefined && value !== null ? value : "";
+        } else if (element.tagName === "SELECT") {
+          element.value = value !== undefined && value !== null ? value : "";
+        } else {
+          element.textContent =
+            value !== undefined && value !== null ? value : "";
+        }
+
+        // Mark read-only fields
+        if (isFieldReadOnly(elementId.replace("popup", ""))) {
+          element.setAttribute("readonly", "readonly");
+          element.classList.add("read-only");
+        }
+      }
+    });
+  }
+
+  /**
+   * Populate dynamic fields based on field configuration
+   * @param {Object} product - Product data
+   * @param {Object} fieldConfig - Field configuration from product_attributes.json
+   */
+  function populateDynamicFieldsFromConfig(product, fieldConfig) {
+    const firstColumn = document.getElementById("popupFirstColumn");
+    const secondColumn = document.getElementById("popupSecondColumn");
+
+    if (!firstColumn || !secondColumn) {
+      console.error("Dynamic field columns not found");
+      return;
+    }
+
+    // Clear existing fields
+    firstColumn.innerHTML = "";
+    secondColumn.innerHTML = "";
+
+    // Get all fields configured for this category
+    const dynamicFields = Object.entries(fieldConfig)
+      .filter(
+        ([key, config]) =>
+          key.startsWith("D_") && key !== "D_WebCategory" && config.used
+      )
+      .map(([key, config]) => ({
+        name: key,
+        label: config.display || key.replace("D_", ""),
+        value: product[key] || "",
+        type: config.type,
+        used: config.used,
+      }));
+
+    console.log("Dynamic fields to display:", dynamicFields);
+
+    // Create field groups and add to columns
+    dynamicFields.forEach((field, index) => {
+      try {
+        const fieldGroup = createFieldGroup({
+          name: field.name,
+          label: field.label,
+          value: field.value,
+          type: field.type === "Boolean" ? "checkbox" : "text",
+          readonly: isFieldReadOnly(field.name),
+        });
+
+        // Alternate between columns
+        const targetColumn = index % 2 === 0 ? firstColumn : secondColumn;
+        targetColumn.appendChild(fieldGroup);
+      } catch (error) {
+        console.error(`Error creating field group for ${field.name}:`, error);
+      }
+    });
+  }
+
+  /**
+   * Fallback function to populate dynamic fields the old way
+   * @param {Object} product - Product data
+   */
+  function populateLegacyDynamicFields(product) {
+    console.log("Using legacy method for dynamic fields");
+
+    const firstColumn = document.getElementById("popupFirstColumn");
+    const secondColumn = document.getElementById("popupSecondColumn");
+
+    if (!firstColumn || !secondColumn) {
+      console.error("Dynamic field columns not found");
+      return;
+    }
+
+    // Clear existing fields
+    firstColumn.innerHTML = "";
+    secondColumn.innerHTML = "";
+
+    // Get all D_ fields from product
+    const dynamicFieldNames = Object.keys(product)
+      .filter((key) => key.startsWith("D_") && key !== "D_WebCategory")
+      .map((key) => ({
+        name: key,
+        value: product[key],
+      }));
+
+    console.log("Legacy dynamic fields:", dynamicFieldNames);
+
+    dynamicFieldNames.forEach((field, index) => {
+      try {
+        const fieldGroup = createFieldGroup({
+          name: field.name,
+          label: field.name
+            .replace("D_", "")
+            .replace(/([A-Z])/g, " $1")
+            .trim(),
+          value: field.value,
+          readonly: isFieldReadOnly(field.name),
+        });
+
+        // Alternate between columns
+        const targetColumn = index % 2 === 0 ? firstColumn : secondColumn;
+        targetColumn.appendChild(fieldGroup);
+      } catch (error) {
+        console.error(`Error creating field group for ${field.name}:`, error);
+      }
+    });
+  }
+
+  /**
+   * Set up web status field
+   * @param {Object} product - Product data
+   */
+  function setupWebStatus(product) {
+    const webStatusSelect = document.getElementById("popupWebStatus");
+    if (webStatusSelect) {
+      const statusObj = product.ECommerceSettings?.ECommerceStatus;
+      const isAvailable =
+        statusObj?.Value === 0 ||
+        statusObj?.Name === "Enabled" ||
+        statusObj === "Enabled";
+
+      console.log("Web Status:", {
+        statusObject: statusObj,
+        isAvailable: isAvailable,
       });
 
-      // Prevent automatic page reload to allow error inspection
-      window.onbeforeunload = function () {
-        return "Error occurred during form population";
-      };
+      webStatusSelect.value = isAvailable ? "Available" : "Not Available";
     }
   }
 
@@ -693,7 +748,7 @@ export const productEdit = (function () {
   }
 
   /**
-   * Handle form submission with improved D_WebCategory handling
+   * Handle form submission with table refresh and page reload
    * @param {Event} event - Submit event
    */
   async function submitProductEdit(event) {
@@ -713,22 +768,26 @@ export const productEdit = (function () {
     const extendedDescInput =
       form.querySelector("#popupExtendedDescription") ||
       form.querySelector("#extendedDescription");
-      
+
     // Enhanced D_WebCategory detection - check ALL possible field variations
-    const webCategoryInput = form.querySelector('select[name="D_WebCategory"], input[name="D_WebCategory"], [id="D_WebCategory"], [id="popupWebCategory"], [name="popupWebCategory"], [data-field="D_WebCategory"]');
-    
+    const webCategoryInput = form.querySelector(
+      'select[name="D_WebCategory"], input[name="D_WebCategory"], [id="D_WebCategory"], [id="popupWebCategory"], [name="popupWebCategory"], [data-field="D_WebCategory"]'
+    );
+
     // Find WebCategory value from the displayed product details table
     let webCategoryDisplayValue = null;
     try {
       // Find all table rows in the current product details
-      const detailsTable = document.querySelector('#currentProductDetails table');
+      const detailsTable = document.querySelector(
+        "#currentProductDetails table"
+      );
       if (detailsTable) {
-        const rows = detailsTable.querySelectorAll('tr');
+        const rows = detailsTable.querySelectorAll("tr");
         // Loop through rows to find the one with "Web Category"
         for (let row of rows) {
-          const headerCell = row.querySelector('th');
+          const headerCell = row.querySelector("th");
           if (headerCell && headerCell.textContent.trim() === "Web Category") {
-            const valueCell = row.querySelector('td');
+            const valueCell = row.querySelector("td");
             if (valueCell) {
               webCategoryDisplayValue = valueCell.textContent.trim();
               break;
@@ -739,14 +798,14 @@ export const productEdit = (function () {
     } catch (e) {
       console.warn("Error finding WebCategory in details table:", e);
     }
-    
+
     console.log("Form elements:", {
       form: form.id,
       productId,
       webStatusSelect: webStatusSelect ? webStatusSelect.value : "not found",
       extendedDesc: extendedDescInput ? "found" : "not found",
       webCategory: webCategoryInput ? webCategoryInput.value : "not found",
-      webCategoryDisplay: webCategoryDisplayValue
+      webCategoryDisplay: webCategoryDisplayValue,
     });
 
     if (!productId) {
@@ -816,9 +875,9 @@ export const productEdit = (function () {
       // Explicitly handle D_WebCategory
       if (!("D_WebCategory" in updatedFields)) {
         console.log("D_WebCategory not found in form data, adding manually");
-        
+
         let webCategoryValue = null;
-        
+
         // Try all possible sources for the value in priority order
         if (webCategoryInput && webCategoryInput.value) {
           webCategoryValue = webCategoryInput.value;
@@ -831,7 +890,7 @@ export const productEdit = (function () {
           webCategoryValue = "TEST";
           console.log(`Using default WebCategory value: ${webCategoryValue}`);
         }
-        
+
         // Set the value in the payload
         updatedFields["D_WebCategory"] = webCategoryValue;
       }
@@ -844,6 +903,9 @@ export const productEdit = (function () {
         headers: {
           "Content-Type": "application/json",
           "X-Requested-With": "XMLHttpRequest",
+          // Add cache-busting headers
+          "Cache-Control": "no-cache, no-store, must-revalidate",
+          Pragma: "no-cache",
         },
         body: JSON.stringify(updatedFields),
       });
@@ -862,9 +924,7 @@ export const productEdit = (function () {
 
       if (!response.ok) {
         console.error("API error response:", result);
-        throw new Error(
-          result.error || `Server returned ${response.status}`
-        );
+        throw new Error(result.error || `Server returned ${response.status}`);
       }
 
       console.log("API response data:", result);
@@ -873,13 +933,15 @@ export const productEdit = (function () {
         throw new Error(result.error);
       }
 
-      utils.showSuccessPopup("Product updated successfully");
+      // Always reload the page after successful submission
+      utils.showSuccessPopup("Product updated successfully. Reloading...");
       closeEditForm();
-
-      // Optionally refresh the page to show changes
+      
+      // Wait a moment to show the success message before reloading
       setTimeout(() => {
         window.location.reload();
-      }, 1500); // Give time to see the success message
+      }, 1500);
+
     } catch (error) {
       console.error("Product Update Error:", error);
       utils.showErrorMessage(`Update failed: ${error.message}`);
@@ -896,9 +958,12 @@ export const productEdit = (function () {
    * Initialize module
    */
   function init() {
-    initEditFormHandlers();
-    initEditButtons();
-    console.log("Product edit functionality initialized");
+    // Load product attributes first
+    loadProductAttributes().then(() => {
+      initEditFormHandlers();
+      initEditButtons();
+      console.log("Product edit functionality initialized");
+    });
   }
 
   // Return public methods
@@ -911,6 +976,7 @@ export const productEdit = (function () {
     fetchProductDetails,
     submitProductEdit,
     handleEditButtonClick,
+    loadProductAttributes,
   };
 })();
 
