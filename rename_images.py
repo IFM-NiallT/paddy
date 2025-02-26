@@ -146,7 +146,7 @@ def rename_category_images(directory: str, json_file: str) -> None:
 def main():
     # Set correct paths
     directory_path = "static/img/categories"
-    json_file_path = "json/categories.json"
+    json_file_path = "static/json/categories.json"
 
     # Confirmation prompt
     print(f"This will rename image files in {directory_path}")
