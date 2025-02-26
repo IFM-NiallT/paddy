@@ -20,7 +20,10 @@ Author: Luke Doyle - 2025 Intern
 
 import os
 from typing import List, Optional
-from .logger import logger
+from .logger import get_logger
+
+# Get logger instance
+logger = get_logger()
 
 
 class Config:
@@ -57,34 +60,16 @@ class Config:
         for directory in required_dirs:
             try:
                 os.makedirs(directory, exist_ok=True)
-                logger.info(
-                    "Directory structure verified",
-                    extra={
-                        'directory': directory,
-                        'absolute_path': os.path.abspath(directory),
-                        'permissions': oct(os.stat(directory).st_mode)[-3:]
-                    }
-                )
+                logger.info(f"Directory structure verified: {directory}")
             except PermissionError as e:
                 logger.critical(
-                    "Permission denied while creating directory",
-                    extra={
-                        'directory': directory,
-                        'error': str(e),
-                        'user': os.getenv('USER'),
-                        'current_permissions': oct(os.stat(os.path.dirname(directory)).st_mode)[-3:] if os.path.exists(os.path.dirname(directory)) else None
-                    },
+                    f"Permission denied creating directory: {directory}",
                     exc_info=True
                 )
                 raise
             except Exception as e:
                 logger.critical(
-                    "Failed to create directory structure",
-                    extra={
-                        'directory': directory,
-                        'error_type': type(e).__name__,
-                        'error_msg': str(e)
-                    },
+                    f"Failed to create directory {directory}: {str(e)}",
                     exc_info=True
                 )
                 raise
@@ -101,66 +86,29 @@ class Config:
             validation_errors.append("API Base URL is missing")
         elif not cls.API_BASE_URL.startswith(('http://', 'https://')):
             validation_errors.append(f"Invalid API Base URL format: {cls.API_BASE_URL}")
-            logger.warning(
-                "Insecure API URL detected",
-                extra={
-                    'url': cls.API_BASE_URL,
-                    'recommended': 'Use HTTPS in production'
-                }
-            )
+            logger.warning(f"Insecure API URL detected: {cls.API_BASE_URL}")
         
         # Validate Bearer Token
         if not cls.BEARER_TOKEN:
             validation_errors.append("Bearer Token is missing")
         elif len(cls.BEARER_TOKEN) < 10:
             validation_errors.append("Bearer Token length is insufficient")
-            logger.error(
-                "Security configuration error",
-                extra={
-                    'issue': 'Invalid bearer token length',
-                    'required_length': '≥ 10',
-                    'current_length': len(cls.BEARER_TOKEN)
-                }
-            )
+            logger.error(f"Security configuration error: Token length ({len(cls.BEARER_TOKEN)}) < 10")
         
         # Validate Request Timeout
         if cls.REQUEST_TIMEOUT <= 0:
             validation_errors.append("Request timeout must be positive")
         elif cls.REQUEST_TIMEOUT > 60:
             validation_errors.append("Request timeout exceeds maximum (60 seconds)")
-            logger.warning(
-                "Request timeout might be too high",
-                extra={
-                    'current_timeout': cls.REQUEST_TIMEOUT,
-                    'recommended_max': 60
-                }
-            )
+            logger.warning(f"Request timeout might be too high: {cls.REQUEST_TIMEOUT}s > 60s")
         
         # Log and raise if any validation errors found
         if validation_errors:
             error_message = "Configuration Validation Failed:\n" + "\n".join(f"- {error}" for error in validation_errors)
-            logger.critical(
-                "Invalid configuration detected",
-                extra={
-                    'validation_errors': validation_errors,
-                    'config_summary': cls.get_connection_info()
-                },
-                exc_info=True
-            )
+            logger.critical(f"Invalid configuration detected: {len(validation_errors)} issues found", exc_info=True)
             raise ValueError(error_message)
         
-        logger.info(
-            "Configuration validated successfully",
-            extra={
-                'config': cls.get_connection_info(),
-                'directories': {
-                    'json_dir': cls.JSON_DIR,
-                    'cache_file': cls.CACHE_FILE,
-                    'field_config': cls.FIELD_CONFIG_FILE,
-                    'env_dir': cls.ENV_DIR
-                }
-            }
-        )
+        logger.info("Configuration validated successfully")
 
     @classmethod
     def get_connection_info(cls) -> dict:
@@ -177,10 +125,7 @@ class Config:
             'env_dir_exists': os.path.exists(cls.ENV_DIR)
         }
         
-        logger.info(
-            "Retrieved connection information",
-            extra={'connection_info': connection_info}
-        )
+        logger.debug(f"Connection information: {connection_info}")
         
         return connection_info
 
@@ -200,38 +145,16 @@ class Config:
                     if file.endswith('.env'):
                         env_path = os.path.join(cls.ENV_DIR, file)
                         env_files.append(env_path)
-                        logger.info(
-                            "Found .env file",
-                            extra={
-                                'path': env_path,
-                                'relative_path': os.path.relpath(env_path, cls.BASE_DIR)
-                            }
-                        )
+                        logger.info(f"Found .env file: {os.path.relpath(env_path, cls.BASE_DIR)}")
             
             return env_files
             
         except PermissionError as e:
-            logger.error(
-                "Permission denied while searching for .env files",
-                extra={
-                    'directory': cls.ENV_DIR,
-                    'error': str(e),
-                    'user': os.getenv('USER')
-                },
-                exc_info=True
-            )
+            logger.error(f"Permission denied accessing {cls.ENV_DIR}: {str(e)}", exc_info=True)
             raise
         
         except Exception as e:
-            logger.error(
-                "Error while searching for .env files",
-                extra={
-                    'directory': cls.ENV_DIR,
-                    'error_type': type(e).__name__,
-                    'error_msg': str(e)
-                },
-                exc_info=True
-            )
+            logger.error(f"Error searching for .env files: {str(e)}", exc_info=True)
             raise
 
     @classmethod
@@ -256,50 +179,23 @@ class Config:
                             key, value = line.split('=', 1)
                             env_vars[key.strip()] = value.strip()
                         except ValueError:
-                            logger.warning(
-                                "Invalid line in .env file",
-                                extra={
-                                    'file': env_path,
-                                    'line': line
-                                }
-                            )
+                            logger.warning(f"Invalid line in {env_path}: '{line}'")
                             continue
             
-            logger.info(
-                "Successfully loaded .env file",
-                extra={
-                    'path': env_path,
-                    'variables_count': len(env_vars),
-                    'variables': list(env_vars.keys())  # Only log keys, not values
-                }
-            )
+            logger.info(f"Loaded {len(env_vars)} variables from {os.path.basename(env_path)}")
             
             return env_vars
             
         except FileNotFoundError:
-            logger.error(
-                ".env file not found",
-                extra={'path': env_path}
-            )
+            logger.error(f".env file not found: {env_path}")
             return None
             
         except PermissionError:
-            logger.error(
-                "Permission denied reading .env file",
-                extra={'path': env_path}
-            )
+            logger.error(f"Permission denied reading .env file: {env_path}")
             return None
             
         except Exception as e:
-            logger.error(
-                "Error reading .env file",
-                extra={
-                    'path': env_path,
-                    'error_type': type(e).__name__,
-                    'error_msg': str(e)
-                },
-                exc_info=True
-            )
+            logger.error(f"Error reading .env file {env_path}: {str(e)}", exc_info=True)
             return None
 
     @classmethod
@@ -325,28 +221,14 @@ class Config:
                     if key == 'REQUEST_TIMEOUT':
                         value = int(value)
                     setattr(cls, key, value)
-                    logger.info(
-                        "Updated config attribute",
-                        extra={
-                            'attribute': key,
-                            'source': env_path
-                        }
-                    )
+                    logger.info(f"Updated config {key} from {os.path.basename(env_path)}")
             
             # Validate the updated configuration
             cls.validate_configuration()
             return True
             
         except Exception as e:
-            logger.error(
-                "Error updating configuration from .env file",
-                extra={
-                    'path': env_path,
-                    'error_type': type(e).__name__,
-                    'error_msg': str(e)
-                },
-                exc_info=True
-            )
+            logger.error(f"Error updating configuration from {env_path}: {str(e)}", exc_info=True)
             return False
 
 
@@ -358,25 +240,12 @@ try:
     api_config_path = os.path.join(Config.ENV_DIR, 'api_config.env')
     if os.path.exists(api_config_path):
         if not Config.update_from_env_file(api_config_path):
-            logger.error(
-                "Failed to load API configuration",
-                extra={'config_path': api_config_path}
-            )
+            logger.error(f"Failed to load API configuration from {api_config_path}")
     else:
-        logger.error(
-            "API configuration file not found",
-            extra={'expected_path': api_config_path}
-        )
+        logger.error(f"API configuration file not found at {api_config_path}")
     
     Config.validate_configuration()
         
 except Exception as e:
-    logger.critical(
-        "Fatal configuration error during initialization",
-        extra={
-            'error_type': type(e).__name__,
-            'error_msg': str(e)
-        },
-        exc_info=True
-    )
+    logger.critical(f"Fatal configuration error: {str(e)}", exc_info=True)
     raise

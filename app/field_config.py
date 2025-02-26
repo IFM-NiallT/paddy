@@ -21,8 +21,11 @@ Author: Luke Doyle - 2025 Intern
 import json
 import os
 from datetime import datetime
-from .logger import logger
+from .logger import get_logger
 from .config import Config
+
+# Get logger instance
+logger = get_logger()
 
 
 class FieldConfig:
@@ -44,11 +47,7 @@ class FieldConfig:
         self.config = self._load_field_config()
         if not self.config:
             logger.critical(
-                "Failed to load field configuration - system may not function correctly",
-                extra={
-                    'config_file': Config.FIELD_CONFIG_FILE,
-                    'timestamp': datetime.now().isoformat()
-                }
+                "Failed to load field configuration - system may not function correctly"
             )
 
     def _load_field_config(self):
@@ -59,40 +58,25 @@ class FieldConfig:
             dict: The loaded configuration dictionary
         """
         try:
-            logger.info(
-                "Loading field configuration",
-                extra={'config_file': Config.FIELD_CONFIG_FILE}
-            )
+            logger.info(f"Loading field configuration from {Config.FIELD_CONFIG_FILE}")
             
             # Check if configuration file exists
             if not os.path.exists(Config.FIELD_CONFIG_FILE):
                 logger.error(
-                    "Field configuration file not found",
-                    extra={
-                        'config_file': Config.FIELD_CONFIG_FILE,
-                        'current_dir': os.getcwd()
-                    },
+                    f"Field configuration file not found: {Config.FIELD_CONFIG_FILE}",
                     exc_info=True
                 )
                 return {}
 
             # Log file statistics
             file_stats = os.stat(Config.FIELD_CONFIG_FILE)
-            logger.info(
-                "Configuration file details",
-                extra={
-                    'file_size': file_stats.st_size,
-                    'last_modified': datetime.fromtimestamp(file_stats.st_mtime).isoformat(),
-                    'file_permissions': oct(file_stats.st_mode)[-3:]
-                }
-            )
+            file_size_kb = file_stats.st_size / 1024
+            last_modified = datetime.fromtimestamp(file_stats.st_mtime).strftime('%Y-%m-%d %H:%M:%S')
+            logger.debug(f"Config file: {file_size_kb:.1f}KB, last modified: {last_modified}")
 
             # Validate file size
             if file_stats.st_size == 0:
-                logger.error(
-                    "Configuration file is empty",
-                    extra={'config_file': Config.FIELD_CONFIG_FILE}
-                )
+                logger.error(f"Configuration file is empty: {Config.FIELD_CONFIG_FILE}")
                 return {}
 
             # Read and parse configuration file
@@ -101,62 +85,36 @@ class FieldConfig:
 
             # Validate configuration structure
             if not isinstance(config, dict):
-                logger.error(
-                    "Invalid configuration format - expected dictionary",
-                    extra={'actual_type': type(config).__name__}
-                )
+                logger.error(f"Invalid configuration format - expected dictionary, got {type(config).__name__}")
                 return {}
 
             # Log configuration summary
-            logger.info(
-                "Configuration loaded successfully",
-                extra={
-                    'categories_count': len(config),
-                    'category_ids': list(config.keys())
-                }
-            )
+            category_count = len(config)
+            logger.info(f"Configuration loaded successfully with {category_count} categories")
 
             # Validate each category's configuration
             for category_id, category_config in config.items():
                 if 'fields' not in category_config:
-                    logger.warning(
-                        "Category missing 'fields' configuration",
-                        extra={
-                            'category_id': category_id,
-                            'available_keys': list(category_config.keys())
-                        }
-                    )
+                    logger.warning(f"Category {category_id} missing 'fields' configuration")
 
             return config
 
         except json.JSONDecodeError as e:
             logger.error(
-                "JSON parsing error in configuration file",
-                extra={
-                    'error_msg': str(e),
-                    'error_line': e.lineno,
-                    'error_col': e.colno
-                },
+                f"JSON parsing error in configuration file: line {e.lineno}, col {e.colno}",
                 exc_info=True
             )
             return {}
         except IOError as e:
+            error_code = e.errno if hasattr(e, 'errno') else 'Unknown'
             logger.error(
-                "IO error reading configuration file",
-                extra={
-                    'error_msg': str(e),
-                    'error_code': e.errno if hasattr(e, 'errno') else None
-                },
+                f"IO error reading configuration file: {error_code} - {str(e)}",
                 exc_info=True
             )
             return {}
         except Exception as e:
             logger.critical(
-                "Unexpected error loading configuration",
-                extra={
-                    'error_type': type(e).__name__,
-                    'error_msg': str(e)
-                },
+                f"Unexpected error loading configuration: {type(e).__name__} - {str(e)}",
                 exc_info=True
             )
             return {}
@@ -175,31 +133,19 @@ class FieldConfig:
         
         # Check if configuration is loaded
         if not self.config:
-            logger.error(
-                "Cannot retrieve category fields - configuration is empty",
-                extra={'category_id': category_id}
-            )
+            logger.error(f"Cannot retrieve fields - configuration is empty for category {category_id}")
             return []
 
         # Check if category exists
         if category_id_str not in self.config:
-            logger.warning(
-                "Category not found in configuration",
-                extra={
-                    'category_id': category_id,
-                    'available_categories': list(self.config.keys())
-                }
-            )
+            logger.warning(f"Category {category_id} not found in configuration")
             return []
 
         # Retrieve category configuration
         category_config = self.config.get(category_id_str, {}).get('fields', {})
         
         if not category_config:
-            logger.warning(
-                "No fields configured for category",
-                extra={'category_id': category_id}
-            )
+            logger.warning(f"No fields configured for category {category_id}")
             return []
 
         # Filter and format active fields
@@ -213,12 +159,6 @@ class FieldConfig:
             if field_info.get('used', False)
         ]
 
-        logger.info(
-            "Retrieved category fields",
-            extra={
-                'category_id': category_id,
-                'active_fields_count': len(active_fields)
-            }
-        )
+        logger.info(f"Retrieved {len(active_fields)} active fields for category {category_id}")
 
         return active_fields
