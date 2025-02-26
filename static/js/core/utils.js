@@ -9,7 +9,7 @@
  */
 
 // Create a namespace for utilities to avoid global scope pollution
-export const utils = (function() {
+const utils = (function() {
   'use strict';
  
   /**

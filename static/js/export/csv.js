@@ -3,9 +3,7 @@
  * Handles exporting table data to CSV format
  */
 
-import { utils } from '../core/utils.js';
-
-export const csvExport = (function() {
+const csvExport = (function() {
     'use strict';
 
     /**
@@ -19,7 +17,7 @@ export const csvExport = (function() {
             console.error('Products table not found');
             
             // Use utils module for error message
-            utils.showErrorMessage('Unable to export CSV: Table not found');
+            window.utils.showErrorMessage('Unable to export CSV: Table not found');
             return;
         }
        
@@ -104,7 +102,7 @@ export const csvExport = (function() {
         }
 
         // Show success message
-        utils.showSuccessPopup(`Exported ${fileName}`);
+        window.utils.showSuccessPopup(`Exported ${fileName}`);
     }
 
     /**

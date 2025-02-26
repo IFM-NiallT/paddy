@@ -6,19 +6,8 @@
  * proper loading order and dependency management.
  */
 
-// Import necessary modules (make sure the paths are correct)
-import { productColumns } from './columns.js';
-import { productSort, updateSortIndicators } from './sort.js';
-import { productSearch } from './search.js';
-import { productEdit } from './edit.js';
-import { utils } from '../core/utils.js';
-import { api } from '../core/api.js';
-import { events } from '../core/events.js';
-import { productTable } from './table.js';
-import { csvExport } from '../export/csv.js';
-
 // Create a namespace for product initialization
-export const productInit = (function() {
+const productInit = (function() {
   'use strict';
 
   /**
@@ -26,18 +15,17 @@ export const productInit = (function() {
    * @returns {boolean} - Whether all dependencies are available
    */
   function checkDependencies() {
-    // All dependencies should be imported via ES modules, 
-    // but we can still check if they're defined for safety
+    // All dependencies should be accessible via the window object
     const dependencies = {
-      utils: typeof utils !== 'undefined',
-      api: typeof api !== 'undefined',
-      events: typeof events !== 'undefined',
-      productTable: typeof productTable !== 'undefined',
-      productSearch: typeof productSearch !== 'undefined',
-      productSort: typeof productSort !== 'undefined',
-      productEdit: typeof productEdit !== 'undefined',
-      productColumns: typeof productColumns !== 'undefined',
-      csvExport: typeof csvExport !== 'undefined'
+      utils: typeof window.utils !== 'undefined',
+      api: typeof window.api !== 'undefined',
+      events: typeof window.events !== 'undefined',
+      productTable: typeof window.productTable !== 'undefined',
+      productSearch: typeof window.productSearch !== 'undefined',
+      productSort: typeof window.productSort !== 'undefined',
+      productEdit: typeof window.productEdit !== 'undefined',
+      productColumns: typeof window.productColumns !== 'undefined',
+      csvExport: typeof window.csvExport !== 'undefined'
     };
     
     const missingDependencies = Object.keys(dependencies).filter(dep => !dependencies[dep]);
@@ -58,46 +46,46 @@ export const productInit = (function() {
     
     try {
       // Initialize column resizing functionality
-      if (productColumns) {
-        productColumns.init();
+      if (window.productColumns) {
+        window.productColumns.init();
       } else {
         console.warn('Column resizing module not available');
         initColumnResizers();  // Fallback to global function
       }
       
       // Initialize sorting functionality
-      if (productSort) {
-        productSort.init();
+      if (window.productSort) {
+        window.productSort.init();
       } else {
         console.warn('Sort module not available');
         initSortHandlers();  // Fallback to global function
       }
       
       // Initialize search functionality
-      if (productSearch) {
-        productSearch.init();
+      if (window.productSearch) {
+        window.productSearch.init();
       } else {
         console.warn('Search module not available');
         initSearchHandlers();  // Fallback to global function
       }
       
       // Initialize product editing functionality
-      if (productEdit) {
-        productEdit.init();
+      if (window.productEdit) {
+        window.productEdit.init();
       } else {
         console.warn('Edit module not available');
         initEditFormHandlers();  // Fallback to global function
       }
       
       // Initialize table functionality
-      if (productTable) {
-        productTable.init();
-        productTable.logTableStructure();
+      if (window.productTable) {
+        window.productTable.init();
+        window.productTable.logTableStructure();
       }
       
       // Initialize CSV export functionality
-      if (csvExport) {
-        csvExport.init();
+      if (window.csvExport) {
+        window.csvExport.init();
       }
       
       console.log('Products page initialization complete');
@@ -121,20 +109,20 @@ export const productInit = (function() {
 
     try {
       // Re-initialize all table-related handlers
-      if (productColumns) {
-        productColumns.init();
+      if (window.productColumns) {
+        window.productColumns.init();
       } else if (typeof window.initColumnResizers === 'function') {
         window.initColumnResizers();
       }
       
-      if (productSort) {
-        productSort.init();
+      if (window.productSort) {
+        window.productSort.init();
       } else if (typeof window.initSortHandlers === 'function') {
         window.initSortHandlers();
       }
       
-      if (productEdit) {
-        productEdit.initEditButtons();
+      if (window.productEdit) {
+        window.productEdit.initEditButtons();
       } else if (typeof window.initEditButtons === 'function') {
         window.initEditButtons();
       }
@@ -170,6 +158,7 @@ export const productInit = (function() {
 })();
 
 // Expose functions to global scope for backward compatibility
+window.productInit = productInit;
 window.initializeProductsPage = productInit.initializeProductsPage;
 window.reinitializeTableHandlers = productInit.reinitializeTableHandlers;
 window.checkDependencies = productInit.checkDependencies;
@@ -183,7 +172,7 @@ document.addEventListener('DOMContentLoaded', productInit.handleDOMContentLoaded
  */
 
 // Column resize fallback
-export function initColumnResizers() {
+function initColumnResizers() {
   console.log('Using fallback column resizer initialization');
   const table = document.getElementById('productsTable');
   
@@ -254,9 +243,10 @@ export function initColumnResizers() {
     });
   }
 }
+window.initColumnResizers = initColumnResizers;
 
 // Sort handlers fallback
-export function initSortHandlers() {
+function initSortHandlers() {
   console.log('Using fallback sort handler initialization');
   const headers = document.querySelectorAll('#productsTable th a');
   headers.forEach(header => {
@@ -270,13 +260,14 @@ export function initSortHandlers() {
     window.updateSortIndicators(window.location.href);
   }
 }
+window.initSortHandlers = initSortHandlers;
 
 // Search handlers fallback
-export function initSearchHandlers() {
+function initSearchHandlers() {
   console.log('Using fallback search handler initialization');
   const searchInput = document.getElementById('productSearch');
   if (searchInput) {
-    const debouncedSearch = utils.debounce(window.searchProducts || function() {
+    const debouncedSearch = window.utils.debounce(window.searchProducts || function() {
       console.warn('searchProducts function not available');
     }, 300);
     
@@ -292,9 +283,10 @@ export function initSearchHandlers() {
     });
   }
 }
+window.initSearchHandlers = initSearchHandlers;
 
 // Edit form handlers fallback
-export function initEditFormHandlers() {
+function initEditFormHandlers() {
   console.log('Using fallback edit form handler initialization');
 
   // Directly get the form element
@@ -326,9 +318,10 @@ export function initEditFormHandlers() {
     }
   }
 }
+window.initEditFormHandlers = initEditFormHandlers;
 
 // Edit buttons fallback
-export function initEditButtons() {
+function initEditButtons() {
   console.log('Using fallback edit button initialization');
   document.querySelectorAll('.edit-product-btn').forEach(button => {
     button.addEventListener('click', function(event) {
@@ -343,15 +336,17 @@ export function initEditButtons() {
     });
   });
 }
+window.initEditButtons = initEditButtons;
 
 // Overlay handler fallback
-export function initOverlayHandler() {
+function initOverlayHandler() {
   console.log('Using fallback overlay handler initialization');
   const overlay = document.getElementById('editFormOverlay');
   if (overlay && typeof window.closeEditForm === 'function') {
     overlay.addEventListener('click', window.closeEditForm);
   }
 }
+window.initOverlayHandler = initOverlayHandler;
 
 // Export the module if CommonJS module system is available
 if (typeof module !== 'undefined' && module.exports) {

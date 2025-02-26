@@ -14,12 +14,8 @@
  * - isFieldReadOnly() - Checks if field is read-only
  */
 
-import { utils } from "../core/utils.js";
-import { api } from "../core/api.js";
-import { events } from "../core/events.js";
-
 // Create a namespace for product editing functionality
-export const productEdit = (function () {
+const productEdit = (function () {
   "use strict";
 
   // Store loaded product attributes configuration
@@ -198,7 +194,7 @@ export const productEdit = (function () {
   function fetchProductDetails(productId) {
     if (!productId) {
       console.error("Invalid product ID");
-      utils.showErrorMessage("Error: Invalid product ID");
+      window.utils.showErrorMessage("Error: Invalid product ID");
       return;
     }
 
@@ -222,14 +218,14 @@ export const productEdit = (function () {
     // Ensure product attributes are loaded
     loadProductAttributes().then(() => {
       // Use API module
-      api
+      window.api
         .fetchProductDetails(productId)
         .then((data) => {
           handleProductDetailsResponse(data);
         })
         .catch((error) => {
           console.error("Error fetching product details:", error);
-          utils.showErrorMessage(
+          window.utils.showErrorMessage(
             `Failed to load product details: ${error.message}`
           );
         })
@@ -509,7 +505,7 @@ export const productEdit = (function () {
       console.groupEnd();
     } catch (criticalError) {
       console.error("Critical Error in Edit Form Population:", criticalError);
-      utils.showErrorMessage(`Error loading form: ${criticalError.message}`);
+      window.utils.showErrorMessage(`Error loading form: ${criticalError.message}`);
     }
   }
 
@@ -810,7 +806,7 @@ export const productEdit = (function () {
 
     if (!productId) {
       console.error("Product ID not found");
-      utils.showErrorMessage("Error: Product ID not found");
+      window.utils.showErrorMessage("Error: Product ID not found");
       return;
     }
 
@@ -934,7 +930,7 @@ export const productEdit = (function () {
       }
 
       // Always reload the page after successful submission
-      utils.showSuccessPopup("Product updated successfully. Reloading...");
+      window.utils.showSuccessPopup("Product updated successfully. Reloading...");
       closeEditForm();
       
       // Wait a moment to show the success message before reloading
@@ -944,7 +940,7 @@ export const productEdit = (function () {
 
     } catch (error) {
       console.error("Product Update Error:", error);
-      utils.showErrorMessage(`Update failed: ${error.message}`);
+      window.utils.showErrorMessage(`Update failed: ${error.message}`);
       return; // Don't refresh on error
     } finally {
       // Re-enable buttons
@@ -979,6 +975,9 @@ export const productEdit = (function () {
     loadProductAttributes,
   };
 })();
+
+// Expose the module globally
+window.productEdit = productEdit;
 
 // Make all key functions available globally for backward compatibility
 window.submitProductEdit = productEdit.submitProductEdit;

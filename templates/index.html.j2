@@ -1,235 +1,198 @@
 <!DOCTYPE html>
-<html lang="en" class="no-js">
+<html lang="en">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>PADDY - Product Categories | IFM</title>
-    
-    <!-- Critical Meta Tags -->
-    <meta name="description" content="PADDY: Product Attribute Designer Deployment for efficient product management and category browsing">
-    <meta name="keywords" content="product management, inventory, categories, IFM, product attributes">
-    <meta name="author" content="IFM">
-    
-    <!-- Preload Critical Resources -->
-    <link rel="preload" href="{{ url_for('static', filename='img/ifm_logo.png') }}" as="image">
-    
-    <!-- External Libraries -->
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet" media="all">
-    <link href="https://fonts.googleapis.com/css2?family=Liter:wght@400;700&display=swap" rel="stylesheet">
-    
-    <!-- Main Stylesheet -->
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
-    
-    <!-- No-JS Fallback -->
-    <noscript>
-        <style>
-            .js-required { display: none; }
-            .no-js-message { display: block; }
-        </style>
-    </noscript>
-
-    <!-- Global script error handler -->
-    <script>
-    function handleScriptError(moduleName) {
-        console.error(`Failed to load ${moduleName} module`);
-        
-        const errorNotification = document.createElement('div');
-        errorNotification.className = 'alert alert-warning position-fixed top-0 start-0 w-100 text-center';
-        errorNotification.style.zIndex = '1050';
-        errorNotification.textContent = `Some functionality may be limited. Unable to load ${moduleName} module.`;
-        
-        document.body.appendChild(errorNotification);
-    }
-    </script>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>PADDY - Product Categories | IFM</title>
+  
+  <!-- Critical Meta Tags -->
+  <meta name="description" content="PADDY: Product Attribute Designer Deployment for efficient product management and category browsing">
+  <meta name="keywords" content="product management, inventory, categories, IFM, product attributes">
+  <meta name="author" content="IFM">
+  
+  <!-- Preload Critical Resources -->
+  <link rel="preload" href="{{ url_for('static', filename='img/ifm_logo.png') }}" as="image">
+  
+  <!-- External Libraries -->
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
+  <link href="https://fonts.googleapis.com/css2?family=Liter:wght@400;700&display=swap" rel="stylesheet">
+  
+  <!-- Main Stylesheet -->
+  <link rel="stylesheet" href="{{ url_for('static', filename='css/main.css') }}">
 </head>
+
 <body>
-    <!-- Accessibility Message for No JavaScript -->
-    <div class="no-js-message text-center bg-warning p-3" style="display:none;">
-        JavaScript is required for full functionality. Please enable JavaScript in your browser.
-    </div>
+  <!-- Navbar -->
+  <header>
+    <nav class="navbar navbar-expand-lg" aria-label="Main Navigation">
+      <div class="container-fluid px-4">
+        <div class="nav-brand-container d-flex align-items-center">
+          <img src="{{ url_for('static', filename='img/ifm_logo.png') }}" alt="IFM logo" class="logo me-2" id="ifmLogo" loading="lazy">
+          <a class="navbar-brand" href="#" id="paddyText" aria-label="PADDY Home">PADDY</a>
+        </div>
+        <div class="d-flex gap-2">
+          <button id="searchAllProducts" class="btn-uni" data-bs-toggle="modal" data-bs-target="#searchProductsModal">
+            Search All Products
+          </button>
+        </div>
+      </div>
+    </nav>
+  </header>
 
-    <!-- Script Error Notification Container -->
-    <div id="scriptErrorContainer" class="position-fixed top-0 start-0 w-100" style="z-index: 1050;"></div>
-
-    <!-- Navbar -->
-    <header>
-        <nav class="navbar navbar-expand-lg" aria-label="Main Navigation">
-            <div class="container-fluid px-4">
-                <div class="nav-brand-container d-flex align-items-center">
-                    <img 
-                        src="{{ url_for('static', filename='img/ifm_logo.png') }}" 
-                        alt="IFM logo" 
-                        class="logo me-2" 
-                        id="ifmLogo"
-                        loading="lazy"
-                    >
-                    <a 
-                        class="navbar-brand" 
-                        href="#" 
-                        id="paddyText" 
-                        aria-label="PADDY Home"
-                    >
-                        PADDY
-                    </a>
-                </div>
-                <div class="d-flex gap-2">
-                    <button 
-                        id="searchAllProducts" 
-                        class="btn-uni" 
-                        data-bs-toggle="modal" 
-                        data-bs-target="#searchProductsModal"
-                    >
-                        Search All Products
-                    </button>
-                </div>
+  <!-- Search Modal -->
+  <div class="modal fade" id="searchProductsModal" tabindex="-1" aria-labelledby="searchProductsModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-xl">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="searchProductsModalLabel">Search Products</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close Search Modal"></button>
+        </div>
+        <div class="modal-body">
+          <div class="search-container mb-4">
+            <div class="search-wrapper">
+              <label for="modalProductSearch" class="visually-hidden">Search products by code</label>
+              <input type="text" class="search-input" id="modalProductSearch" placeholder="Search products by code">
             </div>
-        </nav>
-    </header>
-
-    <!-- Search Modal -->
-    <div 
-      class="modal fade" 
-      id="searchProductsModal" 
-      tabindex="-1" 
-      aria-labelledby="searchProductsModalLabel" 
-      aria-hidden="true"
-    >
-      <div class="modal-dialog modal-xl">
-        <div class="modal-content">
-          <div class="modal-header">
-            <h5 class="modal-title" id="searchProductsModalLabel">Search Products</h5>
-            <button 
-              type="button" 
-              class="btn-close" 
-              data-bs-dismiss="modal" 
-              aria-label="Close Search Modal"
-            ></button>
           </div>
-          <div class="modal-body">
-            <div class="search-container mb-4">
-              <div class="search-wrapper">
-                <label for="modalProductSearch" class="visually-hidden">
-                  Search products by code
-                </label>
-                <input 
-                  type="text" 
-                  class="search-input" 
-                  id="modalProductSearch" 
-                  placeholder="Search products by code"
-                >
-              </div>
-            </div>
 
-            <div class="table-responsive">
-              <table class="table" id="modalProductsTable">
-                <thead>
-                  <tr>
-                    <th>Code</th>
-                    <th>Description</th>
-                    <th>Category</th>
-                    <th>Actions</th>
-                  </tr>
-                </thead>
-                <tbody id="modalProductResultsBody">
-                  <!-- Results will be populated dynamically -->
-                </tbody>
-              </table>
-            </div>
+          <div class="table-responsive">
+            <table class="table" id="modalProductsTable">
+              <thead>
+                <tr>
+                  <th>Code</th>
+                  <th>Description</th>
+                  <th>Category</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="modalProductResultsBody">
+                <!-- Results will be populated dynamically -->
+              </tbody>
+            </table>
           </div>
         </div>
       </div>
     </div>
+  </div>
 
-    <!-- Search Bar Container -->
-    <div class="search-bar-container">
-        <div class="search-controls">
-            <!-- Search input -->
-            <div class="search-wrapper flex-grow-1" id="categorySearchWrapper">
-                <input type="text" class="search-input" id="categorySearch" placeholder="Search categories...">
-            </div>
-            
-            <!-- Dropdowns side by side -->
-            <div class="dropdown-container">
-                <select class="form-select btn-uni" id="sortSelect">
-                    <option value="" disabled selected>Sort By</option>
-                    <option value="alpha-asc">A - Z</option>
-                    <option value="alpha-desc">Z - A</option>
-                    <option value="code-asc">Code Asc</option>
-                    <option value="code-desc">Code Desc</option>
-                </select>
-            </div>
-        </div>
+  <!-- Search and Sort Container -->
+  <div class="search-bar-container">
+    <div class="search-controls">
+      <!-- Search input -->
+      <div class="search-wrapper flex-grow-1" id="categorySearchWrapper">
+        <label for="categorySearch" class="visually-hidden">Search categories</label>
+        <input type="text" class="search-input" id="categorySearch" placeholder="Search categories...">
+      </div>
+      
+      <!-- Sort dropdown -->
+      <div class="dropdown-container">
+        <select class="form-select btn-uni" id="sortSelect" aria-label="Sort categories">
+          <option value="" disabled selected>Sort By</option>
+          <option value="alpha-asc">A - Z</option>
+          <option value="alpha-desc">Z - A</option>
+          <option value="code-asc">Code Asc</option>
+          <option value="code-desc">Code Desc</option>
+        </select>
+      </div>
     </div>
+  </div>
 
-    <main class="container-fluid px-4">
-        <!-- Categories View -->
-        <div id="category-grid">
-            {% for category in categories.Data %}
-                <div class="category-item">
-                    <div class="category-container">
-                        <div class="category-content">
-                            <div class="category-image">
-                                <img src="{{ url_for('static', filename='img/categories/' ~ category.ID ~ '_' ~ category.Description.lower().replace(' ', '_') ~ '.jpg') }}" 
-                                     alt="{{ category.Description }}"
-                                     onerror="this.src='{{ url_for('static', filename='img/categories/404_default.jpg') }}'"
-                                     class="category-img">
-                            </div>
-                            <div class="category-text">
-                                <div class="category-name" title="{{ category.Description }}" data-code="{{ category.Code }}">
-                                    {{ category.Description }}
-                                </div>
-                                <div class="category-details" style="display: flex;">
-                                    <div class="category-code">Code: {{ category.Code }}</div>
-                                </div>
-                            </div>
-                            <div class="category-button">
-                                <button 
-                                    class="btn-uni" 
-                                    onclick="window.location.href='/products/{{ category.ID }}'"
-                                    aria-label="View Products in {{ category.Description }} Category"
-                                >
-                                    View Products
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                </div>
-            {% endfor %}
+  <!-- Main Content -->
+  <main class="container-fluid px-4">
+    <!-- Categories Grid -->
+    <div id="category-grid">
+      {% for category in categories.Data %}
+      <div class="category-item">
+        <div class="category-container">
+          <div class="category-content">
+            <div class="category-image">
+              <img src="{{ url_for('static', filename='img/categories/' ~ category.ID ~ '_' ~ category.Description.lower().replace(' ', '_') ~ '.jpg') }}" 
+                   alt="{{ category.Description }}"
+                   onerror="this.src='{{ url_for('static', filename='img/categories/404_default.jpg') }}'"
+                   class="category-img">
+            </div>
+            <div class="category-text">
+              <div class="category-name" title="{{ category.Description }}" data-code="{{ category.Code }}">
+                {{ category.Description }}
+              </div>
+              <div class="category-details">
+                <div class="category-code">Code: {{ category.Code }}</div>
+              </div>
+            </div>
+            <div class="category-button">
+              <a href="/products/{{ category.ID }}" class="btn-uni" 
+                 aria-label="View Products in {{ category.Description }} Category">
+                View Products
+              </a>
+            </div>
+          </div>
         </div>
-    </main>
-
-    <!-- Footer -->
-    <footer role="contentinfo">
-        <p>PADDY &copy; 2025 - IFM</p>
-        <p class="quote">"Product Attribute Designer Deployment (for) You"</p>
-    </footer>
-    <p class="version-quote">"v0.4"</p>
-
-    <!-- Success Popup -->
-    <div id="successPopup" class="success-popup">
-        <span class="success-icon">✓</span>
-        <span class="success-content">Operation completed successfully</span>
+      </div>
+      {% endfor %}
     </div>
+  </main>
 
-    <!-- Scripts -->
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js" defer></script>
-    
-    <!-- Core scripts -->
-    <script src="{{ url_for('static', filename='js/core/utils.js') }}" defer onerror="handleScriptError('Core utils')"></script>
-    <script src="{{ url_for('static', filename='js/core/api.js') }}" defer onerror="handleScriptError('Core API')"></script>
-    <script src="{{ url_for('static', filename='js/core/events.js') }}" defer onerror="handleScriptError('Core events')"></script>
-    
-    <!-- Category feature modules -->
-    <script src="{{ url_for('static', filename='js/category/search.js') }}" defer onerror="handleScriptError('Category search')"></script>
-    <script src="{{ url_for('static', filename='js/category/sort.js') }}" defer onerror="handleScriptError('Category sort')"></script>
-    
-    <!-- Product modules (for modal) -->
-    <script src="{{ url_for('static', filename='js/product/edit.js') }}" defer onerror="handleScriptError('Product edit')"></script>
-    
-    <!-- Export module -->
-    <script src="{{ url_for('static', filename='js/export/csv.js') }}" defer onerror="handleScriptError('Export CSV')"></script>
-    
-    <!-- Initialization scripts -->
-    <script src="{{ url_for('static', filename='js/category/init.js') }}" defer onerror="handleScriptError('Category init')"></script>
+  <!-- Footer -->
+  <footer class="site-footer" role="contentinfo">
+    <div class="footer-container">
+      <p class="footer-copyright">PADDY &copy; 2025 - IFM</p>
+      <p class="footer-tagline">"Product Attribute Designer Deployment (for) You"</p>
+      <p class="footer-version">v0.4.1</p>
+    </div>
+  </footer>
+
+  <!-- Success Popup -->
+  <div id="successPopup" class="popup popup-success" role="alert" aria-live="assertive">
+    <span class="popup-icon" aria-hidden="true">✓</span>
+    <span class="popup-message">Success!</span>
+  </div>
+
+  <!-- Bootstrap -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
+  
+  <!-- Core JavaScript Libraries -->
+  <script src="{{ url_for('static', filename='js/core/utils.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/core/api.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/core/events.js') }}"></script>
+  
+  <!-- Category Functionality Scripts -->
+  <script src="{{ url_for('static', filename='js/category/search.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/category/sort.js') }}"></script>
+  
+  <!-- Product and Export Scripts (for search modal) -->
+  <script src="{{ url_for('static', filename='js/product/edit.js') }}"></script>
+  <script src="{{ url_for('static', filename='js/export/csv.js') }}"></script>
+  
+  <!-- Initialize last after all modules are loaded -->
+  <script src="{{ url_for('static', filename='js/category/init.js') }}"></script>
+  
+  <!-- Script error handler -->
+  <script>
+    // Handle initialization errors by checking if required objects exist
+    document.addEventListener('DOMContentLoaded', function() {
+      const requiredModules = [
+        { name: 'utils', obj: window.utils },
+        { name: 'categorySearch', obj: window.categorySearch },
+        { name: 'categorySort', obj: window.categorySort },
+        { name: 'categoryInit', obj: window.categoryInit }
+      ];
+      
+      let missingModules = requiredModules.filter(mod => !mod.obj);
+      
+      if (missingModules.length > 0) {
+        const errorMessage = document.createElement('div');
+        errorMessage.className = 'alert alert-warning position-fixed top-0 start-0 w-100 text-center';
+        errorMessage.style.zIndex = '1050';
+        errorMessage.textContent = `Some functionality may be limited. Missing modules: ${missingModules.map(m => m.name).join(', ')}`;
+        document.body.prepend(errorMessage);
+        
+        // Auto-hide after 5 seconds
+        setTimeout(() => {
+          errorMessage.style.opacity = '0';
+          setTimeout(() => errorMessage.remove(), 300);
+        }, 5000);
+      }
+    });
+  </script>
 </body>
 </html>

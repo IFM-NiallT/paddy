@@ -7,10 +7,8 @@
  * - registerGlobalHandlers() - Registers global event handlers
  */
 
-import { utils } from './utils.js';
-
 // Create a namespace for event handling
-export const events = (function() {
+const events = (function() {
   'use strict';
  
   /**

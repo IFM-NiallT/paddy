@@ -7,11 +7,8 @@
  * - performLocalSearch() - Performs local (client-side) search
  */
 
-import { utils } from '../core/utils.js';
-import { api } from '../core/api.js';
-
 // Create a namespace for search functionality
-export const productSearch = (function() {
+const productSearch = (function() {
   'use strict';
   
   /**
@@ -20,7 +17,7 @@ export const productSearch = (function() {
   function initSearchHandlers() {
     const searchInput = document.getElementById('productSearch');
     if (searchInput) {
-      const debouncedSearch = utils.debounce(searchProducts, 300);
+      const debouncedSearch = window.utils.debounce(searchProducts, 300);
       searchInput.addEventListener('input', debouncedSearch);
       
       searchInput.addEventListener('keypress', function(e) {
@@ -90,8 +87,8 @@ export const productSearch = (function() {
     }
     
     try {
-      // Use API module
-      const data = await api.searchProducts(filter, categoryId);
+      // Use API module through window
+      const data = await window.api.searchProducts(filter, categoryId);
       
       // Update the table with search results
       if (typeof window.updateTableWithResults === 'function') {
@@ -104,7 +101,7 @@ export const productSearch = (function() {
       console.error('Search Error:', error);
       // Fall back to local search if API search fails
       performLocalSearch(filter);
-      utils.showErrorMessage(`Search failed: ${error.message}. Using local search instead.`);
+      window.utils.showErrorMessage(`Search failed: ${error.message}. Using local search instead.`);
     } finally {
       // Reset loading state
       if (tableBody) {
@@ -249,6 +246,9 @@ export const productSearch = (function() {
     getColumnCount
   };
 })();
+
+// Expose module globally
+window.productSearch = productSearch;
 
 // Expose functions globally for backward compatibility
 window.searchProducts = productSearch.search;

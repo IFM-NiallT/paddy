@@ -10,14 +10,8 @@
  * - determineWebStatus() - Determines product web status
  */
 
-import { utils } from "../core/utils.js";
-import { api } from "../core/api.js";
-import { productEdit } from "./edit.js";
-import { productPagination } from "./pagination.js";
-import { productInit } from "./init.js";
-
 // Create a namespace for table functionality
-export const productTable = (function () {
+const productTable = (function () {
   "use strict";
 
   /**
@@ -106,8 +100,8 @@ export const productTable = (function () {
     try {
       // Try to fetch the configuration
       let fieldConfig;
-      if (api && api.fetchFieldConfig) {
-        fieldConfig = await api.fetchFieldConfig(categoryId);
+      if (window.api && window.api.fetchFieldConfig) {
+        fieldConfig = await window.api.fetchFieldConfig(categoryId);
         console.log('Fetched field config via API:', fieldConfig);
       } else if (window.fetchFieldConfig) {
         fieldConfig = await window.fetchFieldConfig(categoryId);
@@ -412,16 +406,16 @@ export const productTable = (function () {
 
       // Static columns handling
       if (index === 0) {
-        cell.innerHTML = utils.escapeHtml(product.Code || "");
+        cell.innerHTML = window.utils.escapeHtml(product.Code || "");
         cell.setAttribute(
           "data-full-text",
-          utils.escapeHtml(product.Code || "")
+          window.utils.escapeHtml(product.Code || "")
         );
       } else if (index === 1) {
-        cell.innerHTML = utils.escapeHtml(product.Description || "");
+        cell.innerHTML = window.utils.escapeHtml(product.Description || "");
         cell.setAttribute(
           "data-full-text",
-          utils.escapeHtml(product.Description || "")
+          window.utils.escapeHtml(product.Description || "")
         );
       } else {
         // Dynamic columns matching
@@ -435,8 +429,8 @@ export const productTable = (function () {
             value,
           });
 
-          cell.innerHTML = utils.escapeHtml(String(value));
-          cell.setAttribute("data-full-text", utils.escapeHtml(String(value)));
+          cell.innerHTML = window.utils.escapeHtml(String(value));
+          cell.setAttribute("data-full-text", window.utils.escapeHtml(String(value)));
         } else if (headerText === "web status") {
           const isAvailable = determineWebStatus(product);
           cell.innerHTML = `
@@ -451,10 +445,10 @@ export const productTable = (function () {
             product.ImageCount !== undefined && product.ImageCount !== null
               ? Math.round(product.ImageCount)
               : "";
-          cell.innerHTML = utils.escapeHtml(String(imageCount));
+          cell.innerHTML = window.utils.escapeHtml(String(imageCount));
           cell.setAttribute(
             "data-full-text",
-            utils.escapeHtml(String(imageCount))
+            window.utils.escapeHtml(String(imageCount))
           );
         } else if (headerText === "actions") {
           cell.innerHTML = `
@@ -467,8 +461,8 @@ export const productTable = (function () {
           const directMatch = findPropertyInProduct(product, headerText);
           if (directMatch !== null) {
             console.log(`Found direct match in product for "${headerText}":`, directMatch);
-            cell.innerHTML = utils.escapeHtml(String(directMatch));
-            cell.setAttribute("data-full-text", utils.escapeHtml(String(directMatch)));
+            cell.innerHTML = window.utils.escapeHtml(String(directMatch));
+            cell.setAttribute("data-full-text", window.utils.escapeHtml(String(directMatch)));
           } else {
             console.warn(`No matching field found for header: "${headerText}"`);
             cell.textContent = ""; // Clear cell if no match
@@ -484,8 +478,8 @@ export const productTable = (function () {
     if (editBtn) {
       editBtn.addEventListener("click", (event) => {
         event.stopPropagation();
-        if (productEdit) {
-          productEdit.fetchProductDetails(product.ID);
+        if (window.productEdit) {
+          window.productEdit.fetchProductDetails(product.ID);
         } else if (window.fetchProductDetails) {
           window.fetchProductDetails(product.ID);
         }
@@ -532,15 +526,15 @@ export const productTable = (function () {
     });
 
     // Update pagination
-    if (productPagination) {
-      productPagination.updatePaginationInfo(data);
+    if (window.productPagination) {
+      window.productPagination.updatePaginationInfo(data);
     } else if (window.updatePaginationInfo) {
       window.updatePaginationInfo(data);
     }
 
     // Re-initialize edit buttons
-    if (productEdit) {
-      productEdit.initEditButtons();
+    if (window.productEdit) {
+      window.productEdit.initEditButtons();
     } else if (window.initEditButtons) {
       window.initEditButtons();
     }
@@ -637,7 +631,7 @@ export const productTable = (function () {
     if (!window.categoryFieldConfig && updatedProduct.Category) {
       console.log("Fetching missing category field config...");
       try {
-        await api.fetchFieldConfig(updatedProduct.Category.ID);
+        await window.api.fetchFieldConfig(updatedProduct.Category.ID);
       } catch (error) {
         console.error("Failed to fetch field configuration:", error);
         return;
@@ -732,8 +726,8 @@ export const productTable = (function () {
     });
 
     // Try to reinitialize table handlers
-    if (productInit && productInit.reinitializeTableHandlers) {
-      productInit.reinitializeTableHandlers();
+    if (window.productInit && window.productInit.reinitializeTableHandlers) {
+      window.productInit.reinitializeTableHandlers();
     } else if (window.reinitializeTableHandlers) {
       window.reinitializeTableHandlers();
     }
@@ -761,15 +755,21 @@ export const productTable = (function () {
     ensureFieldConfig,
   };
 })();
+
+// Expose the module globally
+window.productTable = productTable;
+
 // Expose functions globally for backward compatibility
 window.updateTableWithResults = productTable.updateTableWithResults;
 window.updateTableRow = productTable.updateTableRow;
 window.determineWebStatus = productTable.determineWebStatus;
 window.getColumnCount = productTable.getColumnCount;
 window.ensureFieldConfig = productTable.ensureFieldConfig;
+
 // Initialize on DOM content loaded
 document.addEventListener("DOMContentLoaded", productTable.init);
-// Export the productTable module (if CommonJS module system is available)
+
+// Export the module if CommonJS module system is available
 if (typeof module !== "undefined" && module.exports) {
   module.exports = { productTable };
 }

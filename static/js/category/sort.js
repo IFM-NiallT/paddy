@@ -1,11 +1,10 @@
 /**
  * sort.js - Category Sorting Functions
  */
-
 // Create a namespace for category sorting functionality
-export const categorySort = (function() {
+const categorySort = (function() {
     'use strict';
-    
+   
     /**
      * Sort categories function
      * @param {string} sortType - Type of sort to apply
@@ -16,19 +15,19 @@ export const categorySort = (function() {
             console.warn('Category grid not found');
             return;
         }
-        
+       
         const categories = Array.from(categoryGrid.getElementsByClassName("category-item"));
         categories.sort((a, b) => {
             const aNameElement = a.querySelector(".category-name");
             const bNameElement = b.querySelector(".category-name");
-            
+           
             if (!aNameElement || !bNameElement) return 0;
-            
+           
             const aName = aNameElement.textContent.trim();
             const bName = bNameElement.textContent.trim();
             const aCode = aNameElement.getAttribute("data-code") || "";
             const bCode = bNameElement.getAttribute("data-code") || "";
-            
+           
             switch (sortType) {
                 case "alpha-asc":
                     return aName.localeCompare(bName);
@@ -42,11 +41,11 @@ export const categorySort = (function() {
                     return 0;
             }
         });
-        
+       
         // Clear and re-append sorted items
         categories.forEach((category) => categoryGrid.appendChild(category));
     }
-    
+   
     /**
      * Initialize sort functionality
      */
@@ -59,7 +58,7 @@ export const categorySort = (function() {
         }
         console.log('Category sort initialized');
     }
-    
+   
     // Return public methods
     return {
         init,
@@ -68,6 +67,7 @@ export const categorySort = (function() {
 })();
 
 // Expose sort function globally for backward compatibility
+window.categorySort = categorySort;
 window.sortCategories = categorySort.sortCategories;
 
 // Initialize on DOM content loaded

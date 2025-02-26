@@ -7,12 +7,8 @@
  * - updateSortIndicators() - Updates sort direction indicators
  */
 
-import { utils } from '../core/utils.js';
-import { api } from '../core/api.js';
-import { productTable } from './table.js';  // Import the table module
-
 // Create a namespace for sorting functionality
-export const productSort = (function() {
+const productSort = (function() {
   'use strict';
   
   /**
@@ -47,13 +43,13 @@ export const productSort = (function() {
     }
     
     // Use API module to fetch sorted data
-    api.fetchSortedData(url)
+    window.api.fetchSortedData(url)
       .then(data => {
         handleSortResponse(data, url);
       })
       .catch(error => {
         console.error('Error fetching sorted data:', error);
-        utils.showErrorMessage('Failed to sort data: ' + error.message);
+        window.utils.showErrorMessage('Failed to sort data: ' + error.message);
       })
       .finally(() => {
         if (tableBody) {
@@ -76,17 +72,17 @@ export const productSort = (function() {
     
     // Update table with new data - multiple fallback methods
     const updateMethods = [
-      // Direct method from imported module
-      productTable?.updateTableWithResults,
+      // Global window method using productTable
+      window.productTable?.updateTableWithResults,
       
-      // Global window method
+      // Direct global method
       window.updateTableWithResults,
       
-      // Fallback to direct module call
+      // Fallback to direct window module call
       (data) => {
         console.warn('Falling back to alternate update method');
-        if (productTable && typeof productTable.updateTableWithResults === 'function') {
-          productTable.updateTableWithResults(data);
+        if (window.productTable && typeof window.productTable.updateTableWithResults === 'function') {
+          window.productTable.updateTableWithResults(data);
         }
       }
     ];
@@ -105,7 +101,7 @@ export const productSort = (function() {
 
     // If all methods fail, log a comprehensive error
     console.error('No valid method found to update table results');
-    utils.showErrorMessage('Unable to update table after sorting');
+    window.utils.showErrorMessage('Unable to update table after sorting');
   }
   
   /**
@@ -194,6 +190,9 @@ export const productSort = (function() {
   };
 })();
 
+// Expose the module globally
+window.productSort = productSort;
+
 // Expose functions globally for backward compatibility
 window.updateSortIndicators = productSort.updateSortIndicators;
 window.handleSortClick = productSort.handleSortClick;
@@ -202,10 +201,10 @@ window.initSortHandlers = productSort.init;
 // Initialize on DOM content loaded
 document.addEventListener('DOMContentLoaded', productSort.init);
 
-// Export the updateSortIndicators function separately as needed by other modules
-export const updateSortIndicators = productSort.updateSortIndicators;
-
 // Export the module if CommonJS module system is available
 if (typeof module !== 'undefined' && module.exports) {
-  module.exports = { productSort, updateSortIndicators };
+  module.exports = { 
+    productSort,
+    updateSortIndicators: productSort.updateSortIndicators
+  };
 }
