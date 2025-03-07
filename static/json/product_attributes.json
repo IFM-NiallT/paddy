@@ -217,7 +217,7 @@
         "used": true
       },
       "D_SizeB": {
-        "display": "Diameter",
+        "display": "Hose Diameter",
         "type": "String",
         "used": true
       },
